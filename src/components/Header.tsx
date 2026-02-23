@@ -13,6 +13,7 @@ const navItems = [
   { label: "경주 정보", href: "/races" },
   { label: "커뮤니티", href: "/community" },
   { label: "소식/공지", href: "/news" },
+  { label: "데이터 분석", href: "/analysis/odds" },
 ];
 
 export default function Header() {
