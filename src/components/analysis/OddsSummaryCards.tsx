@@ -5,16 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   raceData,
   getAverageOddsByBetType,
-  getUpsetFrequencyByVenue,
+  getUpsetFrequencyByGrade,
 } from "@/data/odds-data";
 
 export default function OddsSummaryCards() {
   const avgOdds = getAverageOddsByBetType(raceData);
-  const upsets = getUpsetFrequencyByVenue(raceData);
+  const upsets = getUpsetFrequencyByGrade(raceData);
 
   const danseung = avgOdds.find((d) => d.승식 === "단승")!;
   const ssangseung = avgOdds.find((d) => d.승식 === "쌍승")!;
-  const overall = upsets.find((d) => d.경륜장 === "전체")!;
+  const overall = upsets.find((d) => d.등급 === "전체")!;
   const totalRaces = raceData.length;
 
   const dates = raceData.map((r) => r.date).sort();

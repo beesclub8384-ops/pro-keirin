@@ -11,17 +11,17 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { raceData, getAverageOddsByVenue } from "@/data/odds-data";
+import { raceData, getAverageOddsByGrade } from "@/data/odds-data";
 
 export default function OddsBarChart() {
-  const data = getAverageOddsByVenue(raceData);
+  const data = getAverageOddsByGrade(raceData);
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">경륜장별 평균 배당률 비교</CardTitle>
+        <CardTitle className="text-lg">등급별 평균 배당률 비교</CardTitle>
         <p className="text-sm text-muted-foreground">
-          단승 / 쌍승 / 삼쌍승 기준
+          단승 / 쌍승 / 삼쌍승 기준, 등급이 낮을수록 배당이 높음
         </p>
       </CardHeader>
       <CardContent>
@@ -30,7 +30,7 @@ export default function OddsBarChart() {
             <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis
-                dataKey="경륜장"
+                dataKey="등급"
                 tick={{ fontSize: 13, fill: "#6B7280" }}
               />
               <YAxis
@@ -59,7 +59,7 @@ export default function OddsBarChart() {
           </ResponsiveContainer>
         </div>
         <div className="mt-4 text-xs text-muted-foreground text-center">
-          * 경주 수: {data.map((d) => `${d.경륜장} ${d.경주수.toLocaleString()}회`).join(" / ")}
+          * 경주 수: {data.map((d) => `${d.등급} ${d.경주수.toLocaleString()}회`).join(" / ")}
         </div>
       </CardContent>
     </Card>

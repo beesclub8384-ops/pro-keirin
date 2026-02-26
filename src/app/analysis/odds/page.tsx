@@ -9,7 +9,7 @@ import { isRealData, raceData } from "@/data/odds-data";
 
 export const metadata = {
   title: "배당률 분석 | 7randoms",
-  description: "경륜 배당률 데이터 분석 — 경륜장별·승식별 배당 패턴 분석",
+  description: "경륜 등급별 배당률 데이터 분석 — 특선급이 정말 배당이 낮은가?",
 };
 
 export default function OddsAnalysisPage() {
@@ -29,14 +29,15 @@ export default function OddsAnalysisPage() {
           )}
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          배당률 분석
+          등급별 배당률 분석
         </h1>
         <p className="mt-2 text-base sm:text-lg text-muted-foreground">
-          경륜장별·승식별 배당 패턴을 실제 경주결과 데이터로 분석합니다
+          &ldquo;특선급이 정말 배당이 낮은가?&rdquo; — 실제 경주 데이터로 검증합니다
         </p>
         <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
           <span className="rounded-full bg-muted px-3 py-1">분석 기간: {periodStart} ~ {periodEnd}</span>
-          <span className="rounded-full bg-muted px-3 py-1">경륜장: 광명 / 부산 / 창원</span>
+          <span className="rounded-full bg-muted px-3 py-1">경륜장: 광명</span>
+          <span className="rounded-full bg-muted px-3 py-1">등급: 특선 / 우수 / 선발</span>
           <span className="rounded-full bg-muted px-3 py-1">총 {raceData.length.toLocaleString()}경주</span>
         </div>
       </div>
@@ -73,7 +74,10 @@ export default function OddsAnalysisPage() {
             <strong>분석 기간:</strong> {periodStart} ~ {periodEnd}
           </li>
           <li>
-            <strong>분석 축:</strong> 경륜장별(광명/부산/창원), 승식별(단승/쌍승/삼쌍승)
+            <strong>분석 축:</strong> 등급별(특선/우수/선발), 승식별(단승/쌍승/삼쌍승)
+          </li>
+          <li>
+            <strong>등급 출처:</strong> 출주표 API(racer_grd_cd) 실제 값 사용
           </li>
           <li>
             <strong>배당 구간:</strong> 단승 기준 저배당(~5배) / 중배당(5~20배) / 고배당(20배~)
@@ -83,7 +87,7 @@ export default function OddsAnalysisPage() {
           </li>
         </ul>
         <p className="mt-4 text-xs text-muted-foreground/70">
-          * 등급별 분석(특선/우수/선발)은 정확한 등급 데이터 확보 후 제공 예정입니다.
+          * 현재 광명 경륜장 데이터만 포함되어 있습니다. 부산/창원 데이터는 출주표 API 제공 범위 확대 시 추가 예정입니다.
         </p>
       </section>
     </div>

@@ -11,10 +11,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { raceData, getMonthlyTrendByVenue } from "@/data/odds-data";
+import { raceData, getMonthlyTrendByGrade } from "@/data/odds-data";
 
 export default function OddsTrend() {
-  const data = getMonthlyTrendByVenue(raceData);
+  const data = getMonthlyTrendByGrade(raceData);
   const dates = raceData.map((r) => r.date).sort();
   const periodLabel = dates.length > 0
     ? `${dates[0].slice(0, 7).replace("-", "년 ")}월 ~ ${dates[dates.length - 1].slice(0, 7).replace("-", "년 ")}월`
@@ -25,7 +25,7 @@ export default function OddsTrend() {
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">월별 단승 평균 배당 추이</CardTitle>
         <p className="text-sm text-muted-foreground">
-          {periodLabel}, 경륜장별 월간 평균
+          {periodLabel}, 등급별 월간 평균
         </p>
       </CardHeader>
       <CardContent>
@@ -56,9 +56,9 @@ export default function OddsTrend() {
                 formatter={(value: any, name: any) => [`${value}배`, name]}
               />
               <Legend wrapperStyle={{ fontSize: "13px" }} />
-              <Line type="monotone" dataKey="광명" stroke="#3B82F6" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="부산" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="창원" stroke="#DC2626" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="특선" stroke="#3B82F6" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="우수" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="선발" stroke="#DC2626" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="전체" stroke="#6B7280" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>

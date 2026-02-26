@@ -1,19 +1,20 @@
 // ============================================================
 // 경륜 배당률 분석 데이터
 // ============================================================
-// data.go.kr 경륜 경주결과 API 데이터를 사용합니다.
-// race-data.json이 없을 경우 빈 배열로 폴백합니다.
+// data.go.kr 경주결과 + 출주표 API 기반 (광명 경륜장 2024년)
+// 등급(gradeGroup)은 출주표 API의 racer_grd_cd 실제 값 사용
 // ============================================================
 
 import cachedData from "./race-data.json";
 
 export type BetType = "단승" | "연승" | "쌍승" | "복승" | "삼쌍승";
-export type Venue = "광명" | "부산" | "창원";
+export type GradeGroup = "특선" | "우수" | "선발";
 
 export interface RaceOddsRecord {
   id: number;
   date: string;           // YYYY-MM-DD
-  venue: Venue;
+  venue: string;
+  gradeGroup: GradeGroup;
   raceNo: number;
   odds: {
     단승: number;
@@ -33,7 +34,7 @@ export const raceData: RaceOddsRecord[] =
 export const isRealData = raceData.length > 0;
 
 // ============================================================
-// 분석 유틸리티 함수들 (정확한 데이터 기반)
+// 분석 유틸리티 함수들
 // ============================================================
 
 const avg = (arr: number[]) =>
@@ -51,17 +52,17 @@ export function getAverageOddsByBetType(data: RaceOddsRecord[]) {
   }));
 }
 
-/** 경륜장별 평균 배당률 비교 */
-export function getAverageOddsByVenue(data: RaceOddsRecord[]) {
-  const venues: Venue[] = ["광명", "부산", "창원"];
-  return venues.map((v) => {
-    const venueData = data.filter((r) => r.venue === v);
+/** 등급별 평균 배당률 비교 */
+export function getAverageOddsByGrade(data: RaceOddsRecord[]) {
+  const grades: GradeGroup[] = ["특선", "우수", "선발"];
+  return grades.map((g) => {
+    const gradeData = data.filter((r) => r.gradeGroup === g);
     return {
-      경륜장: v,
-      단승: avg(venueData.map((r) => r.odds.단승)),
-      쌍승: avg(venueData.map((r) => r.odds.쌍승)),
-      삼쌍승: avg(venueData.map((r) => r.odds.삼쌍승)),
-      경주수: venueData.length,
+      등급: g,
+      단승: avg(gradeData.map((r) => r.odds.단승)),
+      쌍승: avg(gradeData.map((r) => r.odds.쌍승)),
+      삼쌍승: avg(gradeData.map((r) => r.odds.삼쌍승)),
+      경주수: gradeData.length,
     };
   });
 }
@@ -94,25 +95,24 @@ export function getBetTypeDistribution(data: RaceOddsRecord[]) {
   });
 }
 
-/** 전체 이변(고배당) 빈도 — 경륜장별 */
-export function getUpsetFrequencyByVenue(data: RaceOddsRecord[]) {
-  const venues: (Venue | "전체")[] = ["광명", "부산", "창원"];
-  const result: { 경륜장: string; 이변빈도: number; 이변횟수: number; 총경주수: number }[] =
-    venues.map((v) => {
-      const venueData = data.filter((r) => r.venue === v);
-      const upsets = venueData.filter((r) => r.odds.단승 >= 10).length;
+/** 등급별 이변(고배당) 발생 빈도 */
+export function getUpsetFrequencyByGrade(data: RaceOddsRecord[]) {
+  const grades: GradeGroup[] = ["특선", "우수", "선발"];
+  const result: { 등급: string; 이변빈도: number; 이변횟수: number; 총경주수: number }[] =
+    grades.map((g) => {
+      const gradeData = data.filter((r) => r.gradeGroup === g);
+      const upsets = gradeData.filter((r) => r.odds.단승 >= 10).length;
       return {
-        경륜장: v,
-        이변빈도: venueData.length ? Math.round((upsets / venueData.length) * 1000) / 10 : 0,
+        등급: g,
+        이변빈도: gradeData.length ? Math.round((upsets / gradeData.length) * 1000) / 10 : 0,
         이변횟수: upsets,
-        총경주수: venueData.length,
+        총경주수: gradeData.length,
       };
     });
 
-  // 전체 합산도 추가
   const totalUpsets = data.filter((r) => r.odds.단승 >= 10).length;
   result.push({
-    경륜장: "전체",
+    등급: "전체",
     이변빈도: data.length ? Math.round((totalUpsets / data.length) * 1000) / 10 : 0,
     이변횟수: totalUpsets,
     총경주수: data.length,
@@ -121,16 +121,16 @@ export function getUpsetFrequencyByVenue(data: RaceOddsRecord[]) {
   return result;
 }
 
-/** 월별 단승 평균 배당 추이 — 경륜장별 */
-export function getMonthlyTrendByVenue(data: RaceOddsRecord[]) {
+/** 월별 단승 평균 배당 추이 — 등급별 */
+export function getMonthlyTrendByGrade(data: RaceOddsRecord[]) {
   const monthlyMap: Record<string, Record<string, number[]>> = {};
 
   data.forEach((r) => {
     const month = r.date.substring(0, 7);
     if (!monthlyMap[month]) {
-      monthlyMap[month] = { 광명: [], 부산: [], 창원: [], 전체: [] };
+      monthlyMap[month] = { 특선: [], 우수: [], 선발: [], 전체: [] };
     }
-    monthlyMap[month][r.venue].push(r.odds.단승);
+    monthlyMap[month][r.gradeGroup].push(r.odds.단승);
     monthlyMap[month]["전체"].push(r.odds.단승);
   });
 
@@ -138,9 +138,9 @@ export function getMonthlyTrendByVenue(data: RaceOddsRecord[]) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, groups]) => ({
       월: month.substring(5) + "월",
-      광명: avg(groups.광명),
-      부산: avg(groups.부산),
-      창원: avg(groups.창원),
+      특선: avg(groups.특선),
+      우수: avg(groups.우수),
+      선발: avg(groups.선발),
       전체: avg(groups.전체),
     }));
 }

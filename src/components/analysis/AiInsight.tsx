@@ -6,26 +6,28 @@ import {
   raceData,
   isRealData,
   getAverageOddsByBetType,
-  getAverageOddsByVenue,
-  getUpsetFrequencyByVenue,
+  getAverageOddsByGrade,
+  getUpsetFrequencyByGrade,
 } from "@/data/odds-data";
 
 export default function AiInsight() {
   const avgByBet = getAverageOddsByBetType(raceData);
-  const avgByVenue = getAverageOddsByVenue(raceData);
-  const upsets = getUpsetFrequencyByVenue(raceData);
+  const avgByGrade = getAverageOddsByGrade(raceData);
+  const upsets = getUpsetFrequencyByGrade(raceData);
 
   const danseung = avgByBet.find((d) => d.승식 === "단승")!;
   const ssangseung = avgByBet.find((d) => d.승식 === "쌍승")!;
   const samssangseung = avgByBet.find((d) => d.승식 === "삼쌍승")!;
 
-  const overallUpset = upsets.find((d) => d.경륜장 === "전체")!;
-  const venueUpsets = upsets.filter((d) => d.경륜장 !== "전체");
-  const highestUpsetVenue = venueUpsets.sort((a, b) => b.이변빈도 - a.이변빈도)[0];
-  const lowestUpsetVenue = venueUpsets.sort((a, b) => a.이변빈도 - b.이변빈도)[0];
+  const special = avgByGrade.find((d) => d.등급 === "특선")!;
+  const excellent = avgByGrade.find((d) => d.등급 === "우수")!;
+  const general = avgByGrade.find((d) => d.등급 === "선발")!;
 
-  const highestOddsVenue = avgByVenue.sort((a, b) => b.단승 - a.단승)[0];
-  const lowestOddsVenue = avgByVenue.sort((a, b) => a.단승 - b.단승)[0];
+  const overallUpset = upsets.find((d) => d.등급 === "전체")!;
+  const specialUpset = upsets.find((d) => d.등급 === "특선")!;
+  const generalUpset = upsets.find((d) => d.등급 === "선발")!;
+
+  const diffPercent = Math.round((1 - special.단승 / general.단승) * 100);
 
   return (
     <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
@@ -37,25 +39,25 @@ export default function AiInsight() {
       </CardHeader>
       <CardContent className="space-y-4 text-sm leading-relaxed text-foreground/80">
         <div>
-          <h4 className="font-bold text-foreground mb-1">1. 승식별 평균 배당률</h4>
+          <h4 className="font-bold text-foreground mb-1">1. 특선급은 정말 배당이 낮은가?</h4>
           <p>
-            2024년 경주결과 {raceData.length.toLocaleString()}건 분석 결과,
-            평균 단승 배당은 <strong>{danseung.평균}배</strong>,
-            쌍승 <strong>{ssangseung.평균}배</strong>,
-            삼쌍승 <strong>{samssangseung.평균}배</strong>입니다.
-            단승 최고 배당은 <strong>{danseung.최대}배</strong>로 기록되었습니다.
+            <strong className="text-blue-600">결론: 맞습니다.</strong>{" "}
+            광명 경륜장 {raceData.length.toLocaleString()}경주 실데이터 분석 결과,
+            특선급 평균 단승 배당은 <strong>{special.단승}배</strong>로
+            선발급 <strong>{general.단승}배</strong> 대비 약 <strong>{diffPercent}%</strong> 낮습니다.
+            쌍승 기준으로도 특선급 {special.쌍승}배 vs 선발급 {general.쌍승}배로
+            동일한 패턴을 보입니다.
           </p>
         </div>
 
         <div>
-          <h4 className="font-bold text-foreground mb-1">2. 경륜장별 배당 차이</h4>
+          <h4 className="font-bold text-foreground mb-1">2. 승식별 평균 배당률</h4>
           <p>
-            단승 평균 배당이 가장 높은 경륜장은{" "}
-            <strong className="text-blue-600">{highestOddsVenue.경륜장}({highestOddsVenue.단승}배)</strong>이며,
-            가장 낮은 곳은{" "}
-            <strong>{lowestOddsVenue.경륜장}({lowestOddsVenue.단승}배)</strong>입니다.
-            삼쌍승 기준으로도 경륜장 간 배당 차이가 존재하며,
-            이는 각 경륜장의 선수 구성과 경주 특성에 따른 차이로 볼 수 있습니다.
+            단승 <strong>{danseung.평균}배</strong>,
+            쌍승 <strong>{ssangseung.평균}배</strong>,
+            삼쌍승 <strong>{samssangseung.평균}배</strong>.
+            단승 최고 배당은 <strong>{danseung.최대}배</strong>로 기록되었습니다.
+            승식이 복잡할수록 배당과 리스크 모두 높아집니다.
           </p>
         </div>
 
@@ -64,26 +66,26 @@ export default function AiInsight() {
           <p>
             단승 10배 이상의 이변은 전체 경주의{" "}
             <strong>{overallUpset.이변빈도}%</strong>에서 발생합니다.
-            경륜장별로는 {highestUpsetVenue.경륜장}이{" "}
-            <strong>{highestUpsetVenue.이변빈도}%</strong>로 가장 높고,{" "}
-            {lowestUpsetVenue.경륜장}이{" "}
-            <strong>{lowestUpsetVenue.이변빈도}%</strong>로 가장 낮습니다.
+            등급별로는 선발급이{" "}
+            <strong>{generalUpset.이변빈도}%</strong>로 가장 높고,
+            특선급이{" "}
+            <strong>{specialUpset.이변빈도}%</strong>로 가장 낮습니다.
           </p>
         </div>
 
         <div>
           <h4 className="font-bold text-foreground mb-1">4. 팬을 위한 시사점</h4>
           <p>
-            단승은 평균 {danseung.평균}배로 비교적 안정적이지만,
-            쌍승·삼쌍승은 변동 폭이 크므로 리스크 관리가 중요합니다.
-            경륜장별 배당 특성을 파악하고, 본인의 투표 성향에 맞는
-            경륜장과 승식을 선택하는 것이 효과적입니다.
+            특선급은 평균 {special.단승}배로 안정적이지만 수익성이 제한적입니다.
+            선발급은 이변이 잦아 고배당 기회가 있지만 리스크도 높습니다.
+            우수급({excellent.단승}배)은 두 그룹의 중간 성격으로,
+            배당과 예측 가능성의 균형을 찾을 수 있는 등급입니다.
           </p>
         </div>
 
         <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
           {isRealData
-            ? "* 본 분석은 공공데이터포털(data.go.kr) 경륜 경주결과 API의 실제 데이터를 기반으로 합니다. 등급별 분석은 정확한 데이터 확보 후 제공 예정입니다."
+            ? "* 본 분석은 공공데이터포털(data.go.kr) 경주결과·출주표 API의 실제 데이터를 기반으로 합니다. 등급 정보는 출주표 API의 racer_grd_cd 값을 사용합니다."
             : "* 데이터가 로드되지 않았습니다. API 키 설정 후 npm run fetch-data를 실행해 주세요."}
         </div>
       </CardContent>
