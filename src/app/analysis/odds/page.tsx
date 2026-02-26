@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import OddsSummaryCards from "@/components/analysis/OddsSummaryCards";
 import OddsBarChart from "@/components/analysis/OddsBarChart";
 import { isRealData, raceData } from "@/data/odds-data";
 
@@ -37,11 +36,6 @@ export default function OddsAnalysisPage() {
           <span className="rounded-full bg-muted px-3 py-1">총 {raceData.length.toLocaleString()}경주</span>
         </div>
       </div>
-
-      {/* Summary Cards */}
-      <section className="mb-8">
-        <OddsSummaryCards />
-      </section>
 
       {/* Chart */}
       <section className="mb-8">
