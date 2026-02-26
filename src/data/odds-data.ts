@@ -7,7 +7,7 @@
 
 import cachedData from "./race-data.json";
 
-export type BetType = "단승" | "연승" | "쌍승" | "복승" | "삼쌍승";
+export type BetType = "단승" | "연승1착" | "연승2착" | "쌍승" | "복승" | "쌍복승" | "삼복승" | "삼쌍승";
 export type GradeGroup = "특선" | "우수" | "선발";
 
 export interface RaceOddsRecord {
@@ -18,9 +18,12 @@ export interface RaceOddsRecord {
   raceNo: number;
   odds: {
     단승: number;
-    연승: number;
+    연승1착: number;
+    연승2착: number;
     쌍승: number;
     복승: number;
+    쌍복승: number;
+    삼복승: number;
     삼쌍승: number;
   };
 }
@@ -42,7 +45,7 @@ const avg = (arr: number[]) =>
 
 /** 승식별 평균 배당률 */
 export function getAverageOddsByBetType(data: RaceOddsRecord[]) {
-  const betTypes: BetType[] = ["단승", "연승", "쌍승", "복승", "삼쌍승"];
+  const betTypes: BetType[] = ["단승", "연승1착", "연승2착", "쌍승", "복승", "쌍복승", "삼복승", "삼쌍승"];
   return betTypes.map((bt) => ({
     승식: bt,
     평균: avg(data.map((r) => r.odds[bt])),
