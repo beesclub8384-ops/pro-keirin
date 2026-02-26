@@ -55,8 +55,8 @@ export default function AiInsight() {
           <h4 className="font-bold text-foreground mb-1">2. 승식별 평균 배당률</h4>
           <p>
             단승 <strong>{danseung.평균}배</strong>,
-            쌍승 <strong>{ssangseung.평균}배</strong>,
             복승 <strong>{bokseung.평균}배</strong>,
+            쌍승 <strong>{ssangseung.평균}배</strong>,
             삼쌍승 <strong>{samssangseung.평균}배</strong>.
             단승 최고 배당은 <strong>{danseung.최대}배</strong>로 기록되었습니다.
             승식이 복잡할수록 배당과 리스크 모두 높아집니다.

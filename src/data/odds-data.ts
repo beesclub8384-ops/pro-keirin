@@ -7,7 +7,7 @@
 
 import cachedData from "./race-data.json";
 
-export type BetType = "단승" | "연승1착" | "연승2착" | "쌍승" | "복승" | "쌍복승" | "삼복승" | "삼쌍승";
+export type BetType = "단승" | "연승1착" | "연승2착" | "복승" | "쌍승" | "삼복승" | "쌍복승" | "삼쌍승";
 export type GradeGroup = "특선" | "우수" | "선발";
 
 export interface RaceOddsRecord {
@@ -45,7 +45,7 @@ const avg = (arr: number[]) =>
 
 /** 승식별 평균 배당률 */
 export function getAverageOddsByBetType(data: RaceOddsRecord[]) {
-  const betTypes: BetType[] = ["단승", "연승1착", "연승2착", "쌍승", "복승", "쌍복승", "삼복승", "삼쌍승"];
+  const betTypes: BetType[] = ["단승", "연승1착", "연승2착", "복승", "쌍승", "삼복승", "쌍복승", "삼쌍승"];
   return betTypes.map((bt) => ({
     승식: bt,
     평균: avg(data.map((r) => r.odds[bt])),
@@ -65,10 +65,10 @@ export function getAverageOddsByGrade(data: RaceOddsRecord[]) {
       단승: avg(gradeData.map((r) => r.odds.단승)),
       연승1착: avg(gradeData.map((r) => r.odds.연승1착)),
       연승2착: avg(gradeData.map((r) => r.odds.연승2착)),
-      쌍승: avg(gradeData.map((r) => r.odds.쌍승)),
       복승: avg(gradeData.map((r) => r.odds.복승)),
-      쌍복승: avg(gradeData.map((r) => r.odds.쌍복승)),
+      쌍승: avg(gradeData.map((r) => r.odds.쌍승)),
       삼복승: avg(gradeData.map((r) => r.odds.삼복승)),
+      쌍복승: avg(gradeData.map((r) => r.odds.쌍복승)),
       삼쌍승: avg(gradeData.map((r) => r.odds.삼쌍승)),
       경주수: gradeData.length,
     };
@@ -77,7 +77,7 @@ export function getAverageOddsByGrade(data: RaceOddsRecord[]) {
 
 /** 승식별 배당 분포 (저/중/고배당 비율) */
 export function getBetTypeDistribution(data: RaceOddsRecord[]) {
-  const betTypes: BetType[] = ["단승", "연승1착", "연승2착", "쌍승", "복승", "쌍복승", "삼복승", "삼쌍승"];
+  const betTypes: BetType[] = ["단승", "연승1착", "연승2착", "복승", "쌍승", "삼복승", "쌍복승", "삼쌍승"];
   const thresholds: Record<string, { low: number; high: number }> = {
     단승: { low: 5, high: 20 },
     연승1착: { low: 3, high: 10 },

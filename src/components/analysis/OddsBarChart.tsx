@@ -55,10 +55,10 @@ export default function OddsBarChart() {
               <Bar dataKey="단승" fill="#3B82F6" radius={[4, 4, 0, 0]} />
               <Bar dataKey="연승1착" fill="#06B6D4" radius={[4, 4, 0, 0]} />
               <Bar dataKey="연승2착" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="쌍승" fill="#DC2626" radius={[4, 4, 0, 0]} />
               <Bar dataKey="복승" fill="#F59E0B" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="쌍복승" fill="#10B981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="쌍승" fill="#DC2626" radius={[4, 4, 0, 0]} />
               <Bar dataKey="삼복승" fill="#EC4899" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="쌍복승" fill="#10B981" radius={[4, 4, 0, 0]} />
               <Bar dataKey="삼쌍승" fill="#F97316" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
