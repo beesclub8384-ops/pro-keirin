@@ -2,18 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Search } from "lucide-react";
+import { Menu, X, Search, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
   { label: "홈", href: "/" },
-  { label: "조합 소개", href: "/about" },
+  { label: "경주 분석", href: "/analysis/odds" },
+  { label: "선수 데이터", href: "/players" },
   { label: "경륜 가이드", href: "/guide" },
-  { label: "선수 정보", href: "/players" },
-  { label: "경주 정보", href: "/races" },
   { label: "커뮤니티", href: "/community" },
-  { label: "소식/공지", href: "/news" },
-  { label: "데이터 분석", href: "/analysis/odds" },
 ];
 
 export default function Header() {
@@ -24,12 +21,12 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-keirin-red text-white font-bold text-sm">
-            PK
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-white">
+            <BarChart3 className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold leading-tight text-keirin-dark">프로경륜</span>
-            <span className="text-[10px] leading-tight text-muted-foreground">선수노동조합</span>
+            <span className="text-sm font-bold leading-tight text-keirin-dark">7randoms</span>
+            <span className="text-[10px] leading-tight text-muted-foreground">경륜 데이터 분석</span>
           </div>
         </Link>
 
@@ -39,7 +36,7 @@ export default function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className="px-3 py-2 text-sm font-medium text-foreground/80 hover:text-keirin-red transition-colors rounded-md hover:bg-muted"
+              className="px-3 py-2 text-sm font-medium text-foreground/80 hover:text-brand transition-colors rounded-md hover:bg-muted"
             >
               {item.label}
             </Link>
@@ -78,7 +75,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="py-3 text-sm font-medium text-foreground/80 hover:text-keirin-red border-b border-muted last:border-0"
+                className="py-3 text-sm font-medium text-foreground/80 hover:text-brand border-b border-muted last:border-0"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}

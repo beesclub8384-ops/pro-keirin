@@ -56,11 +56,11 @@ const races = [
 function getGradeBadgeColor(grade: string) {
   switch (grade) {
     case "GI":
-      return "bg-keirin-red text-white border-keirin-red";
+      return "bg-brand text-white border-brand";
     case "GII":
       return "bg-keirin-gold text-keirin-dark border-keirin-gold";
     case "GIII":
-      return "bg-blue-500 text-white border-blue-500";
+      return "bg-emerald-500 text-white border-emerald-500";
     default:
       return "bg-secondary text-secondary-foreground";
   }
@@ -73,12 +73,12 @@ export default function UpcomingRaces() {
         {/* Section Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">다가오는 경주 일정</h2>
+            <h2 className="text-2xl font-bold text-foreground">다가오는 경주</h2>
             <p className="mt-1 text-sm text-muted-foreground">이번 주와 다음 주 경주 일정입니다</p>
           </div>
           <Link
             href="/races"
-            className="hidden sm:flex items-center gap-1 text-sm font-medium text-keirin-red hover:underline"
+            className="hidden sm:flex items-center gap-1 text-sm font-medium text-brand hover:underline"
           >
             전체 일정 <ChevronRight className="h-4 w-4" />
           </Link>
@@ -101,11 +101,11 @@ export default function UpcomingRaces() {
                 <h3 className="mb-3 font-semibold text-foreground">{race.name}</h3>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarDays className="h-4 w-4 text-keirin-red" />
+                    <CalendarDays className="h-4 w-4 text-brand" />
                     <span>{race.date} {race.time}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 text-keirin-red" />
+                    <MapPin className="h-4 w-4 text-brand" />
                     <span>{race.venue}</span>
                   </div>
                 </div>
@@ -118,7 +118,7 @@ export default function UpcomingRaces() {
         <div className="mt-4 sm:hidden text-center">
           <Link
             href="/races"
-            className="text-sm font-medium text-keirin-red hover:underline"
+            className="text-sm font-medium text-brand hover:underline"
           >
             전체 일정 보기 →
           </Link>

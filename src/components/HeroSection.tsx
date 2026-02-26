@@ -1,108 +1,93 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { BarChart3, TrendingUp, Zap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const slides = [
+const quickStats = [
   {
-    id: 1,
-    title: "2026 그랑프리",
-    subtitle: "최고의 선수들이 펼치는 최고의 경주",
-    description: "대한민국 경륜 최대의 축제가 돌아옵니다",
-    bgColor: "from-keirin-red to-keirin-red-dark",
-    accent: "경주 일정 보기",
+    icon: BarChart3,
+    label: "분석 경주 수",
+    value: "4,680",
+    sub: "최근 1년",
   },
   {
-    id: 2,
-    title: "프로경륜선수노동조합",
-    subtitle: "선수가 중심이 되는 경륜",
-    description: "팬과 선수가 함께 만들어가는 경륜 문화",
-    bgColor: "from-keirin-dark to-gray-900",
-    accent: "조합 소개",
+    icon: TrendingUp,
+    label: "평균 단승 배당",
+    value: "5.2배",
+    sub: "전체 등급",
   },
   {
-    id: 3,
-    title: "경륜을 처음 접하시나요?",
-    subtitle: "쉽고 재미있는 경륜 가이드",
-    description: "출주표 읽는 법부터 전법까지, 한눈에 알아보세요",
-    bgColor: "from-blue-700 to-blue-900",
-    accent: "가이드 보기",
+    icon: Zap,
+    label: "이변 빈도",
+    value: "9.8%",
+    sub: "10배 이상",
+  },
+  {
+    icon: Users,
+    label: "등록 선수",
+    value: "320명",
+    sub: "3개 경륜장",
   },
 ];
 
 export default function HeroSection() {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const prev = () => setCurrent((c) => (c - 1 + slides.length) % slides.length);
-  const next = () => setCurrent((c) => (c + 1) % slides.length);
-
   return (
-    <section className="relative w-full overflow-hidden">
-      <div
-        className="flex transition-transform duration-500 ease-out"
-        style={{ transform: `translateX(-${current * 100}%)` }}
-      >
-        {slides.map((slide) => (
-          <div
-            key={slide.id}
-            className={`min-w-full bg-gradient-to-br ${slide.bgColor} relative`}
-          >
-            <div className="mx-auto max-w-7xl px-4 py-20 sm:py-28 md:py-36">
-              <div className="max-w-xl text-white">
-                <p className="mb-2 text-sm font-medium uppercase tracking-wider text-white/70">
-                  {slide.subtitle}
-                </p>
-                <h1 className="mb-4 text-3xl font-bold sm:text-4xl md:text-5xl">
-                  {slide.title}
-                </h1>
-                <p className="mb-8 text-base text-white/80 sm:text-lg">
-                  {slide.description}
-                </p>
-                <Button
-                  size="lg"
-                  className="bg-white text-keirin-dark hover:bg-white/90 font-semibold"
-                >
-                  {slide.accent}
-                </Button>
-              </div>
-            </div>
-          </div>
-        ))}
+    <section className="relative w-full bg-gradient-to-br from-keirin-dark via-slate-900 to-brand-dark overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-10 left-10 w-72 h-72 bg-brand rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-brand-light rounded-full blur-3xl" />
       </div>
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={prev}
-        className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white hover:bg-black/50 transition-colors"
-      >
-        <ChevronLeft className="h-5 w-5" />
-      </button>
-      <button
-        onClick={next}
-        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white hover:bg-black/50 transition-colors"
-      >
-        <ChevronRight className="h-5 w-5" />
-      </button>
+      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:py-20 md:py-24">
+        <div className="max-w-2xl mb-12">
+          <p className="mb-3 text-sm font-medium uppercase tracking-wider text-brand-light">
+            AI-Powered Keirin Analytics
+          </p>
+          <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl md:text-5xl leading-tight">
+            데이터로 읽는
+            <br />
+            <span className="text-brand-light">경륜의 패턴</span>
+          </h1>
+          <p className="mb-8 text-base text-gray-300 sm:text-lg max-w-lg">
+            배당률 분석, 선수 성적 추이, 이변 패턴까지.
+            AI가 분석한 경륜 인사이트를 확인하세요.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/analysis/odds">
+              <Button size="lg" className="bg-brand hover:bg-brand-dark text-white font-semibold">
+                배당률 분석 보기
+              </Button>
+            </Link>
+            <Link href="/guide">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-gray-600 text-gray-200 hover:bg-white/10 hover:text-white font-semibold"
+              >
+                경륜 가이드
+              </Button>
+            </Link>
+          </div>
+        </div>
 
-      {/* Dots */}
-      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            className={`h-2 rounded-full transition-all ${
-              i === current ? "w-6 bg-white" : "w-2 bg-white/50"
-            }`}
-          />
-        ))}
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {quickStats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <stat.icon className="h-4 w-4 text-brand-light" />
+                <span className="text-xs text-gray-400">{stat.label}</span>
+              </div>
+              <p className="text-xl font-bold text-white sm:text-2xl">{stat.value}</p>
+              <p className="text-xs text-gray-500 mt-1">{stat.sub}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

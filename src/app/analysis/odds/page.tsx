@@ -7,7 +7,7 @@ import OddsTrend from "@/components/analysis/OddsTrend";
 import AiInsight from "@/components/analysis/AiInsight";
 
 export const metadata = {
-  title: "등급별 배당률 분석 | 프로경륜선수노동조합",
+  title: "등급별 배당률 분석 | 7randoms",
   description: "경륜 등급별 배당률 데이터 분석 — 특선급이 정말 배당이 낮은가?",
 };
 
@@ -17,7 +17,7 @@ export default function OddsAnalysisPage() {
       {/* Page Header */}
       <div className="mb-8 sm:mb-10">
         <div className="flex items-center gap-2 mb-3">
-          <Badge className="bg-keirin-red text-white border-keirin-red">데이터 분석</Badge>
+          <Badge className="bg-brand text-white border-brand">데이터 분석</Badge>
           <Badge variant="outline">1차 과제</Badge>
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">

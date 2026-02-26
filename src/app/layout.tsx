@@ -11,9 +11,9 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "프로경륜선수노동조합",
-  description: "프로경륜선수노동조합 공식 홈페이지 - 경륜 정보, 선수 소개, 경주 일정, 커뮤니티",
-  keywords: ["경륜", "프로경륜", "선수노동조합", "스피돔", "경주", "사이클"],
+  title: "7randoms - 경륜 데이터 분석",
+  description: "AI 기반 경륜 데이터 분석 플랫폼 - 배당률 분석, 선수 성적 통계, 경주 예측 인사이트",
+  keywords: ["경륜", "경륜 분석", "배당률", "경주 예측", "선수 통계", "데이터 분석"],
 };
 
 export default function RootLayout({

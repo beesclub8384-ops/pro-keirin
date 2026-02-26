@@ -6,18 +6,18 @@ import Link from "next/link";
 const posts = [
   {
     id: 1,
-    category: "선수 응원",
-    title: "김경륜 선수 오늘 경주 정말 대단했습니다!",
-    author: "경륜매니아",
+    category: "분석 토론",
+    title: "특선급 배당 패턴, 최근 변화가 보이네요",
+    author: "데이터분석러",
     date: "2시간 전",
     comments: 24,
     likes: 56,
   },
   {
     id: 2,
-    category: "경주 후기",
-    title: "스피돔 2월 마지막 주 관전 후기 (사진 다수)",
-    author: "스피돔러버",
+    category: "예측 공유",
+    title: "이번 주 왕중왕전 예측 및 배당 분석",
+    author: "경륜매니아",
     date: "5시간 전",
     comments: 18,
     likes: 42,
@@ -25,7 +25,7 @@ const posts = [
   {
     id: 3,
     category: "초보 질문",
-    title: "출주표에서 선행/추입이 뭔가요? 전법 질문입니다",
+    title: "출주표에서 전법이 배당에 미치는 영향이 궁금합니다",
     author: "경륜입문자",
     date: "어제",
     comments: 31,
@@ -40,12 +40,12 @@ export default function CommunityPreview() {
         {/* Section Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">커뮤니티 최신 글</h2>
-            <p className="mt-1 text-sm text-muted-foreground">팬들의 이야기</p>
+            <h2 className="text-2xl font-bold text-foreground">커뮤니티</h2>
+            <p className="mt-1 text-sm text-muted-foreground">분석 토론과 예측 공유</p>
           </div>
           <Link
             href="/community"
-            className="hidden sm:flex items-center gap-1 text-sm font-medium text-keirin-red hover:underline"
+            className="hidden sm:flex items-center gap-1 text-sm font-medium text-brand hover:underline"
           >
             더보기 <ChevronRight className="h-4 w-4" />
           </Link>
@@ -87,7 +87,7 @@ export default function CommunityPreview() {
         <div className="mt-4 sm:hidden text-center">
           <Link
             href="/community"
-            className="text-sm font-medium text-keirin-red hover:underline"
+            className="text-sm font-medium text-brand hover:underline"
           >
             커뮤니티 바로가기 →
           </Link>

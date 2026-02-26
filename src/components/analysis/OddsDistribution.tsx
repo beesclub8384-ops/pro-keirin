@@ -71,7 +71,7 @@ export default function OddsDistribution() {
             <div className="text-muted-foreground">적당한 이변</div>
           </div>
           <div className="rounded-lg bg-red-50 p-2">
-            <div className="font-bold text-keirin-red">고배당 (20배~)</div>
+            <div className="font-bold text-rose-600">고배당 (20배~)</div>
             <div className="text-muted-foreground">대이변</div>
           </div>
         </div>

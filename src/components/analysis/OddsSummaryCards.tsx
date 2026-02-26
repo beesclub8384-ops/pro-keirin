@@ -31,8 +31,8 @@ export default function OddsSummaryCards() {
       value: `${general.단승}배`,
       sub: `특선급 대비 ${Math.round((general.단승 / special.단승 - 1) * 100)}% 높음`,
       icon: TrendingUp,
-      color: "text-keirin-red",
-      bg: "bg-red-50",
+      color: "text-rose-600",
+      bg: "bg-rose-50",
     },
     {
       label: "특선급 이변(고배당) 빈도",

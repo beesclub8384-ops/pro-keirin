@@ -2,41 +2,41 @@ import { ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
-const news = [
+const analyses = [
   {
     id: 1,
-    category: "공지",
-    title: "2026년 상반기 경주 일정 안내",
-    date: "2026.02.20",
-    categoryColor: "bg-keirin-red text-white border-keirin-red",
+    category: "배당률",
+    title: "특선급 배당률이 정말 낮을까? 1년 데이터 분석 결과",
+    date: "2026.02.25",
+    categoryColor: "bg-brand text-white border-brand",
   },
   {
     id: 2,
-    category: "뉴스",
-    title: "프로경륜선수노동조합, 선수 복지 개선안 발표",
-    date: "2026.02.18",
-    categoryColor: "bg-blue-500 text-white border-blue-500",
+    category: "이변",
+    title: "고배당 이변은 언제 터지나 - 등급별 이변 빈도 분석",
+    date: "2026.02.22",
+    categoryColor: "bg-amber-500 text-white border-amber-500",
   },
   {
     id: 3,
-    category: "이벤트",
-    title: "경륜 팬 감사 이벤트 - 스피돔 관람 초대권 증정",
-    date: "2026.02.15",
-    categoryColor: "bg-keirin-gold text-keirin-dark border-keirin-gold",
+    category: "선수",
+    title: "2026 상반기 선행 vs 추입 전법별 성적 비교",
+    date: "2026.02.20",
+    categoryColor: "bg-emerald-500 text-white border-emerald-500",
   },
   {
     id: 4,
-    category: "뉴스",
-    title: "SS급 김선수, 통산 200승 달성 기념 인터뷰",
-    date: "2026.02.12",
-    categoryColor: "bg-blue-500 text-white border-blue-500",
+    category: "배당률",
+    title: "삼쌍승 고배당 패턴 - 경륜장별 차이 분석",
+    date: "2026.02.18",
+    categoryColor: "bg-brand text-white border-brand",
   },
   {
     id: 5,
-    category: "공지",
-    title: "경륜장 주차장 이용 안내 변경 사항",
-    date: "2026.02.10",
-    categoryColor: "bg-keirin-red text-white border-keirin-red",
+    category: "트렌드",
+    title: "월별 배당률 추이로 본 경륜 시즌 패턴",
+    date: "2026.02.15",
+    categoryColor: "bg-violet-500 text-white border-violet-500",
   },
 ];
 
@@ -47,25 +47,25 @@ export default function LatestNews() {
         {/* Section Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">최신 소식</h2>
-            <p className="mt-1 text-sm text-muted-foreground">조합 공지사항과 경륜 뉴스</p>
+            <h2 className="text-2xl font-bold text-foreground">최신 분석</h2>
+            <p className="mt-1 text-sm text-muted-foreground">AI 기반 경륜 데이터 분석 리포트</p>
           </div>
           <Link
-            href="/news"
-            className="hidden sm:flex items-center gap-1 text-sm font-medium text-keirin-red hover:underline"
+            href="/analysis/odds"
+            className="hidden sm:flex items-center gap-1 text-sm font-medium text-brand hover:underline"
           >
             전체 보기 <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
 
-        {/* News List */}
+        {/* Analysis List */}
         <div className="rounded-xl border bg-card">
-          {news.map((item, index) => (
+          {analyses.map((item, index) => (
             <Link
               key={item.id}
-              href={`/news/${item.id}`}
+              href="/analysis/odds"
               className={`flex items-center gap-4 px-5 py-4 hover:bg-muted/50 transition-colors ${
-                index !== news.length - 1 ? "border-b" : ""
+                index !== analyses.length - 1 ? "border-b" : ""
               }`}
             >
               <Badge className={`${item.categoryColor} shrink-0 text-xs`}>
@@ -85,10 +85,10 @@ export default function LatestNews() {
         {/* Mobile: View All Link */}
         <div className="mt-4 sm:hidden text-center">
           <Link
-            href="/news"
-            className="text-sm font-medium text-keirin-red hover:underline"
+            href="/analysis/odds"
+            className="text-sm font-medium text-brand hover:underline"
           >
-            전체 소식 보기 →
+            전체 분석 보기 →
           </Link>
         </div>
       </div>
