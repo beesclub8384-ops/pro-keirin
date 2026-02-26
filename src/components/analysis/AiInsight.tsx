@@ -4,6 +4,7 @@ import { Brain } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   raceData,
+  isRealData,
   getAverageOddsByGrade,
   getUpsetFrequency,
   getOddsDistribution,
@@ -78,8 +79,9 @@ export default function AiInsight() {
         </div>
 
         <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-          * 본 분석은 실제 경륜 통계 패턴을 기반으로 구성한 샘플 데이터입니다.
-          향후 kcycle.or.kr 실제 데이터 연동 시 더 정확한 분석이 가능합니다.
+          {isRealData
+            ? "* 본 분석은 공공데이터포털(data.go.kr) 경륜 경주결과 API의 실제 데이터를 기반으로 합니다. 등급 분류는 경주번호 기반 추론입니다."
+            : "* 본 분석은 실제 경륜 통계 패턴을 기반으로 구성한 샘플 데이터입니다. API 키 설정 후 npm run fetch-data를 실행하면 실제 데이터로 교체됩니다."}
         </div>
       </CardContent>
     </Card>

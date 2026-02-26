@@ -1,11 +1,11 @@
 // ============================================================
 // 경륜 등급별 배당률 분석 데이터
 // ============================================================
-// 실제 한국 경륜 통계 패턴을 기반으로 구성한 샘플 데이터입니다.
-// - 특선급(SS/S): 상위 선수들이 출전 → 예측 용이 → 배당 낮은 경향
-// - 우수급(A): 중간 수준
-// - 선발급(B): 실력 편차 적음 → 예측 어려움 → 배당 높은 경향
+// data.go.kr 경륜 경주결과 API 데이터를 사용합니다.
+// race-data.json이 없을 경우 샘플 데이터로 폴백합니다.
 // ============================================================
+
+import cachedData from "./race-data.json";
 
 export type GradeGroup = "특선" | "우수" | "선발";
 export type BetType = "단승" | "연승" | "쌍승" | "복승" | "삼쌍승";
@@ -128,8 +128,13 @@ export function generateRaceData(): RaceOddsRecord[] {
   return records;
 }
 
-// 사전 생성된 데이터
-export const raceData = generateRaceData();
+// API 데이터 (race-data.json) 사용, 비었으면 샘플 데이터 폴백
+export const raceData: RaceOddsRecord[] =
+  Array.isArray(cachedData) && cachedData.length > 0
+    ? (cachedData as RaceOddsRecord[])
+    : generateRaceData();
+
+export const isRealData = Array.isArray(cachedData) && cachedData.length > 0;
 
 // ============================================================
 // 분석 유틸리티 함수들
