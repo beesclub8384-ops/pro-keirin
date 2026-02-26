@@ -16,6 +16,10 @@ export default function OddsSummaryCards() {
   const general = avgOdds.find((d) => d.등급 === "선발")!;
   const specialUpset = upsets.find((d) => d.등급 === "특선")!;
   const totalRaces = raceData.length;
+  const dates = raceData.map((r) => r.date).sort();
+  const periodLabel = dates.length > 0
+    ? `${dates[0].slice(0, 7).replace("-", "년 ")}월 ~ ${dates[dates.length - 1].slice(0, 7).replace("-", "년 ")}월`
+    : "";
 
   const summaryCards = [
     {
@@ -45,7 +49,7 @@ export default function OddsSummaryCards() {
     {
       label: "분석 대상 경주 수",
       value: `${totalRaces.toLocaleString()}경주`,
-      sub: "2024년 3월 ~ 2025년 2월 (1년)",
+      sub: periodLabel,
       icon: BarChart3,
       color: "text-green-600",
       bg: "bg-green-50",

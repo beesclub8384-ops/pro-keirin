@@ -15,13 +15,17 @@ import { raceData, getMonthlyTrend } from "@/data/odds-data";
 
 export default function OddsTrend() {
   const data = getMonthlyTrend(raceData);
+  const dates = raceData.map((r) => r.date).sort();
+  const periodLabel = dates.length > 0
+    ? `${dates[0].slice(0, 7).replace("-", "년 ")}월 ~ ${dates[dates.length - 1].slice(0, 7).replace("-", "년 ")}월`
+    : "";
 
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">월별 단승 평균 배당 추이</CardTitle>
         <p className="text-sm text-muted-foreground">
-          2024년 3월 ~ 2025년 2월, 등급별 월간 평균
+          {periodLabel}, 등급별 월간 평균
         </p>
       </CardHeader>
       <CardContent>
