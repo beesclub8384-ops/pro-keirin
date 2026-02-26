@@ -19,9 +19,9 @@ export interface ApiRaceResult {
   pool2_val: string;  // 연승 배당 (예: "(1)1.1 (3)6.0")
   pool4_val: string;  // 쌍승 배당 (예: "(1-3)19.3")
   pool5_val: string;  // 복승 배당 (예: "(1-3)14.3")
-  pool6_val: string;  // 쌍복승 배당 (예: "(1-3-2)96.8")
-  pool7_val: string;  // 삼복승 배당 (예: "(1-3-2)286.7")
-  pool8_val: string;  // 삼쌍승 배당 (예: "(1-3-2)142.5")
+  pool6_val: string;  // 삼복승 배당 (예: "(1-3-2)96.8")
+  pool7_val: string;  // 삼쌍승 배당 (예: "(1-3-2)286.7")
+  pool8_val: string;  // 쌍복승 배당 (예: "(1-3-2)142.5")
   week_tcnt: number;  // 주차
   day_tcnt: number;   // 일차
 }

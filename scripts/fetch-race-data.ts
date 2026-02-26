@@ -85,9 +85,9 @@ function toRaceRecord(item: ApiRaceResult, id: number): RaceOddsRecord | null {
     연승2착: yeonseung2,
     쌍승: parsePoolVal(item.pool4_val),
     복승: parsePoolVal(item.pool5_val),
-    쌍복승: parsePoolVal(item.pool6_val),
-    삼복승: parsePoolVal(item.pool7_val),
-    삼쌍승: parsePoolVal(item.pool8_val),
+    삼복승: parsePoolVal(item.pool6_val),
+    삼쌍승: parsePoolVal(item.pool7_val),
+    쌍복승: parsePoolVal(item.pool8_val),
   };
 
   // 모든 배당이 0이면 취소된 경주
