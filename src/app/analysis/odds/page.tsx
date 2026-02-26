@@ -74,13 +74,13 @@ export default function OddsAnalysisPage() {
             <strong>분석 기간:</strong> {periodStart} ~ {periodEnd}
           </li>
           <li>
-            <strong>분석 축:</strong> 등급별(특선/우수/선발), 승식별(단승/쌍승/삼쌍승)
+            <strong>분석 축:</strong> 등급별(선발/우수/특선), 승식별(단승/연승1착/연승2착/쌍승/복승/쌍복승/삼복승/삼쌍승)
           </li>
           <li>
             <strong>등급 출처:</strong> 출주표 API(racer_grd_cd) 실제 값 사용
           </li>
           <li>
-            <strong>배당 구간:</strong> 단승 기준 저배당(~5배) / 중배당(5~20배) / 고배당(20배~)
+            <strong>배당 구간:</strong> 승식별 저/중/고배당 구간 적용 (예: 단승 ~5/5~20/20~, 삼쌍승 ~50/50~200/200~)
           </li>
           <li>
             <strong>이변 정의:</strong> 단승 배당 10배 이상인 경우

@@ -57,13 +57,18 @@ export function getAverageOddsByBetType(data: RaceOddsRecord[]) {
 
 /** 등급별 평균 배당률 비교 */
 export function getAverageOddsByGrade(data: RaceOddsRecord[]) {
-  const grades: GradeGroup[] = ["특선", "우수", "선발"];
+  const grades: GradeGroup[] = ["선발", "우수", "특선"];
   return grades.map((g) => {
     const gradeData = data.filter((r) => r.gradeGroup === g);
     return {
       등급: g,
       단승: avg(gradeData.map((r) => r.odds.단승)),
+      연승1착: avg(gradeData.map((r) => r.odds.연승1착)),
+      연승2착: avg(gradeData.map((r) => r.odds.연승2착)),
       쌍승: avg(gradeData.map((r) => r.odds.쌍승)),
+      복승: avg(gradeData.map((r) => r.odds.복승)),
+      쌍복승: avg(gradeData.map((r) => r.odds.쌍복승)),
+      삼복승: avg(gradeData.map((r) => r.odds.삼복승)),
       삼쌍승: avg(gradeData.map((r) => r.odds.삼쌍승)),
       경주수: gradeData.length,
     };
@@ -72,10 +77,15 @@ export function getAverageOddsByGrade(data: RaceOddsRecord[]) {
 
 /** 승식별 배당 분포 (저/중/고배당 비율) */
 export function getBetTypeDistribution(data: RaceOddsRecord[]) {
-  const betTypes: BetType[] = ["단승", "쌍승", "삼쌍승"];
+  const betTypes: BetType[] = ["단승", "연승1착", "연승2착", "쌍승", "복승", "쌍복승", "삼복승", "삼쌍승"];
   const thresholds: Record<string, { low: number; high: number }> = {
     단승: { low: 5, high: 20 },
+    연승1착: { low: 3, high: 10 },
+    연승2착: { low: 3, high: 10 },
     쌍승: { low: 15, high: 50 },
+    복승: { low: 10, high: 40 },
+    쌍복승: { low: 30, high: 100 },
+    삼복승: { low: 50, high: 200 },
     삼쌍승: { low: 50, high: 200 },
   };
 
@@ -100,7 +110,7 @@ export function getBetTypeDistribution(data: RaceOddsRecord[]) {
 
 /** 등급별 이변(고배당) 발생 빈도 */
 export function getUpsetFrequencyByGrade(data: RaceOddsRecord[]) {
-  const grades: GradeGroup[] = ["특선", "우수", "선발"];
+  const grades: GradeGroup[] = ["선발", "우수", "특선"];
   const result: { 등급: string; 이변빈도: number; 이변횟수: number; 총경주수: number }[] =
     grades.map((g) => {
       const gradeData = data.filter((r) => r.gradeGroup === g);
@@ -131,7 +141,7 @@ export function getMonthlyTrendByGrade(data: RaceOddsRecord[]) {
   data.forEach((r) => {
     const month = r.date.substring(0, 7);
     if (!monthlyMap[month]) {
-      monthlyMap[month] = { 특선: [], 우수: [], 선발: [], 전체: [] };
+      monthlyMap[month] = { 선발: [], 우수: [], 특선: [], 전체: [] };
     }
     monthlyMap[month][r.gradeGroup].push(r.odds.단승);
     monthlyMap[month]["전체"].push(r.odds.단승);

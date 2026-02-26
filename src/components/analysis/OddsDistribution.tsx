@@ -21,11 +21,11 @@ export default function OddsDistribution() {
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">승식별 배당 분포 비교</CardTitle>
         <p className="text-sm text-muted-foreground">
-          단승 / 쌍승 / 삼쌍승의 저·중·고배당 비율
+          8개 승식의 저·중·고배당 비율
         </p>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] sm:h-[350px]">
+        <div className="h-[400px] sm:h-[480px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
