@@ -51,7 +51,33 @@ export default function OddsBarChart() {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 formatter={(value: any, name: any) => [`${value}배`, name]}
               />
-              <Legend wrapperStyle={{ fontSize: "13px" }} />
+              <Legend
+                content={() => {
+                  const items = [
+                    { label: "단승", color: "#3B82F6" },
+                    { label: "연승1착", color: "#06B6D4" },
+                    { label: "연승2착", color: "#8B5CF6" },
+                    { label: "복승", color: "#F59E0B" },
+                    { label: "쌍승", color: "#DC2626" },
+                    { label: "삼복승", color: "#EC4899" },
+                    { label: "쌍복승", color: "#10B981" },
+                    { label: "삼쌍승", color: "#F97316" },
+                  ];
+                  return (
+                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[13px]">
+                      {items.map((it) => (
+                        <span key={it.label} className="flex items-center gap-1">
+                          <span
+                            className="inline-block h-3 w-3 rounded-sm"
+                            style={{ backgroundColor: it.color }}
+                          />
+                          {it.label}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                }}
+              />
               <Bar dataKey="단승" fill="#3B82F6" radius={[4, 4, 0, 0]} />
               <Bar dataKey="연승1착" fill="#06B6D4" radius={[4, 4, 0, 0]} />
               <Bar dataKey="연승2착" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
