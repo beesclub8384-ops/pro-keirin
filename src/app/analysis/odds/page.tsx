@@ -1,10 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import OddsSummaryCards from "@/components/analysis/OddsSummaryCards";
 import OddsBarChart from "@/components/analysis/OddsBarChart";
-import OddsDistribution from "@/components/analysis/OddsDistribution";
-import OddsUpsetFrequency from "@/components/analysis/OddsUpsetFrequency";
-import OddsTrend from "@/components/analysis/OddsTrend";
-import AiInsight from "@/components/analysis/AiInsight";
 import { isRealData, raceData } from "@/data/odds-data";
 
 export const metadata = {
@@ -37,7 +33,7 @@ export default function OddsAnalysisPage() {
         <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
           <span className="rounded-full bg-muted px-3 py-1">분석 기간: {periodStart} ~ {periodEnd}</span>
           <span className="rounded-full bg-muted px-3 py-1">경륜장: 광명</span>
-          <span className="rounded-full bg-muted px-3 py-1">등급: 특선 / 우수 / 선발</span>
+          <span className="rounded-full bg-muted px-3 py-1">등급: 선발 / 우수 / 특선</span>
           <span className="rounded-full bg-muted px-3 py-1">총 {raceData.length.toLocaleString()}경주</span>
         </div>
       </div>
@@ -47,20 +43,9 @@ export default function OddsAnalysisPage() {
         <OddsSummaryCards />
       </section>
 
-      {/* Charts Section */}
-      <section className="mb-8 grid gap-6 lg:grid-cols-2">
-        <OddsBarChart />
-        <OddsDistribution />
-      </section>
-
-      <section className="mb-8 grid gap-6 lg:grid-cols-2">
-        <OddsUpsetFrequency />
-        <OddsTrend />
-      </section>
-
-      {/* AI Insight */}
+      {/* Chart */}
       <section className="mb-8">
-        <AiInsight />
+        <OddsBarChart />
       </section>
 
       {/* Data Methodology */}
@@ -78,12 +63,6 @@ export default function OddsAnalysisPage() {
           </li>
           <li>
             <strong>등급 출처:</strong> 출주표 API(racer_grd_cd) 실제 값 사용
-          </li>
-          <li>
-            <strong>배당 구간:</strong> 승식별 저/중/고배당 구간 적용 (예: 단승 ~5/5~20/20~, 삼쌍승 ~50/50~200/200~)
-          </li>
-          <li>
-            <strong>이변 정의:</strong> 단승 배당 10배 이상인 경우
           </li>
         </ul>
         <p className="mt-4 text-xs text-muted-foreground/70">
