@@ -1,21 +1,19 @@
 // ============================================================
-// 경륜 등급별 배당률 분석 데이터
+// 경륜 배당률 분석 데이터
 // ============================================================
 // data.go.kr 경륜 경주결과 API 데이터를 사용합니다.
-// race-data.json이 없을 경우 샘플 데이터로 폴백합니다.
+// race-data.json이 없을 경우 빈 배열로 폴백합니다.
 // ============================================================
 
 import cachedData from "./race-data.json";
 
-export type GradeGroup = "특선" | "우수" | "선발";
 export type BetType = "단승" | "연승" | "쌍승" | "복승" | "삼쌍승";
+export type Venue = "광명" | "부산" | "창원";
 
 export interface RaceOddsRecord {
   id: number;
   date: string;           // YYYY-MM-DD
-  venue: "광명" | "부산" | "창원";
-  gradeGroup: GradeGroup;
-  grade: string;          // SS, S1, S2, S3, A1, A2, A3, B1, B2, B3
+  venue: Venue;
   raceNo: number;
   odds: {
     단승: number;
@@ -26,219 +24,123 @@ export interface RaceOddsRecord {
   };
 }
 
-// 시드 기반 의사 난수 생성 (일관된 데이터)
-function seededRandom(seed: number): () => number {
-  let s = seed;
-  return () => {
-    s = (s * 16807 + 0) % 2147483647;
-    return s / 2147483647;
-  };
-}
-
-function generateOdds(
-  rand: () => number,
-  gradeGroup: GradeGroup
-): RaceOddsRecord["odds"] {
-  // 등급별 배당률 분포 파라미터
-  const params = {
-    특선: { 단승: [1.5, 4.0], 연승: [1.1, 2.5], 쌍승: [3, 25], 복승: [2, 18], 삼쌍승: [8, 120] },
-    우수: { 단승: [2.0, 8.0], 연승: [1.2, 3.5], 쌍승: [5, 50], 복승: [4, 35], 삼쌍승: [15, 350] },
-    선발: { 단승: [2.5, 15.0], 연승: [1.3, 5.0], 쌍승: [8, 90], 복승: [6, 60], 삼쌍승: [25, 800] },
-  };
-
-  const p = params[gradeGroup];
-
-  // 가끔 고배당 이변 발생 (약 8~12%)
-  const isUpset = rand() < (gradeGroup === "특선" ? 0.08 : gradeGroup === "우수" ? 0.10 : 0.12);
-  const upsetMultiplier = isUpset ? 2.0 + rand() * 3.0 : 1.0;
-
-  const genOdd = (range: number[]) => {
-    const base = range[0] + rand() * (range[1] - range[0]);
-    return Math.round(base * upsetMultiplier * 10) / 10;
-  };
-
-  return {
-    단승: genOdd(p.단승),
-    연승: genOdd(p.연승),
-    쌍승: genOdd(p.쌍승),
-    복승: genOdd(p.복승),
-    삼쌍승: genOdd(p.삼쌍승),
-  };
-}
-
-// 2024.03 ~ 2025.02 (약 1년치) 데이터 생성
-export function generateRaceData(): RaceOddsRecord[] {
-  const rand = seededRandom(42);
-  const records: RaceOddsRecord[] = [];
-  let id = 1;
-
-  const venues: RaceOddsRecord["venue"][] = ["광명", "부산", "창원"];
-  const gradeMap: Record<GradeGroup, string[]> = {
-    특선: ["SS", "S1", "S2", "S3"],
-    우수: ["A1", "A2", "A3"],
-    선발: ["B1", "B2", "B3"],
-  };
-
-  // 매주 금~일 경주 (약 52주 × 3일)
-  const startDate = new Date(2024, 2, 1); // 2024-03-01
-
-  for (let week = 0; week < 52; week++) {
-    for (let dayOffset = 0; dayOffset < 3; dayOffset++) {
-      const raceDate = new Date(startDate);
-      raceDate.setDate(startDate.getDate() + week * 7 + dayOffset + (5 - startDate.getDay())); // 금요일부터
-
-      const dateStr = raceDate.toISOString().split("T")[0];
-      const venue = venues[Math.floor(rand() * venues.length)];
-
-      // 하루 약 12경주 (등급 혼합)
-      const dayGrades: { group: GradeGroup; grade: string }[] = [];
-
-      // 특선 2~3경주, 우수 4~5경주, 선발 4~5경주
-      const numSpecial = 2 + Math.floor(rand() * 2);
-      const numExcellent = 4 + Math.floor(rand() * 2);
-      const numGeneral = 12 - numSpecial - numExcellent;
-
-      for (let i = 0; i < numSpecial; i++) {
-        const grades = gradeMap["특선"];
-        dayGrades.push({ group: "특선", grade: grades[Math.floor(rand() * grades.length)] });
-      }
-      for (let i = 0; i < numExcellent; i++) {
-        const grades = gradeMap["우수"];
-        dayGrades.push({ group: "우수", grade: grades[Math.floor(rand() * grades.length)] });
-      }
-      for (let i = 0; i < numGeneral; i++) {
-        const grades = gradeMap["선발"];
-        dayGrades.push({ group: "선발", grade: grades[Math.floor(rand() * grades.length)] });
-      }
-
-      dayGrades.forEach((g, raceIdx) => {
-        records.push({
-          id: id++,
-          date: dateStr,
-          venue,
-          gradeGroup: g.group,
-          grade: g.grade,
-          raceNo: raceIdx + 1,
-          odds: generateOdds(rand, g.group),
-        });
-      });
-    }
-  }
-
-  return records;
-}
-
-// API 데이터 (race-data.json) 사용, 비었으면 샘플 데이터 폴백
+// API 데이터 (race-data.json) 로드
 export const raceData: RaceOddsRecord[] =
   Array.isArray(cachedData) && cachedData.length > 0
     ? (cachedData as RaceOddsRecord[])
-    : generateRaceData();
+    : [];
 
-export const isRealData = Array.isArray(cachedData) && cachedData.length > 0;
+export const isRealData = raceData.length > 0;
 
 // ============================================================
-// 분석 유틸리티 함수들
+// 분석 유틸리티 함수들 (정확한 데이터 기반)
 // ============================================================
 
-export function getAverageOddsByGrade(data: RaceOddsRecord[]) {
-  const groups: Record<GradeGroup, { 단승: number[]; 쌍승: number[]; 삼쌍승: number[] }> = {
-    특선: { 단승: [], 쌍승: [], 삼쌍승: [] },
-    우수: { 단승: [], 쌍승: [], 삼쌍승: [] },
-    선발: { 단승: [], 쌍승: [], 삼쌍승: [] },
-  };
+const avg = (arr: number[]) =>
+  arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10 : 0;
 
-  data.forEach((r) => {
-    groups[r.gradeGroup].단승.push(r.odds.단승);
-    groups[r.gradeGroup].쌍승.push(r.odds.쌍승);
-    groups[r.gradeGroup].삼쌍승.push(r.odds.삼쌍승);
-  });
-
-  const avg = (arr: number[]) => arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10 : 0;
-
-  return (["특선", "우수", "선발"] as GradeGroup[]).map((group) => ({
-    등급: group,
-    단승: avg(groups[group].단승),
-    쌍승: avg(groups[group].쌍승),
-    삼쌍승: avg(groups[group].삼쌍승),
-    경주수: groups[group].단승.length,
+/** 승식별 평균 배당률 */
+export function getAverageOddsByBetType(data: RaceOddsRecord[]) {
+  const betTypes: BetType[] = ["단승", "연승", "쌍승", "복승", "삼쌍승"];
+  return betTypes.map((bt) => ({
+    승식: bt,
+    평균: avg(data.map((r) => r.odds[bt])),
+    최소: data.length ? Math.min(...data.map((r) => r.odds[bt])) : 0,
+    최대: data.length ? Math.max(...data.map((r) => r.odds[bt])) : 0,
+    경주수: data.length,
   }));
 }
 
-export function getOddsDistribution(data: RaceOddsRecord[], betType: BetType) {
-  const groups: Record<GradeGroup, { 저배당: number; 중배당: number; 고배당: number; total: number }> = {
-    특선: { 저배당: 0, 중배당: 0, 고배당: 0, total: 0 },
-    우수: { 저배당: 0, 중배당: 0, 고배당: 0, total: 0 },
-    선발: { 저배당: 0, 중배당: 0, 고배당: 0, total: 0 },
-  };
+/** 경륜장별 평균 배당률 비교 */
+export function getAverageOddsByVenue(data: RaceOddsRecord[]) {
+  const venues: Venue[] = ["광명", "부산", "창원"];
+  return venues.map((v) => {
+    const venueData = data.filter((r) => r.venue === v);
+    return {
+      경륜장: v,
+      단승: avg(venueData.map((r) => r.odds.단승)),
+      쌍승: avg(venueData.map((r) => r.odds.쌍승)),
+      삼쌍승: avg(venueData.map((r) => r.odds.삼쌍승)),
+      경주수: venueData.length,
+    };
+  });
+}
 
-  // 배당 구간: 승식별로 다르게 설정
-  const thresholds = {
+/** 승식별 배당 분포 (저/중/고배당 비율) */
+export function getBetTypeDistribution(data: RaceOddsRecord[]) {
+  const betTypes: BetType[] = ["단승", "쌍승", "삼쌍승"];
+  const thresholds: Record<string, { low: number; high: number }> = {
     단승: { low: 5, high: 20 },
-    연승: { low: 3, high: 10 },
     쌍승: { low: 15, high: 50 },
-    복승: { low: 10, high: 40 },
     삼쌍승: { low: 50, high: 200 },
   };
 
-  const t = thresholds[betType];
-
-  data.forEach((r) => {
-    const odds = r.odds[betType];
-    const g = groups[r.gradeGroup];
-    g.total++;
-    if (odds <= t.low) g.저배당++;
-    else if (odds <= t.high) g.중배당++;
-    else g.고배당++;
+  return betTypes.map((bt) => {
+    const t = thresholds[bt];
+    let low = 0, mid = 0, high = 0;
+    data.forEach((r) => {
+      const v = r.odds[bt];
+      if (v <= t.low) low++;
+      else if (v <= t.high) mid++;
+      else high++;
+    });
+    const total = data.length || 1;
+    return {
+      승식: bt,
+      저배당: Math.round((low / total) * 100),
+      중배당: Math.round((mid / total) * 100),
+      고배당: Math.round((high / total) * 100),
+    };
   });
-
-  return (["특선", "우수", "선발"] as GradeGroup[]).map((group) => ({
-    등급: group,
-    저배당: Math.round((groups[group].저배당 / groups[group].total) * 100),
-    중배당: Math.round((groups[group].중배당 / groups[group].total) * 100),
-    고배당: Math.round((groups[group].고배당 / groups[group].total) * 100),
-  }));
 }
 
-export function getUpsetFrequency(data: RaceOddsRecord[]) {
-  // "고배당 이변" = 단승 배당 10배 이상
-  const groups: Record<GradeGroup, { total: number; upset: number }> = {
-    특선: { total: 0, upset: 0 },
-    우수: { total: 0, upset: 0 },
-    선발: { total: 0, upset: 0 },
-  };
+/** 전체 이변(고배당) 빈도 — 경륜장별 */
+export function getUpsetFrequencyByVenue(data: RaceOddsRecord[]) {
+  const venues: (Venue | "전체")[] = ["광명", "부산", "창원"];
+  const result: { 경륜장: string; 이변빈도: number; 이변횟수: number; 총경주수: number }[] =
+    venues.map((v) => {
+      const venueData = data.filter((r) => r.venue === v);
+      const upsets = venueData.filter((r) => r.odds.단승 >= 10).length;
+      return {
+        경륜장: v,
+        이변빈도: venueData.length ? Math.round((upsets / venueData.length) * 1000) / 10 : 0,
+        이변횟수: upsets,
+        총경주수: venueData.length,
+      };
+    });
 
-  data.forEach((r) => {
-    groups[r.gradeGroup].total++;
-    if (r.odds.단승 >= 10) groups[r.gradeGroup].upset++;
+  // 전체 합산도 추가
+  const totalUpsets = data.filter((r) => r.odds.단승 >= 10).length;
+  result.push({
+    경륜장: "전체",
+    이변빈도: data.length ? Math.round((totalUpsets / data.length) * 1000) / 10 : 0,
+    이변횟수: totalUpsets,
+    총경주수: data.length,
   });
 
-  return (["특선", "우수", "선발"] as GradeGroup[]).map((group) => ({
-    등급: group,
-    이변빈도: Math.round((groups[group].upset / groups[group].total) * 1000) / 10,
-    이변횟수: groups[group].upset,
-    총경주수: groups[group].total,
-  }));
+  return result;
 }
 
-export function getMonthlyTrend(data: RaceOddsRecord[]) {
-  const monthlyMap: Record<string, Record<GradeGroup, number[]>> = {};
+/** 월별 단승 평균 배당 추이 — 경륜장별 */
+export function getMonthlyTrendByVenue(data: RaceOddsRecord[]) {
+  const monthlyMap: Record<string, Record<string, number[]>> = {};
 
   data.forEach((r) => {
-    const month = r.date.substring(0, 7); // YYYY-MM
+    const month = r.date.substring(0, 7);
     if (!monthlyMap[month]) {
-      monthlyMap[month] = { 특선: [], 우수: [], 선발: [] };
+      monthlyMap[month] = { 광명: [], 부산: [], 창원: [], 전체: [] };
     }
-    monthlyMap[month][r.gradeGroup].push(r.odds.단승);
+    monthlyMap[month][r.venue].push(r.odds.단승);
+    monthlyMap[month]["전체"].push(r.odds.단승);
   });
-
-  const avg = (arr: number[]) => arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10 : 0;
 
   return Object.entries(monthlyMap)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, groups]) => ({
       월: month.substring(5) + "월",
-      특선: avg(groups.특선),
-      우수: avg(groups.우수),
-      선발: avg(groups.선발),
+      광명: avg(groups.광명),
+      부산: avg(groups.부산),
+      창원: avg(groups.창원),
+      전체: avg(groups.전체),
     }));
 }

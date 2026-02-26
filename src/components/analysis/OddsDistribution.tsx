@@ -11,17 +11,17 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { raceData, getOddsDistribution } from "@/data/odds-data";
+import { raceData, getBetTypeDistribution } from "@/data/odds-data";
 
 export default function OddsDistribution() {
-  const data = getOddsDistribution(raceData, "단승");
+  const data = getBetTypeDistribution(raceData);
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">등급별 단승 배당 분포</CardTitle>
+        <CardTitle className="text-lg">승식별 배당 분포 비교</CardTitle>
         <p className="text-sm text-muted-foreground">
-          저배당(~5배) / 중배당(5~20배) / 고배당(20배~) 비율
+          단승 / 쌍승 / 삼쌍승의 저·중·고배당 비율
         </p>
       </CardHeader>
       <CardContent>
@@ -41,7 +41,7 @@ export default function OddsDistribution() {
               />
               <YAxis
                 type="category"
-                dataKey="등급"
+                dataKey="승식"
                 tick={{ fontSize: 13, fill: "#6B7280" }}
                 width={50}
               />
@@ -63,15 +63,15 @@ export default function OddsDistribution() {
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
           <div className="rounded-lg bg-blue-50 p-2">
-            <div className="font-bold text-blue-600">저배당 (~5배)</div>
+            <div className="font-bold text-blue-600">저배당</div>
             <div className="text-muted-foreground">안정적 결과</div>
           </div>
           <div className="rounded-lg bg-amber-50 p-2">
-            <div className="font-bold text-amber-600">중배당 (5~20배)</div>
+            <div className="font-bold text-amber-600">중배당</div>
             <div className="text-muted-foreground">적당한 이변</div>
           </div>
           <div className="rounded-lg bg-red-50 p-2">
-            <div className="font-bold text-rose-600">고배당 (20배~)</div>
+            <div className="font-bold text-rose-600">고배당</div>
             <div className="text-muted-foreground">대이변</div>
           </div>
         </div>

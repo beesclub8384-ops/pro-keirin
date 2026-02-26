@@ -1,21 +1,22 @@
 "use client";
 
-import { TrendingDown, TrendingUp, BarChart3, Zap } from "lucide-react";
+import { TrendingUp, BarChart3, Zap, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   raceData,
-  getAverageOddsByGrade,
-  getUpsetFrequency,
+  getAverageOddsByBetType,
+  getUpsetFrequencyByVenue,
 } from "@/data/odds-data";
 
 export default function OddsSummaryCards() {
-  const avgOdds = getAverageOddsByGrade(raceData);
-  const upsets = getUpsetFrequency(raceData);
+  const avgOdds = getAverageOddsByBetType(raceData);
+  const upsets = getUpsetFrequencyByVenue(raceData);
 
-  const special = avgOdds.find((d) => d.등급 === "특선")!;
-  const general = avgOdds.find((d) => d.등급 === "선발")!;
-  const specialUpset = upsets.find((d) => d.등급 === "특선")!;
+  const danseung = avgOdds.find((d) => d.승식 === "단승")!;
+  const ssangseung = avgOdds.find((d) => d.승식 === "쌍승")!;
+  const overall = upsets.find((d) => d.경륜장 === "전체")!;
   const totalRaces = raceData.length;
+
   const dates = raceData.map((r) => r.date).sort();
   const periodLabel = dates.length > 0
     ? `${dates[0].slice(0, 7).replace("-", "년 ")}월 ~ ${dates[dates.length - 1].slice(0, 7).replace("-", "년 ")}월`
@@ -23,25 +24,25 @@ export default function OddsSummaryCards() {
 
   const summaryCards = [
     {
-      label: "특선급 평균 단승 배당",
-      value: `${special.단승}배`,
-      sub: `선발급 대비 ${Math.round((1 - special.단승 / general.단승) * 100)}% 낮음`,
-      icon: TrendingDown,
+      label: "평균 단승 배당",
+      value: `${danseung.평균}배`,
+      sub: `최소 ${danseung.최소}배 ~ 최대 ${danseung.최대}배`,
+      icon: Target,
       color: "text-blue-600",
       bg: "bg-blue-50",
     },
     {
-      label: "선발급 평균 단승 배당",
-      value: `${general.단승}배`,
-      sub: `특선급 대비 ${Math.round((general.단승 / special.단승 - 1) * 100)}% 높음`,
+      label: "평균 쌍승 배당",
+      value: `${ssangseung.평균}배`,
+      sub: `최소 ${ssangseung.최소}배 ~ 최대 ${ssangseung.최대}배`,
       icon: TrendingUp,
       color: "text-rose-600",
       bg: "bg-rose-50",
     },
     {
-      label: "특선급 이변(고배당) 빈도",
-      value: `${specialUpset.이변빈도}%`,
-      sub: `${specialUpset.총경주수}경주 중 ${specialUpset.이변횟수}회`,
+      label: "이변(고배당) 빈도",
+      value: `${overall.이변빈도}%`,
+      sub: `${overall.총경주수.toLocaleString()}경주 중 ${overall.이변횟수}회`,
       icon: Zap,
       color: "text-amber-600",
       bg: "bg-amber-50",

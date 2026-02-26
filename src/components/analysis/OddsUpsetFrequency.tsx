@@ -11,17 +11,17 @@ import {
   Cell,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { raceData, getUpsetFrequency } from "@/data/odds-data";
+import { raceData, getUpsetFrequencyByVenue } from "@/data/odds-data";
 
-const COLORS = ["#3B82F6", "#F59E0B", "#DC2626"];
+const COLORS = ["#3B82F6", "#F59E0B", "#DC2626", "#10B981"];
 
 export default function OddsUpsetFrequency() {
-  const data = getUpsetFrequency(raceData);
+  const data = getUpsetFrequencyByVenue(raceData);
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">등급별 이변(고배당) 발생 빈도</CardTitle>
+        <CardTitle className="text-lg">경륜장별 이변(고배당) 발생 빈도</CardTitle>
         <p className="text-sm text-muted-foreground">
           단승 10배 이상을 &quot;이변&quot;으로 정의
         </p>
@@ -32,7 +32,7 @@ export default function OddsUpsetFrequency() {
             <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis
-                dataKey="등급"
+                dataKey="경륜장"
                 tick={{ fontSize: 13, fill: "#6B7280" }}
               />
               <YAxis
@@ -67,13 +67,13 @@ export default function OddsUpsetFrequency() {
         </div>
         <div className="mt-4 space-y-2">
           {data.map((d, i) => (
-            <div key={d.등급} className="flex items-center justify-between text-sm">
+            <div key={d.경륜장} className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: COLORS[i] }} />
-                <span className="font-medium">{d.등급}급</span>
+                <span className="font-medium">{d.경륜장}</span>
               </div>
               <span className="text-muted-foreground">
-                {d.총경주수}경주 중 {d.이변횟수}회 ({d.이변빈도}%)
+                {d.총경주수.toLocaleString()}경주 중 {d.이변횟수}회 ({d.이변빈도}%)
               </span>
             </div>
           ))}

@@ -11,10 +11,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { raceData, getMonthlyTrend } from "@/data/odds-data";
+import { raceData, getMonthlyTrendByVenue } from "@/data/odds-data";
 
 export default function OddsTrend() {
-  const data = getMonthlyTrend(raceData);
+  const data = getMonthlyTrendByVenue(raceData);
   const dates = raceData.map((r) => r.date).sort();
   const periodLabel = dates.length > 0
     ? `${dates[0].slice(0, 7).replace("-", "년 ")}월 ~ ${dates[dates.length - 1].slice(0, 7).replace("-", "년 ")}월`
@@ -25,7 +25,7 @@ export default function OddsTrend() {
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">월별 단승 평균 배당 추이</CardTitle>
         <p className="text-sm text-muted-foreground">
-          {periodLabel}, 등급별 월간 평균
+          {periodLabel}, 경륜장별 월간 평균
         </p>
       </CardHeader>
       <CardContent>
@@ -35,7 +35,7 @@ export default function OddsTrend() {
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis
                 dataKey="월"
-                tick={{ fontSize: 11, fill: "#6B7280" }}
+                tick={{ fontSize: 12, fill: "#6B7280" }}
               />
               <YAxis
                 tick={{ fontSize: 12, fill: "#6B7280" }}
@@ -53,36 +53,13 @@ export default function OddsTrend() {
                   fontSize: "13px",
                 }}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                formatter={(value: any, name: any) => [`${value}배`, `${name}급`]}
+                formatter={(value: any, name: any) => [`${value}배`, name]}
               />
-              <Legend
-                wrapperStyle={{ fontSize: "13px" }}
-                formatter={(value) => `${value}급`}
-              />
-              <Line
-                type="monotone"
-                dataKey="특선"
-                stroke="#3B82F6"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="우수"
-                stroke="#F59E0B"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="선발"
-                stroke="#DC2626"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-              />
+              <Legend wrapperStyle={{ fontSize: "13px" }} />
+              <Line type="monotone" dataKey="광명" stroke="#3B82F6" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="부산" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="창원" stroke="#DC2626" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="전체" stroke="#6B7280" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
