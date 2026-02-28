@@ -1,9 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { BarChart3, TrendingUp, Zap, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const quickStats = [
   {
@@ -47,37 +45,6 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-black/60" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:py-20 md:py-24">
-        <div className="max-w-2xl mb-12">
-          <p className="mb-3 text-sm font-medium uppercase tracking-wider text-brand-light">
-            AI-Powered Keirin Analytics
-          </p>
-          <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl md:text-5xl leading-tight">
-            데이터로 읽는
-            <br />
-            <span className="text-brand-light">경륜의 패턴</span>
-          </h1>
-          <p className="mb-8 text-base text-gray-300 sm:text-lg max-w-lg">
-            배당률 분석, 선수 성적 추이, 이변 패턴까지.
-            AI가 분석한 경륜 인사이트를 확인하세요.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/analysis/odds">
-              <Button size="lg" className="bg-brand hover:bg-brand-dark text-white font-semibold">
-                배당률 분석 보기
-              </Button>
-            </Link>
-            <Link href="/guide">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-gray-600 text-gray-200 hover:bg-white/10 hover:text-white font-semibold"
-              >
-                경륜 가이드
-              </Button>
-            </Link>
-          </div>
-        </div>
-
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {quickStats.map((stat) => (
