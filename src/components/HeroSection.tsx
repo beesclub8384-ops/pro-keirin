@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { BarChart3, TrendingUp, Zap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,12 +34,17 @@ const quickStats = [
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full bg-gradient-to-br from-keirin-dark via-slate-900 to-brand-dark overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-brand rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-brand-light rounded-full blur-3xl" />
-      </div>
+    <section className="relative w-full overflow-hidden">
+      {/* Background Image */}
+      <Image
+        src="/images/hero-bg.png"
+        alt=""
+        fill
+        priority
+        className="object-cover"
+      />
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/60" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:py-20 md:py-24">
         <div className="max-w-2xl mb-12">
