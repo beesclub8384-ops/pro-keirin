@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { label: "홈", href: "/" },
-  { label: "경주 분석", href: "/analysis/odds" },
+  { label: "배당률 분석", href: "/analysis/odds" },
   { label: "선수 데이터", href: "/players" },
   { label: "경륜 가이드", href: "/guide" },
   { label: "커뮤니티", href: "/community" },

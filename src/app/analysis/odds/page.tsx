@@ -16,19 +16,14 @@ export default function OddsAnalysisPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
       {/* Page Header */}
       <div className="mb-8 sm:mb-10">
-        <div className="flex items-center gap-2 mb-3">
-          <Badge className="bg-brand text-white border-brand">데이터 분석</Badge>
-          <Badge variant="outline">1차 과제</Badge>
-          {!isRealData && (
+        {!isRealData && (
+          <div className="mb-3">
             <Badge variant="outline" className="border-amber-400 text-amber-600">데이터 없음</Badge>
-          )}
-        </div>
+          </div>
+        )}
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
           등급별 배당률 분석
         </h1>
-        <p className="mt-2 text-base sm:text-lg text-muted-foreground">
-          &ldquo;특선급이 정말 배당이 낮은가?&rdquo; — 실제 경주 데이터로 검증합니다
-        </p>
         <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
           <span className="rounded-full bg-muted px-3 py-1">분석 기간: {periodStart} ~ {periodEnd}</span>
           <span className="rounded-full bg-muted px-3 py-1">경륜장: 광명</span>
