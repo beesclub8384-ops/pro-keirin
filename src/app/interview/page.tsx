@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Newspaper } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -190,10 +190,10 @@ export default function InterviewPage() {
           </CardContent>
         </Card>
 
-        {/* Sidebar: This month's articles */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-bold text-foreground">
-            {month + 1}월 인터뷰 목록
+        {/* Article list */}
+        <div className="space-y-4">
+          <h2 className="text-base font-bold text-foreground">
+            {month + 1}월 인터뷰
           </h2>
           {loading ? (
             <p className="text-sm text-muted-foreground">불러오는 중...</p>
@@ -203,47 +203,35 @@ export default function InterviewPage() {
             </p>
           ) : (
             monthArticles.map((a, i) => (
-              <Card
+              <div
                 key={`${a.date}-${a.playerName}-${i}`}
-                className="cursor-pointer hover:shadow-md transition-shadow"
+                className="group cursor-pointer rounded-xl border bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 hover:border-brand/30"
                 onClick={() =>
                   router.push(
                     `/interview/${a.date}?player=${encodeURIComponent(a.playerName)}`,
                   )
                 }
               >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
-                      <Newspaper className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium">
-                        {a.playerName}
-                      </p>
-                      {extractTitle(a.article) && (
-                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
-                          {extractTitle(a.article)}
-                        </p>
-                      )}
-                      <div className="mt-1.5 flex items-center gap-2">
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] px-1.5 py-0"
-                        >
-                          {a.grade}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {a.region}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {a.date}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg font-bold text-foreground group-hover:text-brand transition-colors">
+                    {a.playerName}
+                  </span>
+                  <Badge variant="secondary" className="text-[11px] px-2 py-0.5">
+                    {a.grade}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {a.region}
+                  </span>
+                </div>
+                {extractTitle(a.article) && (
+                  <p className="text-sm leading-snug text-foreground/70 line-clamp-2 mb-2.5">
+                    &ldquo;{extractTitle(a.article)}&rdquo;
+                  </p>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  {a.date}
+                </span>
+              </div>
             ))
           )}
         </div>
