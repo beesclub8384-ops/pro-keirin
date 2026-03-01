@@ -8,6 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { fetchInterviewsByDate } from "@/lib/interview";
 
+/** [PHOTO_1]~[PHOTO_N]을 photos 배열의 실제 이미지 마크다운으로 치환 */
+function replacePhotoTags(article: string, photos?: string[]): string {
+  return article.replace(/\[PHOTO_(\d+)\]/g, (match, num) => {
+    const idx = parseInt(num, 10) - 1;
+    if (photos && photos[idx]) {
+      return `![인터뷰 사진 ${num}](${photos[idx]})`;
+    }
+    return "";
+  });
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -97,9 +108,9 @@ export default async function InterviewDatePage({
                 </div>
 
                 {/* Article content */}
-                <article className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-strong:text-foreground prose-a:text-brand">
+                <article className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-strong:text-foreground prose-a:text-brand prose-img:w-full prose-img:rounded-xl prose-img:mb-4">
                   <Markdown remarkPlugins={[remarkGfm]}>
-                    {article.article}
+                    {replacePhotoTags(article.article, article.photos)}
                   </Markdown>
                 </article>
               </CardContent>

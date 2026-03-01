@@ -5,6 +5,7 @@ export interface InterviewArticle {
   region: string;
   article: string;
   docLink: string;
+  photos?: string[];
 }
 
 const API_URL =
