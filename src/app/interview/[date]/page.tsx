@@ -111,11 +111,17 @@ export async function generateMetadata({
 
 export default async function InterviewDatePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ date: string }>;
+  searchParams: Promise<{ player?: string }>;
 }) {
   const { date } = await params;
-  const articles = await fetchInterviewsByDate(date);
+  const { player } = await searchParams;
+  const allArticles = await fetchInterviewsByDate(date);
+  const articles = player
+    ? allArticles.filter((a) => a.playerName === player)
+    : allArticles;
 
   const displayDate = date.replace(
     /(\d{4})-(\d{2})-(\d{2})/,
@@ -141,10 +147,10 @@ export default async function InterviewDatePage({
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          {displayDate} 인터뷰
+          {player ? `${player} 인터뷰` : `${displayDate} 인터뷰`}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {articles.length}건의 인터뷰 기사
+          {player ? displayDate : `${articles.length}건의 인터뷰 기사`}
         </p>
       </div>
 

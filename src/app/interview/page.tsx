@@ -38,6 +38,13 @@ function toKSTDate(dateStr: string): string {
   return kst.toISOString().slice(0, 10);
 }
 
+/** article 첫 줄 # 헤딩에서 제목 추출 */
+function extractTitle(article: string): string {
+  const match = article.match(/^#\s+(.+)/m);
+  if (!match) return "";
+  return match[1].replace(/^["「"']|["」"']$/g, "").trim();
+}
+
 export default function InterviewPage() {
   const router = useRouter();
   const today = new Date();
@@ -108,7 +115,7 @@ export default function InterviewPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         {/* Calendar */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -199,7 +206,11 @@ export default function InterviewPage() {
               <Card
                 key={`${a.date}-${a.playerName}-${i}`}
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => router.push(`/interview/${a.date}`)}
+                onClick={() =>
+                  router.push(
+                    `/interview/${a.date}?player=${encodeURIComponent(a.playerName)}`,
+                  )
+                }
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
@@ -207,10 +218,15 @@ export default function InterviewPage() {
                       <Newspaper className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">
+                      <p className="text-sm font-medium">
                         {a.playerName}
                       </p>
-                      <div className="mt-1 flex items-center gap-2">
+                      {extractTitle(a.article) && (
+                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+                          {extractTitle(a.article)}
+                        </p>
+                      )}
+                      <div className="mt-1.5 flex items-center gap-2">
                         <Badge
                           variant="secondary"
                           className="text-[10px] px-1.5 py-0"
@@ -220,10 +236,10 @@ export default function InterviewPage() {
                         <span className="text-xs text-muted-foreground">
                           {a.region}
                         </span>
+                        <span className="text-xs text-muted-foreground">
+                          {a.date}
+                        </span>
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {a.date}
-                      </p>
                     </div>
                   </div>
                 </CardContent>
