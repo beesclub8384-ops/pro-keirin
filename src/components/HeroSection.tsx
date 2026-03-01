@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full overflow-hidden h-[200px] sm:h-[242px] md:h-[290px]">
+    <section className="relative w-full overflow-hidden h-[214px] sm:h-[259px] md:h-[310px]">
       {/* Background Image */}
       <Image
         src="/images/hero-bg.png"
