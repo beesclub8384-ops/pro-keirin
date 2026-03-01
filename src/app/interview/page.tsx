@@ -30,6 +30,14 @@ function formatDate(year: number, month: number, day: number) {
   return `${year}-${m}-${d}`;
 }
 
+/** ISO 타임스탬프를 KST YYYY-MM-DD로 변환 */
+function toKSTDate(dateStr: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  const d = new Date(dateStr);
+  const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
 export default function InterviewPage() {
   const router = useRouter();
   const today = new Date();
@@ -42,7 +50,8 @@ export default function InterviewPage() {
     fetch(API_URL)
       .then((res) => res.json())
       .then((data) => {
-        setArticles(Array.isArray(data) ? data : []);
+        if (!Array.isArray(data)) return setArticles([]);
+        setArticles(data.map((a: InterviewArticle) => ({ ...a, date: toKSTDate(a.date) })));
       })
       .catch(() => setArticles([]))
       .finally(() => setLoading(false));
@@ -159,7 +168,7 @@ export default function InterviewPage() {
                   >
                     <span>{day}</span>
                     {hasArticle && (
-                      <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-brand" />
+                      <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-red-500" />
                     )}
                   </button>
                 );
