@@ -11,8 +11,6 @@ export default function HeroSection() {
         priority
         className="object-cover object-[center_20%]"
       />
-      {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
     </section>
   );
 }
