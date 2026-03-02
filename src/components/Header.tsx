@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Search, BarChart3 } from "lucide-react";
+import Image from "next/image";
+import { Menu, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -20,14 +21,15 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-white">
-            <BarChart3 className="h-5 w-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold leading-tight text-keirin-dark">7randoms</span>
-            <span className="text-[10px] leading-tight text-muted-foreground">경륜 데이터 분석</span>
-          </div>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/images/logo.webp"
+            alt="7randoms"
+            width={120}
+            height={40}
+            priority
+            className="h-8 w-auto sm:h-10"
+          />
         </Link>
 
         {/* Desktop Navigation */}
