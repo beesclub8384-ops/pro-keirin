@@ -19,16 +19,16 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+      <div className="mx-auto flex h-24 sm:h-28 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
             src="/images/logo.png"
             alt="7randoms"
-            width={144}
-            height={48}
+            width={288}
+            height={96}
             priority
-            className="h-9 w-auto sm:h-12"
+            className="h-[72px] w-auto sm:h-[96px]"
           />
         </Link>
 
