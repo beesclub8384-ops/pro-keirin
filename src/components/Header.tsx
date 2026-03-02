@@ -23,12 +23,12 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
-            src="/images/logo.webp"
+            src="/images/logo.png"
             alt="7randoms"
-            width={120}
-            height={40}
+            width={144}
+            height={48}
             priority
-            className="h-8 w-auto sm:h-10"
+            className="h-9 w-auto sm:h-12"
           />
         </Link>
 
