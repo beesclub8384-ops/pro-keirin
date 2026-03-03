@@ -39,6 +39,14 @@ yarn-error.log*
 # crawled data
 /data/
 
+# large aggregated data files (100MB+ GitHub limit)
+src/data/decision-card-data.json
+src/data/entry-data.json
+src/data/race-detail-data.json
+
+# sensitive files
+CIAUDE API.txt
+
 # claude
 .claude/
 
