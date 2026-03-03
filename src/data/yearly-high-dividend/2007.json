@@ -1,0 +1,255 @@
+{
+  "year": 2007,
+  "tables": [
+    {
+      "poolType": "단승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "110.4",
+          "raceDate": "2007년 07월 28일 29회차 2일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "95.4",
+          "raceDate": "2007년 04월 13일 14회차 1일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "85.3",
+          "raceDate": "2007년 03월 30일 12회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "83.4",
+          "raceDate": "2007년 01월 07일 01회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "78.3",
+          "raceDate": "2007년 01월 05일 01회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "연승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "40.9",
+          "raceDate": "2007년 07월 15일 27회차 3일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "36.9",
+          "raceDate": "2007년 08월 19일 32회차 3일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "36.4",
+          "raceDate": "2007년 07월 28일 29회차 2일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "36.0",
+          "raceDate": "2007년 01월 07일 01회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "32.7",
+          "raceDate": "2007년 02월 24일 07회차 2일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,415.6",
+          "raceDate": "2007년 07월 15일 27회차 3일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "1,182.5",
+          "raceDate": "2007년 01월 07일 01회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "1,014.7",
+          "raceDate": "2007년 04월 13일 14회차 1일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "659.1",
+          "raceDate": "2007년 03월 09일 09회차 1일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "650.1",
+          "raceDate": "2007년 01월 05일 01회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "237.4",
+          "raceDate": "2007년 07월 15일 27회차 3일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "227.7",
+          "raceDate": "2007년 04월 13일 14회차 1일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "222.8",
+          "raceDate": "2007년 01월 21일 03회차 3일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "210.5",
+          "raceDate": "2007년 08월 12일 31회차 3일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "197.5",
+          "raceDate": "2007년 01월 05일 01회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "4,167.6",
+          "raceDate": "2007년 04월 13일 14회차 1일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "1,330.9",
+          "raceDate": "2007년 05월 04일 17회차 1일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "1,024.7",
+          "raceDate": "2007년 05월 11일 18회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "833.4",
+          "raceDate": "2007년 01월 05일 01회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "811.0",
+          "raceDate": "2007년 10월 27일 42회차 2일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    }
+  ]
+}

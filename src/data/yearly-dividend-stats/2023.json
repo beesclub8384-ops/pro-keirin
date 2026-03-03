@@ -1,0 +1,147 @@
+{
+  "year": 2023,
+  "highDividends": [
+    {
+      "poolType": "단승식",
+      "amount": "146.5",
+      "raceDate": "2023년 10회차 2일차 제09경주(03/11)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "연승식",
+      "amount": "70.9",
+      "raceDate": "2023년 45회차 2일차 제15경주(11/18)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍승식",
+      "amount": "1,862.6",
+      "raceDate": "2023년 41회차 2일차 제02경주(10/21)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "복승식",
+      "amount": "550.9",
+      "raceDate": "2023년 51회차 1일차 제01경주(12/29)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼복승식",
+      "amount": "1,035.2",
+      "raceDate": "2023년 41회차 2일차 제02경주(10/21)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍복승식",
+      "amount": "13,586.1",
+      "raceDate": "2023년 41회차 2일차 제02경주(10/21)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼쌍승식",
+      "amount": "19,533.2",
+      "raceDate": "2023년 41회차 2일차 제02경주(10/21)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    }
+  ],
+  "distribution": [
+    {
+      "poolType": "단승식",
+      "range1": "2,191",
+      "range2": "91",
+      "range3": "132",
+      "range4": "5.5",
+      "range5": "76",
+      "range6": "3.2",
+      "range7": "5",
+      "range8": "0.2"
+    },
+    {
+      "poolType": "연승식",
+      "range1": "4,626",
+      "range2": "96",
+      "range3": "141",
+      "range4": "2.9",
+      "range5": "51",
+      "range6": "1.1",
+      "range7": "2",
+      "range8": "0"
+    },
+    {
+      "poolType": "쌍승식",
+      "range1": "1,647",
+      "range2": "67.8",
+      "range3": "323",
+      "range4": "13.3",
+      "range5": "255",
+      "range6": "10.5",
+      "range7": "97",
+      "range8": "4"
+    },
+    {
+      "poolType": "복승식",
+      "range1": "1,910",
+      "range2": "78.9",
+      "range3": "229",
+      "range4": "9.5",
+      "range5": "181",
+      "range6": "7.5",
+      "range7": "60",
+      "range8": "2.5"
+    },
+    {
+      "poolType": "삼복승식",
+      "range1": "1,574",
+      "range2": "65.2",
+      "range3": "340",
+      "range4": "14.1",
+      "range5": "288",
+      "range6": "11.9",
+      "range7": "128",
+      "range8": "5.3"
+    },
+    {
+      "poolType": "쌍복승식",
+      "range1": "1,174",
+      "range2": "48.5",
+      "range3": "401",
+      "range4": "16.6",
+      "range5": "354",
+      "range6": "14.6",
+      "range7": "193",
+      "range8": "8"
+    },
+    {
+      "poolType": "삼쌍승식",
+      "range1": "837",
+      "range2": "34.3",
+      "range3": "428",
+      "range4": "17.5",
+      "range5": "454",
+      "range6": "18.6",
+      "range7": "245",
+      "range8": "10"
+    }
+  ]
+}

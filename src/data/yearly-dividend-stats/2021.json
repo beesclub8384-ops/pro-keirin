@@ -1,0 +1,127 @@
+{
+  "year": 2021,
+  "highDividends": [
+    {
+      "poolType": "단승식",
+      "amount": "89.7",
+      "raceDate": "2021년 14회차 2일차 제01경주(04/03)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍승식",
+      "amount": "1,155.7",
+      "raceDate": "2021년 50회차 1일차 제02경주(12/10)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "복승식",
+      "amount": "494.0",
+      "raceDate": "2021년 50회차 1일차 제02경주(12/10)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼복승식",
+      "amount": "1,282.7",
+      "raceDate": "2021년 45회차 2일차 제07경주(11/06)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍복승식",
+      "amount": "6,100.5",
+      "raceDate": "2021년 37회차 3일차 제06경주(09/12)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼쌍승식",
+      "amount": "6,523.2",
+      "raceDate": "2021년 45회차 2일차 제07경주(11/06)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    }
+  ],
+  "distribution": [
+    {
+      "poolType": "단승식",
+      "range1": "742",
+      "range2": "92.6",
+      "range3": "31",
+      "range4": "3.9",
+      "range5": "24",
+      "range6": "3",
+      "range7": "4",
+      "range8": "0.5"
+    },
+    {
+      "poolType": "쌍승식",
+      "range1": "578",
+      "range2": "73.3",
+      "range3": "69",
+      "range4": "8.7",
+      "range5": "77",
+      "range6": "9.8",
+      "range7": "29",
+      "range8": "3.7"
+    },
+    {
+      "poolType": "복승식",
+      "range1": "178",
+      "range2": "80.2",
+      "range3": "15",
+      "range4": "6.8",
+      "range5": "18",
+      "range6": "8.1",
+      "range7": "8",
+      "range8": "3.6"
+    },
+    {
+      "poolType": "삼복승식",
+      "range1": "572",
+      "range2": "71.5",
+      "range3": "77",
+      "range4": "9.6",
+      "range5": "77",
+      "range6": "9.6",
+      "range7": "43",
+      "range8": "5.4"
+    },
+    {
+      "poolType": "쌍복승식",
+      "range1": "224",
+      "range2": "54.2",
+      "range3": "59",
+      "range4": "14.3",
+      "range5": "57",
+      "range6": "13.8",
+      "range7": "24",
+      "range8": "5.8"
+    },
+    {
+      "poolType": "삼쌍승식",
+      "range1": "102",
+      "range2": "45.7",
+      "range3": "31",
+      "range4": "13.9",
+      "range5": "28",
+      "range6": "12.6",
+      "range7": "20",
+      "range8": "9"
+    }
+  ]
+}

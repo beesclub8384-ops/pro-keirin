@@ -1,0 +1,147 @@
+{
+  "year": 2020,
+  "highDividends": [
+    {
+      "poolType": "단승식",
+      "amount": "100.4",
+      "raceDate": "2020년 1회차 2일차 제14경주(01/04)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "연승식",
+      "amount": "45.8",
+      "raceDate": "2020년 3회차 2일차 제07경주(01/18)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍승식",
+      "amount": "2,376.8",
+      "raceDate": "2020년 3회차 2일차 제07경주(01/18)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "복승식",
+      "amount": "353.6",
+      "raceDate": "2020년 3회차 2일차 제07경주(01/18)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼복승식",
+      "amount": "685.4",
+      "raceDate": "2020년 44회차 1일차 제04경주(11/06)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍복승식",
+      "amount": "4,128.9",
+      "raceDate": "2020년 1회차 2일차 제14경주(01/04)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼쌍승식",
+      "amount": "7,301.6",
+      "raceDate": "2020년 1회차 2일차 제14경주(01/04)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    }
+  ],
+  "distribution": [
+    {
+      "poolType": "단승식",
+      "range1": "364",
+      "range2": "90.1",
+      "range3": "32",
+      "range4": "7.9",
+      "range5": "5",
+      "range6": "1.2",
+      "range7": "2",
+      "range8": "0.5"
+    },
+    {
+      "poolType": "연승식",
+      "range1": "642",
+      "range2": "96.5",
+      "range3": "16",
+      "range4": "2.4",
+      "range5": "7",
+      "range6": "1.1",
+      "range7": "0",
+      "range8": "0"
+    },
+    {
+      "poolType": "쌍승식",
+      "range1": "287",
+      "range2": "70.2",
+      "range3": "46",
+      "range4": "11.2",
+      "range5": "38",
+      "range6": "9.3",
+      "range7": "19",
+      "range8": "4.6"
+    },
+    {
+      "poolType": "복승식",
+      "range1": "272",
+      "range2": "81.2",
+      "range3": "25",
+      "range4": "7.5",
+      "range5": "24",
+      "range6": "7.2",
+      "range7": "8",
+      "range8": "2.4"
+    },
+    {
+      "poolType": "삼복승식",
+      "range1": "280",
+      "range2": "69.3",
+      "range3": "45",
+      "range4": "11.1",
+      "range5": "43",
+      "range6": "10.6",
+      "range7": "18",
+      "range8": "4.5"
+    },
+    {
+      "poolType": "쌍복승식",
+      "range1": "184",
+      "range2": "55.1",
+      "range3": "44",
+      "range4": "13.2",
+      "range5": "43",
+      "range6": "12.9",
+      "range7": "20",
+      "range8": "6"
+    },
+    {
+      "poolType": "삼쌍승식",
+      "range1": "145",
+      "range2": "42.8",
+      "range3": "49",
+      "range4": "14.5",
+      "range5": "56",
+      "range6": "16.5",
+      "range7": "22",
+      "range8": "6.5"
+    }
+  ]
+}

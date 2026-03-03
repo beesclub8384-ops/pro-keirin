@@ -1,0 +1,255 @@
+{
+  "year": 2011,
+  "tables": [
+    {
+      "poolType": "단승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "85.6",
+          "raceDate": "2011년 12월 16일 48회차 1일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "83.7",
+          "raceDate": "2011년 03월 19일 10회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "63.7",
+          "raceDate": "2011년 09월 24일 36회차 2일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "59.0",
+          "raceDate": "2011년 02월 27일 07회차 3일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "49.0",
+          "raceDate": "2011년 08월 13일 31회차 2일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "연승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "98.6",
+          "raceDate": "2011년 12월 16일 48회차 1일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "40.3",
+          "raceDate": "2011년 04월 29일 16회차 1일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "29.4",
+          "raceDate": "2011년 05월 27일 20회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "28.1",
+          "raceDate": "2011년 02월 27일 07회차 3일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "27.8",
+          "raceDate": "2011년 04월 29일 16회차 1일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "531.7",
+          "raceDate": "2011년 08월 13일 31회차 2일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "471.8",
+          "raceDate": "2011년 03월 25일 11회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "429.0",
+          "raceDate": "2011년 05월 13일 18회차 1일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "402.6",
+          "raceDate": "2011년 10월 09일 38회차 3일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "386.2",
+          "raceDate": "2011년 05월 27일 20회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "183.4",
+          "raceDate": "2011년 03월 25일 11회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "174.7",
+          "raceDate": "2011년 03월 27일 11회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "157.9",
+          "raceDate": "2011년 05월 13일 18회차 1일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "150.9",
+          "raceDate": "2011년 05월 27일 20회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "136.1",
+          "raceDate": "2011년 11월 27일 45회차 3일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "699.0",
+          "raceDate": "2011년 01월 28일 04회차 1일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "533.4",
+          "raceDate": "2011년 07월 03일 25회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "508.1",
+          "raceDate": "2011년 02월 18일 06회차 1일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "422.3",
+          "raceDate": "2011년 10월 28일 41회차 1일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "419.0",
+          "raceDate": "2011년 03월 27일 11회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    }
+  ]
+}

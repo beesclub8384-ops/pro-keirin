@@ -1,0 +1,255 @@
+{
+  "year": 2008,
+  "tables": [
+    {
+      "poolType": "단승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "94.2",
+          "raceDate": "2008년 08월 09일 31회차 2일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "92.7",
+          "raceDate": "2008년 10월 18일 40회차 2일차 제 05경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "89.8",
+          "raceDate": "2008년 03월 14일 10회차 1일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "87.7",
+          "raceDate": "2008년 03월 02일 08회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "83.6",
+          "raceDate": "2008년 06월 13일 23회차 1일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "연승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "73.7",
+          "raceDate": "2008년 05월 02일 17회차 1일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "60.5",
+          "raceDate": "2008년 10월 10일 39회차 1일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "46.4",
+          "raceDate": "2008년 03월 21일 11회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "44.3",
+          "raceDate": "2008년 07월 05일 26회차 2일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "41.8",
+          "raceDate": "2008년 02월 17일 06회차 3일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "3,296.3",
+          "raceDate": "2008년 10월 18일 40회차 2일차 제 05경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "973.6",
+          "raceDate": "2008년 09월 06일 35회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "852.2",
+          "raceDate": "2008년 03월 22일 11회차 2일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "826.0",
+          "raceDate": "2008년 09월 05일 35회차 1일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "730.3",
+          "raceDate": "2008년 10월 19일 40회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "430.2",
+          "raceDate": "2008년 10월 18일 40회차 2일차 제 05경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "291.9",
+          "raceDate": "2008년 09월 06일 35회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "241.7",
+          "raceDate": "2008년 09월 05일 35회차 1일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "227.3",
+          "raceDate": "2008년 05월 23일 20회차 1일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "227.3",
+          "raceDate": "2008년 03월 22일 11회차 2일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,081.5",
+          "raceDate": "2008년 03월 02일 08회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "874.1",
+          "raceDate": "2008년 10월 24일 41회차 1일차 제 03경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "831.9",
+          "raceDate": "2008년 10월 31일 42회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "658.4",
+          "raceDate": "2008년 03월 21일 11회차 1일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "575.1",
+          "raceDate": "2008년 04월 19일 15회차 2일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,355 @@
+{
+  "year": 2022,
+  "tables": [
+    {
+      "poolType": "단승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "194.4",
+          "raceDate": "2022년 05월 21일 20회차 2일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "102.4",
+          "raceDate": "2022년 08월 12일 32회차 1일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "68.2",
+          "raceDate": "2022년 10월 01일 39회차 2일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "66.0",
+          "raceDate": "2022년 08월 14일 32회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "63.0",
+          "raceDate": "2022년 02월 18일 07회차 1일차 제 03경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "연승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "52.6",
+          "raceDate": "2022년 03월 19일 11회차 2일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "52.1",
+          "raceDate": "2022년 05월 28일 21회차 2일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "44.5",
+          "raceDate": "2022년 08월 21일 33회차 3일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "41.9",
+          "raceDate": "2022년 12월 23일 51회차 1일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "41.1",
+          "raceDate": "2022년 10월 15일 41회차 2일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,874.7",
+          "raceDate": "2022년 04월 02일 13회차 2일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "1,627.5",
+          "raceDate": "2022년 08월 12일 32회차 1일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "1,446.2",
+          "raceDate": "2022년 08월 14일 32회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "1,440.5",
+          "raceDate": "2022년 04월 09일 14회차 2일차 제 05경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "1,415.4",
+          "raceDate": "2022년 01월 14일 02회차 1일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "671.8",
+          "raceDate": "2022년 07월 09일 27회차 2일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "468.8",
+          "raceDate": "2022년 10월 08일 40회차 2일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "380.9",
+          "raceDate": "2022년 04월 02일 13회차 2일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "357.0",
+          "raceDate": "2022년 04월 09일 14회차 2일차 제 05경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "339.7",
+          "raceDate": "2022년 02월 12일 06회차 2일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,426.0",
+          "raceDate": "2022년 04월 09일 14회차 2일차 제 05경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "789.8",
+          "raceDate": "2022년 01월 16일 02회차 3일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "562.5",
+          "raceDate": "2022년 12월 23일 51회차 1일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "550.4",
+          "raceDate": "2022년 01월 23일 03회차 3일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "516.2",
+          "raceDate": "2022년 03월 04일 09회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "10,008.2",
+          "raceDate": "2022년 07월 09일 27회차 2일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "9,020.7",
+          "raceDate": "2022년 01월 14일 02회차 1일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "8,759.8",
+          "raceDate": "2022년 04월 02일 13회차 2일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "6,861.4",
+          "raceDate": "2022년 04월 09일 14회차 2일차 제 05경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "5,292.6",
+          "raceDate": "2022년 05월 21일 20회차 2일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "9,059.6",
+          "raceDate": "2022년 01월 14일 02회차 1일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "5,673.7",
+          "raceDate": "2022년 04월 09일 14회차 2일차 제 05경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "3,528.6",
+          "raceDate": "2022년 04월 02일 13회차 2일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "3,382.5",
+          "raceDate": "2022년 01월 23일 03회차 3일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "3,032.6",
+          "raceDate": "2022년 08월 28일 34회차 3일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,355 @@
+{
+  "year": 2024,
+  "tables": [
+    {
+      "poolType": "단승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "125.8",
+          "raceDate": "2024년 04월 07일 13회차 3일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "121.6",
+          "raceDate": "2024년 10월 11일 40회차 1일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "120.0",
+          "raceDate": "2024년 11월 15일 45회차 1일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "77.1",
+          "raceDate": "2024년 07월 05일 26회차 1일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "74.0",
+          "raceDate": "2024년 05월 19일 19회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "연승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "68.0",
+          "raceDate": "2024년 09월 07일 35회차 2일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "51.9",
+          "raceDate": "2024년 08월 30일 34회차 1일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "46.6",
+          "raceDate": "2024년 07월 26일 29회차 1일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "42.7",
+          "raceDate": "2024년 07월 13일 27회차 2일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "37.8",
+          "raceDate": "2024년 06월 21일 24회차 1일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,467.0",
+          "raceDate": "2024년 09월 20일 37회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "999.3",
+          "raceDate": "2024년 04월 19일 15회차 1일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "926.3",
+          "raceDate": "2024년 07월 26일 29회차 1일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "869.1",
+          "raceDate": "2024년 12월 29일 51회차 3일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "793.5",
+          "raceDate": "2024년 09월 07일 35회차 2일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "503.2",
+          "raceDate": "2024년 09월 07일 35회차 2일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "379.0",
+          "raceDate": "2024년 09월 20일 37회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "362.5",
+          "raceDate": "2024년 02월 03일 05회차 2일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "339.7",
+          "raceDate": "2024년 02월 18일 06회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "321.1",
+          "raceDate": "2024년 07월 26일 29회차 1일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,052.3",
+          "raceDate": "2024년 09월 07일 35회차 2일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "1,018.0",
+          "raceDate": "2024년 05월 04일 17회차 2일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "583.4",
+          "raceDate": "2024년 10월 18일 41회차 1일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "553.4",
+          "raceDate": "2024년 05월 31일 21회차 1일차 제 16경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "540.0",
+          "raceDate": "2024년 11월 23일 46회차 2일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "10,913.0",
+          "raceDate": "2024년 09월 07일 35회차 2일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "7,954.5",
+          "raceDate": "2024년 09월 20일 37회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "6,201.4",
+          "raceDate": "2024년 09월 14일 36회차 2일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "5,417.6",
+          "raceDate": "2024년 05월 31일 21회차 1일차 제 16경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "3,937.3",
+          "raceDate": "2024년 02월 18일 06회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "4,243.1",
+          "raceDate": "2024년 09월 14일 36회차 2일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "2,963.6",
+          "raceDate": "2024년 05월 31일 21회차 1일차 제 16경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "2,944.5",
+          "raceDate": "2024년 09월 07일 35회차 2일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "2,793.1",
+          "raceDate": "2024년 02월 03일 05회차 2일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "2,660.6",
+          "raceDate": "2024년 05월 04일 17회차 2일차 제 16경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    }
+  ]
+}

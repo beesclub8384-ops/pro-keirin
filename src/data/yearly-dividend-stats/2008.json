@@ -1,0 +1,107 @@
+{
+  "year": 2008,
+  "highDividends": [
+    {
+      "poolType": "단승식",
+      "amount": "94.2",
+      "raceDate": "2008년 31회차 2일차 제11경주(08/09)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "연승식",
+      "amount": "73.7",
+      "raceDate": "2008년 17회차 1일차 제12경주(05/02)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍승식",
+      "amount": "3,296.3",
+      "raceDate": "2008년 40회차 2일차 제05경주(10/18)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "복승식",
+      "amount": "430.2",
+      "raceDate": "2008년 40회차 2일차 제05경주(10/18)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼복승식",
+      "amount": "1,081.5",
+      "raceDate": "2008년 8회차 3일차 제10경주(03/02)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    }
+  ],
+  "distribution": [
+    {
+      "poolType": "단승식",
+      "range1": "1,844",
+      "range2": "90.3",
+      "range3": "117",
+      "range4": "5.7",
+      "range5": "67",
+      "range6": "3.3",
+      "range7": "15",
+      "range8": "0.7"
+    },
+    {
+      "poolType": "연승식",
+      "range1": "3,926",
+      "range2": "96.2",
+      "range3": "129",
+      "range4": "3.2",
+      "range5": "26",
+      "range6": "0.6",
+      "range7": "2",
+      "range8": "0"
+    },
+    {
+      "poolType": "쌍승식",
+      "range1": "1,337",
+      "range2": "65.1",
+      "range3": "314",
+      "range4": "15.3",
+      "range5": "218",
+      "range6": "10.6",
+      "range7": "116",
+      "range8": "5.6"
+    },
+    {
+      "poolType": "복승식",
+      "range1": "1,595",
+      "range2": "77.9",
+      "range3": "196",
+      "range4": "9.6",
+      "range5": "174",
+      "range6": "8.5",
+      "range7": "64",
+      "range8": "3.1"
+    },
+    {
+      "poolType": "삼복승식",
+      "range1": "1,275",
+      "range2": "62.3",
+      "range3": "323",
+      "range4": "15.8",
+      "range5": "276",
+      "range6": "13.5",
+      "range7": "104",
+      "range8": "5.1"
+    }
+  ]
+}

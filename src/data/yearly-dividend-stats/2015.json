@@ -1,0 +1,107 @@
+{
+  "year": 2015,
+  "highDividends": [
+    {
+      "poolType": "단승식",
+      "amount": "148.8",
+      "raceDate": "2015년 35회차 1일차 제04경주(09/04)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "연승식",
+      "amount": "46.7",
+      "raceDate": "2015년 41회차 1일차 제11경주(10/23)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍승식",
+      "amount": "951.0",
+      "raceDate": "2015년 34회차 1일차 제11경주(08/28)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "복승식",
+      "amount": "267.9",
+      "raceDate": "2015년 32회차 2일차 제11경주(08/15)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼복승식",
+      "amount": "808.4",
+      "raceDate": "2015년 34회차 1일차 제11경주(08/28)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    }
+  ],
+  "distribution": [
+    {
+      "poolType": "단승식",
+      "range1": "1,964",
+      "range2": "90.5",
+      "range3": "124",
+      "range4": "5.7",
+      "range5": "68",
+      "range6": "3.1",
+      "range7": "11",
+      "range8": "0.5"
+    },
+    {
+      "poolType": "연승식",
+      "range1": "4,142",
+      "range2": "95.9",
+      "range3": "147",
+      "range4": "3.4",
+      "range5": "32",
+      "range6": "0.7",
+      "range7": "0",
+      "range8": "0"
+    },
+    {
+      "poolType": "쌍승식",
+      "range1": "1,443",
+      "range2": "66.3",
+      "range3": "269",
+      "range4": "12.4",
+      "range5": "241",
+      "range6": "11.1",
+      "range7": "140",
+      "range8": "6.4"
+    },
+    {
+      "poolType": "복승식",
+      "range1": "1,659",
+      "range2": "76.6",
+      "range3": "239",
+      "range4": "11",
+      "range5": "165",
+      "range6": "7.6",
+      "range7": "72",
+      "range8": "3.3"
+    },
+    {
+      "poolType": "삼복승식",
+      "range1": "1,358",
+      "range2": "62.7",
+      "range3": "338",
+      "range4": "15.6",
+      "range5": "244",
+      "range6": "11.3",
+      "range7": "146",
+      "range8": "6.7"
+    }
+  ]
+}

@@ -1,0 +1,2221 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	
+
+	<meta charset="UTF-8" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" >
+	<meta name="format-detection" content="telephone=no">
+
+	<link rel="shortcut icon" href="/images/favicon/favicon.ico" type="image/x-icon" />
+	<link rel="icon" href="/images/favicon/favicon.ico" type="image/x-icon" />
+
+	<meta name="description" content="경륜, 광명스피돔, 경륜경정총괄본부, 경륜가이드, 경주일정, 종합경주, 경주출주표, 경주결과, 경주배당률, 경주현황, 심판판정, 통계데이터, 선수조회, 선수전적비교, 신인선수, 선수현황, 순위정보, 상금정보, 경륜영상관, 경주동영상, 스피돔소식, 이벤트 경륜, 경륜인사이트, 대상경륜방송, 모의베팅, 예상과 후기, 문화교실, 신고센터, 순위예측, 희망길벗 ">
+	<meta name="keywords" content="KCYCLE, 스피돔, 경륜, 스포츠, 경주, 일정, 출주표, 배당률, 베팅, 경륜선수">
+	<meta name="author" content="경륜경정총괄본부">
+	<meta property="og:title" content="KCYCLE 경륜 - KSPO">
+	<meta property="og:description" content="경륜, 광명스피돔, 경륜경정총괄본부, 경륜가이드, 경주일정, 종합경주, 경주출주표, 경주결과, 경주배당률, 경주현황, 심판판정, 통계데이터, 선수조회, 선수전적비교, 신인선수, 선수현황, 순위정보, 상금정보, 경륜영상관, 경주동영상, 스피돔소식, 이벤트 경륜, 경륜인사이트, 대상경륜방송, 예상과 후기, 문화교실, 신고센터, 순위예측, 희망길벗 ">
+	<meta property="og:image" content="/images/favicon/favicon.ico">
+	<meta property="og:url" content="https://www.kcycle.or.kr/">
+
+	<title>KCYCLE 경륜</title>
+
+	<link rel="stylesheet" href="https://cast.kcycle.or.kr/kcycle/common/css/swiper.css">
+	<link rel="stylesheet" href="https://cast.kcycle.or.kr/kcycle/common/css/style.css">
+	<link rel="stylesheet" href="https://cast.kcycle.or.kr/kcycle/common/css/component.css" />
+	<link rel="stylesheet" href="https://cast.kcycle.or.kr/kcycle/common/css/module.css" />
+
+	<script type="text/javascript" src="https://cast.kcycle.or.kr/kcycle/common/js/swiper.min.js"></script>
+	<script type="text/javascript" src="https://cast.kcycle.or.kr/kcycle/common/js/common.js"></script>
+
+	<!-- rMateChartH5 -->
+	<link rel="stylesheet" href="/static/rMateChartH5/css/rMateChartH5.css"/>
+
+	<script type="text/javascript" src="/static/js/jquery/jquery-3.7.0.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery/jquery.i18n.properties.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery/printThis.js"></script>
+
+	<!-- rMateChartH5 -->
+	<script language="javascript"  src="/static/rMateChartH5/rMateChartH5License.js"></script>
+	<script type="text/javascript" src="/static/rMateChartH5/rMateChartH5.js"></script>
+
+	<script type="text/javascript" src="/static/js/common-fn.js"></script>
+	<script type="text/javascript" src="/static/js/common-fetch.js"></script>
+	<script type="text/javascript" src="/static/js/common-validator.js"></script>
+
+	<script type="text/javascript" src="/static/js/common-member.js"></script>
+	<script type="text/javascript" src="/static/js/common-race.js"></script>
+	<script type="text/javascript" src="/static/js/common-racer.js"></script>
+	<script type="text/javascript" src="/static/js/common-video.js"></script>
+	<!-- rMateChartH5 custom -->
+	<script type="text/javascript" src="/static/js/common-chart.js"></script>
+
+	<script type="text/javascript">
+		let alertMessage = null;
+		if(alertMessage) {
+			alert(alertMessage);
+		}
+	</script>
+	<style>
+		pre {
+			white-space: pre-wrap;
+			max-width: 100%;
+		}
+	</style>
+
+</head>
+<body>
+	<div class="skip">
+		<a class="quickBtn" href="#container">본문바로가기</a>
+	</div>
+
+	<!-- 로딩영역 -->
+	<div class="loading">
+	<div class="modSmPopup" style="z-index: 9999">
+		<div class="popupDim">딤영역</div>
+		<div class="popupArea"> <!-- style - 너비값(width), 높이값(height) : 팝업 너비 및 높이 지정 -->
+			<div class="popupContainer">
+				<div class="popupContArea">
+					<div class="popCont">
+						<!-- 팝업 컨텐츠 영역 -->
+						<div class="popImage">
+							<div class="imgBg"><img src="/images/contents/loading_mascot_bg.png" alt="로딩이미지 백그라운드"></div>
+							<div class="imgMc"><img src="/images/contents/loading_mascot.png" alt="로딩이미지 캐릭터"></div>
+						</div>
+
+						<div class="popTitle">
+							<h2>잠시만 기다려주세요!</h2>
+							<p>페이지를 불러오는 중입니다!</p>
+						</div>
+						<!-- //팝업 컨텐츠 영역 -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+	<!-- ./로딩영역 -->
+
+	<div class="wrap">
+		<div class="lytLayout">
+			<div class="layoutArea">
+
+				<!-- 상단영역 -->
+				<div class="layoutTop">
+					<!-- TOP -->
+					<div class="cptHeader">
+						
+	<div class="quickArea">
+		<div class="quickBox">
+			<ul class="guickMenuGroup">
+				<li class="item"><a href="https://www.speedon.or.kr" target="_blank" rel="noopener noreferrer">스피드온</a></li>
+				<li class="item"><a href="https://www.kboat.or.kr" target="_blank" rel="noopener noreferrer">KBOAT</a></li>
+				<li class="item"><a href="https://www.kspo.or.kr/kspo/main/main.do" target="_blank" rel="noopener noreferrer">국민체육진흥공단</a></li>
+				<li class="item"><a href="https://rsup.net/kspo" target="_self">원격지원</a></li>
+				<li class="item"><a href="https://eng.krace.or.kr" target="_self">ENG</a></li>
+				<li class="item">
+					<span class="txt">화면크기</span>
+					<button type="button" class="btnView minus" onclick="zoomView('minus');">작게</button>
+					<span class="viewPer">100%</span>
+					<button type="button" class="btnView plus" onclick="zoomView('plus');">크게</button>
+				</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="headArea">
+		<div class="headBox">
+			<div class="logoBox">
+				<button tyle="button" href="javascript: void(0)" onclick="fnMoveTo(&#39;/main&#39;)">
+					<svg xmlns="http://www.w3.org/2000/svg" width="160" height="26" viewBox="0 0 160 26" fill="none" class="logo">
+						<g clip-path="url(#clip0_269_1320)">
+							<path d="M86.1643 3.03442C84.7223 3.03442 83.5183 3.58351 82.8045 4.17595L73.8715 12.1883L68.219 3.04165H61.6221L69.8773 16.4076L67.2962 26.0599H70.3604C72.1051 26.0599 73.4317 25.0196 73.6841 24.0803C74.506 21.0242 75.4505 17.5274 75.8903 15.8946L90.3027 3.04887H86.1643V3.03442Z" fill="#6F6F71"/>
+							<path d="M36.4888 0H30.8363C28.5292 0 26.6474 0.787506 25.5876 1.68338L11.9178 11.5597C13.0137 7.47769 14.088 3.46069 15.0108 0H11.0598C8.61572 0 6.82047 0.744157 6.3951 2.1241L0 26.0527H3.93655C6.43115 26.0527 8.24802 25.2869 8.63014 23.8564V23.8708C9.42321 20.9086 10.2884 17.6647 11.1608 14.3919L19.0627 24.2971C19.8342 25.258 20.6849 26.0599 23.4751 26.0599H29.5169L19.2069 13.2503L36.4888 0Z" fill="#6F6F71"/>
+							<path d="M120.62 21.4578H118.926C117.852 21.4578 117.116 21.3422 116.749 21.111C116.165 20.7569 115.999 20.1934 116.309 19.1675C116.309 19.1675 119.445 7.63666 120.685 3.02722H118.897C116.46 3.02722 114.672 3.76415 114.24 5.13687L110.382 19.3481C109.82 21.4505 110.043 22.9966 111.002 24.2176C111.954 25.4459 113.54 26.06 115.761 26.0527H128.277C130.094 26.0527 131.348 25.0124 131.601 24.0731L132.3 21.4505H120.62V21.4578Z" fill="#6F6F71"/>
+							<path d="M94.1095 9.73908C94.4844 8.35914 95.8759 7.62221 96.842 7.62221C99.9422 7.62221 107.801 7.62221 107.801 7.62221C109.625 7.62221 110.879 6.58906 111.125 5.64983L111.824 3.02722H96.9285C91.55 3.02722 89.1131 6.50959 88.4426 9.00215L85.6308 19.3409C84.5925 23.2206 86.4094 26.0672 91.0093 26.0455H103.461C105.285 26.0455 106.532 25.0051 106.784 24.0659L107.484 21.4433H94.0879C92.0403 21.4289 90.9804 21.0387 91.5428 19.1603C91.5428 19.1603 93.1506 13.2865 94.1023 9.73186L94.1095 9.73908Z" fill="#6F6F71"/>
+							<path d="M37.6643 9.00218L34.8524 19.3409C33.8142 23.2206 35.6311 26.0672 40.2309 26.0455H52.6895C54.5136 26.0455 55.7609 25.0052 56.0132 24.0659L56.7126 21.4433H43.3167C41.2692 21.4289 40.2093 21.0387 40.7717 19.1603C40.7717 19.1603 42.3795 13.2865 43.3312 9.73188C43.7061 8.35194 45.1048 7.61501 46.0637 7.61501C49.1639 7.61501 57.0226 7.61501 57.0226 7.61501C58.8467 7.61501 60.094 6.58186 60.3463 5.64263L61.0457 3.02002H46.1502C40.7717 3.02002 38.3348 6.50239 37.6643 8.99495V9.00218Z" fill="#6F6F71"/>
+							<path d="M145.097 3.02722C139.719 3.02722 137.282 6.50959 136.611 9.00215L133.8 19.3409C132.761 23.2206 134.585 26.0672 139.178 26.0455H151.629C153.454 26.0455 154.708 25.0051 154.953 24.0659L155.653 21.4433H142.257C140.209 21.4289 139.149 21.0387 139.712 19.1603C139.712 19.1603 139.971 18.1994 140.353 16.8339H153.266C155.083 16.8339 156.337 15.8007 156.59 14.8615L157.289 12.2389H141.608C141.846 11.3502 142.076 10.4977 142.278 9.73908C142.653 8.35914 144.052 7.62221 145.011 7.62221C148.111 7.62221 155.97 7.62221 155.97 7.62221C157.794 7.62221 159.041 6.58906 159.293 5.64983L159.993 3.02722H145.097Z" fill="#6F6F71"/>
+						</g>
+						<defs>
+							<clipPath id="clip0_269_1320">
+								<rect width="160" height="26.0527" fill="white"/>
+							</clipPath>
+						</defs>
+					</svg>
+				</button>
+			</div>
+			<ul class="myMenuGroup">
+				
+				<li class="item ico01">
+					<a href="javascript: void(0)" class="myLink" onclick="fnToggleIntgSearch()">통합검색</a>
+				</li>
+				<li class="item ico02">
+					<a href="/clinic/introduce" class="myLink">희망길벗</a>
+					<div class="myMenuArea">
+						<div class="myMenuBox">
+							<ul class="menuBox">
+								<li class="subItem">
+									<a href="/clinic/introduce">희망길벗 소개</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/history">희망길벗 연혁</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/talk">도박중독의 이해</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/selfdiagnosis">자가진단</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/faq">도박중독 FAQ</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/program">프로그램 안내</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/relatedsite">관련사이트</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/counsel">상담안내</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/achive">희망길벗 아카이브</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</li>
+				<li class="item ico03">
+					<a href="/member/login" class="myLink">로그인</a>
+				</li>
+				<li class="item ico04">
+					<a href="/member/join" class="myLink">회원가입</a>
+				</li>
+				
+			</ul>
+		</div>
+	</div>
+
+	<!-- GNB -->
+	<div class="gnbArea">
+		<div class="gnbBox">
+			<ul class="depth1Group">
+				<li class="depth1Menu">
+					<a href="/guide/about/introduce" class="depth1Name" target="_self">경륜 가이드</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/guide/about/introduce" class="depth2Name" target="_self">경륜 알아보기</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/guide/about/introduce" class="depth3Name" target="_self">경륜안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/about/basic" class="depth3Name" target="_self">경륜기초정보</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/about/raceprogress" class="depth3Name" target="_self">경주진행과정</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/about/velodrome" class="depth3Name" target="_self">벨로드롬 가이드</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/guide/enjoy/ticketpurchase" class="depth2Name" target="_self">경륜 즐겨보기</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/guide/enjoy/ticketpurchase" class="depth3Name" target="_self">경주권 구매 가이드</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/enjoy/racecard" class="depth3Name" target="_self">출주표 보는법</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/enjoy/dividendrateboard" class="depth3Name" target="_self">배당률 보는법</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/enjoy/ticketrefund" class="depth3Name" target="_self">경주권 환급</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/guide/learn/bicycle" class="depth2Name" target="_self">경륜 지식쌓기</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/guide/learn/bicycle" class="depth3Name" target="_self">경륜 자전거 안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/racerule" class="depth3Name" target="_self">경주규칙안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/racetactics" class="depth3Name" target="_self">경륜전법소개</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/judgeequip" class="depth3Name" target="_self">경륜심판·장비</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/committee" class="depth3Name" target="_self">제재심의위원회</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/dictionary" class="depth3Name" target="_self">경륜용어사전</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/relatedlaw" class="depth3Name" target="_self">경륜·경정 관련법 안내</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/guide/predictpaper" class="depth2Name" target="_self">경륜예상지</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="javascript: fnOpenWinPopup(&#39;모의베팅&#39;, &#39;/guide/mockbet&#39;)" class="depth2Name" target="_self">모의베팅</a>
+									
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu active">
+					<a href="/race/schedule" class="depth1Name" target="_self">경륜 정보</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/race/schedule" class="depth2Name" target="_self">경주일정</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/info" class="depth2Name" target="_self">종합경주정보</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/card/decision" class="depth2Name" target="_self">경주출주표</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/card/decision" class="depth3Name" target="_self">확정출주표</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/card/undecided" class="depth3Name" target="_self">미확정출주표</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/card/jisoo" class="depth3Name" target="_self">승부수 지표</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/result/general" class="depth2Name" target="_self">경주결과</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/result/general" class="depth3Name" target="_self">통합경주결과</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/result/grand" class="depth3Name" target="_self">대상경주결과</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/dividendrate/final" class="depth2Name" target="_self">경주배당률</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/dividendrate/final" class="depth3Name" target="_self">최종배당률</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/dividendrate/decision" class="depth3Name" target="_self">확정배당률</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/state/breakingnews" class="depth2Name" target="_self">경주현황</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/state/breakingnews" class="depth3Name" target="_self">경주속보</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/state/news" class="depth3Name" target="_self">경주소식</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/state/racerinterview" class="depth3Name" target="_self">출전선수상담</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/judge/photo" class="depth2Name" target="_self">심판판정</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/judge/photo" class="depth3Name" target="_self">착순판정사진</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/judge/blackbox" class="depth3Name" target="_self">심판방송</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/judge/sanctionsracer" class="depth3Name" target="_self">심판제재선수</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu active">
+									<a href="/race/stats/dividendrate" class="depth2Name" target="_self">통계데이터</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/stats/dividendrate" class="depth3Name" target="_self">배당률 통계</a>
+										</li>
+										<li class="depth3Menu active">
+											<a href="/race/stats/sales" class="depth3Name" target="_self">매출액 통계</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/stats/highdividend" class="depth3Name" target="_self">고배당 순위</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/stats/nohit" class="depth3Name" target="_self">무적중 경주</a>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/racer/info" class="depth1Name" target="_self">경륜 선수</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/racer/info" class="depth2Name" target="_self">선수조회</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/compare" class="depth2Name" target="_self">선수전적비교</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/rookie/trainingcentergrade" class="depth2Name" target="_self">신인선수 정보</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/racer/rookie/trainingcentergrade" class="depth3Name" target="_self">훈련원 졸업성적</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/rookie/rehearsalrace" class="depth3Name" target="_self">신인선수 시범경주</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/state/fallinjury" class="depth2Name" target="_self">선수현황</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/racer/state/fallinjury" class="depth3Name" target="_self">낙차부상</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/state/specialpromotion" class="depth3Name" target="_self">특별승강급</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/state/sanction" class="depth3Name" target="_self">제재선수</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/state/trainingsitechange" class="depth3Name" target="_self">훈련지 변경</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/ranking/total" class="depth2Name" target="_self">순위정보</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/racer/ranking/total" class="depth3Name" target="_self">전체성적순위</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/ranking/wintop30" class="depth3Name" target="_self">다승30</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/ranking/winaccrued" class="depth3Name" target="_self">1착 다승 누적순위</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/ranking/winstreaks" class="depth3Name" target="_self">현재 연승순위</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/ranking/mostwinstreaks" class="depth3Name" target="_self">최다 연승순위</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/prize/pymtinfo" class="depth2Name" target="_self">상금정보</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/racer/prize/pymtinfo" class="depth3Name" target="_self">상금 지급 정보</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/prize/ranking" class="depth3Name" target="_self">전체 상금 순위</a>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/broadcast/videoroom" class="depth1Name" target="_self">경륜 영상관</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/broadcast/videoroom" class="depth2Name" target="_self">경륜 영상관</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/racevideo" class="depth2Name" target="_self">경주동영상</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/speedomnews" class="depth2Name" target="_self">스피돔소식</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/event" class="depth2Name" target="_self">이벤트 경륜</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/insite" class="depth2Name" target="_self">경륜 인사이트</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/grand" class="depth2Name" target="_self">대상경륜방송</a>
+									
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/customerplaza/predictreview" class="depth1Name" target="_self">고객광장</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/customerplaza/predictreview" class="depth2Name" target="_self">예상과 후기</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/culture" class="depth2Name" target="_self">문화교실</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/notice" class="depth2Name" target="_self">공지사항</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="https://www.kspo.or.kr/kspo/main/contents.do?menuNo=200244" class="depth2Name" target="_blank">고객헌장</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/voc" class="depth2Name" target="_self">고객의 소리</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/faq" class="depth2Name" target="_self">자주묻는질문</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/event/info" class="depth2Name" target="_self">행사안내</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/customerplaza/event/info" class="depth3Name" target="_self">이벤트</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/report/guide" class="depth2Name" target="_self">경륜·경정 신고센터</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/guide" class="depth3Name" target="_self">신고센터 안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/lostticket" class="depth3Name" target="_self">분실경주권 신고</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/cheater" class="depth3Name" target="_self">부정행위자 신고</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/malfeasant" class="depth3Name" target="_self">경륜·경정 불법 현장 신고</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/illegalsite" class="depth3Name" target="_self">경륜·경정 불법 사이트 신고</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="https://www.kspo.or.kr/kspo/serviceCenter/reportCenter/list.do?menuNo=200013" class="depth3Name" target="_blank">부조리 신고센터</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="https://www.kspo.or.kr/kspo/serviceCenter/reportCenter/list.do?menuNo=200013" class="depth3Name" target="_blank">예산낭비 신고센터</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/terms/use" class="depth2Name" target="_self">약관</a>
+									
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/company/press" class="depth1Name" target="_self">총괄본부</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/company/press" class="depth2Name" target="_self">보도자료</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/bi" class="depth2Name" target="_self">BI소개</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/branch" class="depth2Name" target="_self">지사안내</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/speedom/introduce" class="depth2Name" target="_self">광명스피돔</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/company/speedom/introduce" class="depth3Name" target="_self">광명스피돔 소개</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/speedom/facility" class="depth3Name" target="_self">시설안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/speedom/direction" class="depth3Name" target="_self">오시는 길</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/trainingcenter/introduce" class="depth2Name" target="_self">경륜훈련원</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/company/trainingcenter/introduce" class="depth3Name" target="_self">경륜훈련원 안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/trainingcenter/loadmap" class="depth3Name" target="_self">선수 로드맵</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/trainingcenter/cadet" class="depth3Name" target="_self">후보생 졸업현황</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/trainingcenter/direction" class="depth3Name" target="_self">오시는 길</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/socontr" class="depth2Name" target="_blank">사회공헌</a>
+									
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/rankingpredict" class="depth1Name" target="_self">순위예측</a>
+					
+				</li>
+				
+			</ul>
+			<button type="button" class="allMenu" onclick="fnToggleSiteMap()">전체메뉴</button>
+		</div>
+	</div>
+
+	<!-- All Menu -->
+	<div class="allMenuWrap">
+		
+	</div>
+
+	<div id="logoutTime" class="modAlertPopup"> <!-- class - on : 팝업오픈 -->
+		<div class="popupDim">딤영역</div>
+		<div class="popupArea">
+			<div class="popupInMotion">
+				<div class="popupContainer">
+					<div class="popupContArea">
+						<button class="btnPopClose" onclick="closePopup('logoutTime');">닫기</button>
+						<div class="popCont">
+							<!-- 팝업 컨텐츠 영역 -->
+							<p class="alertDt">
+								고객님의 안전한 개인정보보호를 위해 로그인 후<br> 30분간 사용이 없으실 경우 자동으로 로그아웃 됩니다.
+								로그아웃을 원하시지 않으시면 [로그인 연장]을 <br>클릭해주세요
+							</p>
+							<!-- //팝업 컨텐츠 영역 -->
+						</div>
+						<!-- 팝업 하단 영역 -->
+						<div class="popBtm">
+							<button type="button" class="btn gLine" onclick="fnMember.logout()">로그아웃</button>
+							<button type="button" class="btn Primary" onclick="fnMember.session.refresh(); closePopup('logoutTime');">로그인 연장</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input type="hidden" id="activeMenu" value="/race/stats/sales">
+
+	<script type="text/javascript">
+		const activeMenu = document.querySelector("#activeMenu");
+		const BASE_URL = activeMenu ? activeMenu.value : "";
+
+		const fnRace   = new fnCmmRace(BASE_URL);
+		const fnRacer  = new fnCmmRacer(BASE_URL);
+
+		async function fnToggleSiteMap() {
+			const fragment = document.querySelector(".allMenuWrap");
+			if(fragment.children.length == 0) {
+				const result = await fnFetch.get("/cmm/menu/sitemap?path=" + BASE_URL);
+				$(fragment).replaceWith(result);
+
+				all1MenuAction();
+				document.querySelector("body").style.cssText = "height:100%; min-height:100%; overflow:hidden !important;";
+			}
+		}
+	</script>
+
+					</div>
+					<!-- ./TOP -->
+					<!-- 퀵메뉴 -->
+					<div class="cptQuickMenu ">
+						
+	<div class="quickHead">
+		<div class="headTit">나의 활동지수</div>
+		
+		<a href="/member/login" class="linkLogin">로그인</a> <!-- 로그아웃 시 노출 -->
+	</div>
+	<ul class="quickBtns">
+		<li class="quickItem">
+			
+			<a class="quickIco ico01" href="/race/card/decision">경주출주표</a>
+		</li>
+		<li class="quickItem">
+			
+			<a class="quickIco ico02" href="/broadcast/racevideo">경주동영상</a>
+		</li>
+		<li class="quickItem">
+			
+			<a class="quickIco ico03" href="/race/result/general">경주결과</a>
+		</li>
+		<li class="quickItem">
+			
+			<a class="quickIco ico04" href="/race/dividendrate/final">경주배당률</a>
+		</li>
+		<li class="quickItem">
+			
+			<a class="quickIco ico05" href="/customerplaza/predictreview">예상과후기</a>
+		</li>
+		<li class="quickItem">
+			<a class="quickIco ico06" href="javascript: void(0)" onclick="fnPopupActivePointGuide();">활동지수안내</a>
+			
+		</li>
+
+	</ul>
+	<button type="button" class="btnTop">TOP</button>
+
+					</div>
+					<!-- ./퀵메뉴 -->
+				</div>
+				<!-- ./상단영역 -->
+
+				<!-- 통합검색영역 -->
+				
+	<script type="text/javascript">
+		//상단 검색창 활성화 토글
+		async function fnToggleIntgSearch() {
+			const intgSearch = document.querySelector("#intg-search");
+			if(intgSearch) {
+				if(intgSearch.style.display == "none") {
+					intgSearch.style.display = "block";
+					intgSearch.classList.add("on");
+					document.documentElement.classList.add('fixScroll');
+
+					document.querySelector("#keyword").focus();
+
+					try {
+						//최근검색어 + 인기검색어
+						const result = await fnFetch.get("/search/integrated/keyword/recent-popular");
+						const fragment = document.querySelector(".keywordRecentPopular");
+						$(fragment).replaceWith(result);
+
+						const len = $(result).find(".swiper-slide").length;
+						if(len > 0) {
+							new Swiper('.schStxSlide', {
+								slidesPerView: 'auto',
+								freeMode: true,
+								loop: true,
+								navigation: {
+									prevEl: ".schStxSlidePage .prev",
+									nextEl: ".schStxSlidePage .next",
+								},
+							});
+						}
+					} catch (e) {
+						console.error(e);
+					}
+				} else {
+					intgSearch.style.display = "none";
+					intgSearch.classList.remove("on");
+					document.documentElement.classList.remove('fixScroll');
+				}
+			}
+		}
+
+		//키워드 자동 완성
+		async function fnKewordAutoComplete(_this) {
+			try {
+				const schBox = _this.closest(".schBox");
+				const schBoxRel = schBox.querySelector(".schBoxRel");
+				schBoxRel.style.display = "none";
+
+				const keyword = _this.value;
+				if(!keyword) {
+					return;
+				}
+
+				schBoxRel.style.display = "block";
+
+				const formData = new FormData();
+				formData.append("query", keyword);
+				const result = await fnFetch.post("/search/integrated/keyword/auto-complete", formData);
+
+				$(schBoxRel).empty();
+				if(result.length == 0) {
+					schBoxRel.style.display = "none";
+				} else {
+					schBoxRel.style.display = "block";
+					$(schBoxRel).append(result);
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		//키워드 검색
+		function fnKewordSearch(keyword) {
+			if(!keyword) {
+				keyword = document.querySelector("#keyword").value;
+			}
+			if(!keyword) {
+				alert("검색어를 입력해주세요.");
+				document.querySelector("#keyword").focus();
+				return;
+			}
+			fnMoveTo("/search/integrated?query=" + keyword);
+		}
+
+		//최근검색어 단일 삭제
+		async function fnRemoveMyKeyword(flag, keyword) {
+			try {
+				const formData = new FormData();
+				formData.append("query", keyword);
+
+				const url = fnGetUrl("/search/integrated/keyword/recent/delete", flag);
+				const result = await fnFetch.post(url, formData);
+				const fragment = document.querySelector(".keywordRecent" + flag);
+				$(fragment).replaceWith(result);
+
+				const len = $(result).find(".swiper-slide").length;
+				if(len > 0) {
+					new Swiper('.schStxSlide', {
+						slidesPerView: 'auto',
+						freeMode: true,
+						loop: true,
+						navigation: {
+							prevEl: ".schStxSlidePage .prev",
+							nextEl: ".schStxSlidePage .next",
+						},
+					});
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		//최근검색어 전체 삭제
+		async function fnRemoveAllMyKeyword(flag) {
+			try {
+				const url = fnGetUrl("/search/integrated/keyword/recent/delete-all", flag);
+				const result = await fnFetch.post(url);
+				const fragment = document.querySelector(".keywordRecent" + flag);
+				$(fragment).replaceWith(result);
+
+				const len = $(result).find(".swiper-slide").length;
+				if(len > 0) {
+					new Swiper('.schStxSlide', {
+						slidesPerView: 'auto',
+						freeMode: true,
+						loop: true,
+						navigation: {
+							prevEl: ".schStxSlidePage .prev",
+							nextEl: ".schStxSlidePage .next",
+						},
+					});
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	</script>
+	<div class="cptSchHd" id="intg-search" style="display: none">
+		<div class="mView">
+			<div class="mTit">통합검색</div>
+			<button type="button" class="mSchHdClose" onclick="fnToggleIntgSearch()"></button>
+		</div>
+		<div class="schDim"></div>
+		<button type="button" class="schHdClose" onclick="fnToggleIntgSearch()"></button>
+		<div class="cptArea">
+			<div class="inCont">
+				<h2><b>찾으시는 정보</b>를<span class="blk"></span> 입력해주세요.</h2>
+				<div class="schBox">
+					<input type="text" class="schFrmIpt" placeholder="검색어를 입력하세요." title="검색어" id="keyword" oninput="fnKewordAutoComplete(this)" maxlength="30" onkeypress="if(event.keyCode==13){fnKewordSearch(); return false;}" autocomplete="off">
+					<button type="button" class="schFrmIptBtn" onclick="fnKewordSearch();">검색</button>
+					<div class="schBoxRel" style="display: none">
+						
+					</div>
+				</div>
+				<div class="keywordRecentPopular">
+					<div class="comSchStx keywordRecent1">
+						<div class="schStx">
+							<div class="schTit">
+								<h3>최근 검색어</h3>
+								 <!-- 20241127 수정 -->
+							</div>
+
+							<div class="schStxRst">
+								
+								<p class="noStxRst">최근 검색어가 없습니다.</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="comPopularStx keywordPopular">
+						<div class="schStx">
+							<div class="schTit">
+								<h3>인기 검색어</h3>
+								<div class="ri time"></div>
+							</div>
+							<div class="schStxRst">
+								
+								<p class="noStxRst">인기 검색어가 없습니다.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+				<!-- ./통합검색영역 -->
+
+				<!-- 중단영역 -->
+				<div class="layoutContainer" id="container">
+					<!-- 서브 콘텐츠 영역 -->
+					<div class="layoutSubCont">
+						<!-- 서브 탑 (타이틀) -->
+						
+	<div class="cptSubTop bg02">
+		<div class="subTopArea">
+			<ul class="location">
+				<li class="item"><a href="/main">홈</a></li>
+				<li class="item">
+					<a href="/race/schedule">경륜 정보</a>
+				</li>
+				<li class="item">
+					<a href="/race/stats/dividendrate">통계데이터</a>
+				</li>
+				
+			</ul>
+			<div class="subTitle">
+				<a href="/race/stats/sales">
+					<h1>매출액 통계</h1>
+				</a>
+			</div>
+			<div class="subText">
+				
+					<p><b>회차별, 일차별, 경주별로 <br> 최대 매출</b>을 알려드려요. </p>
+				
+				
+			</div>
+			<ul class="addFunc">
+				<li class="item print">
+					<button type="button" class="btnPrint" onclick="fnPrint();">프린트</button>
+				</li>
+				<li class="item share">
+					<button type="button" class="btnShare" onclick="fnClipboard();">공유</button>
+				</li>
+			</ul>
+		</div>
+	</div>
+
+						<!-- ./서브 탑 (타이틀) -->
+
+						<!-- 서브 컨텐츠 (내용) -->
+						
+	<script type="text/javascript">
+	</script>
+
+	<div class="layoutContArea">
+		<div class="comSubInfo">
+			<h2 class="infoTit">경주의 최고 매출액을 통계내어 순위로 안내합니다.</h2>
+			<p class="info">연도를 선택하셔서 회차별, 일차별, 경주별로 최고 매출액을 확인하세요.</p>
+		</div>
+
+		<div class="cptSection">
+			<div class="sectArea">
+
+<!--				선택옵션-->
+				<div class="comTitH2 mRow">
+					<h2>매출액 통계</h2>
+					<div class="right">
+						<div class="frmBox">
+							<select class="iptSlt" id="stndYear" name="stndYear" onchange="fnRace.search.year()" title="연도 선택">
+								<option value="" >전체</option>
+								<option value="2026">2026</option>
+								<option value="2025">2025</option>
+								<option value="2024">2024</option>
+								<option value="2023">2023</option>
+								<option value="2022">2022</option>
+								<option value="2021">2021</option>
+								<option value="2020">2020</option>
+								<option value="2019">2019</option>
+								<option value="2018" selected="selected">2018</option>
+								<option value="2017">2017</option>
+								<option value="2016">2016</option>
+								<option value="2015">2015</option>
+								<option value="2014">2014</option>
+								<option value="2013">2013</option>
+								<option value="2012">2012</option>
+								<option value="2011">2011</option>
+								<option value="2010">2010</option>
+								<option value="2009">2009</option>
+								<option value="2008">2008</option>
+								<option value="2007">2007</option>
+								<option value="2006">2006</option>
+								<option value="2005">2005</option>
+								<option value="2004">2004</option>
+								<option value="2003">2003</option>
+								<option value="2002">2002</option>
+								<option value="2001">2001</option>
+								<option value="2000">2000</option>
+								<option value="1999">1999</option>
+								<option value="1998">1998</option>
+							</select>
+						</div>
+					</div>
+				</div>
+
+				<div class="comTitH3">
+					<h3>회차별 최고 매출액</h3>
+				</div>
+				<!-- 회차별 최고 매출액 -->
+				<div class="comDataTable both">
+					<div class="tableArea">
+						<table>
+							<caption></caption>
+							<colgroup>
+								<col style="width:20%">
+								<col style="width:50%">
+								<col style="width:30%">
+							</colgroup>
+							<thead>
+								<tr>
+									<th>순위</th>
+									<th>회차</th>
+									<th>매출액(단위 : 원)</th>
+								</tr>
+							</thead>
+							<tbody>
+								
+									<tr class="num">
+										<th>1</th>
+										<td>
+											2018년 51회차 (
+											2018-12-28 ~
+											2018-12-30)
+										</td>
+										<td>45,110,609,900</td>
+									</tr>
+									<tr class="num">
+										<th>2</th>
+										<td>
+											2018년 37회차 (
+											2018-09-22 ~
+											<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	
+
+	<meta charset="UTF-8" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" >
+	<meta name="format-detection" content="telephone=no">
+
+	<link rel="shortcut icon" href="/images/favicon/favicon.ico" type="image/x-icon" />
+	<link rel="icon" href="/images/favicon/favicon.ico" type="image/x-icon" />
+
+	<meta name="description" content="경륜, 광명스피돔, 경륜경정총괄본부, 경륜가이드, 경주일정, 종합경주, 경주출주표, 경주결과, 경주배당률, 경주현황, 심판판정, 통계데이터, 선수조회, 선수전적비교, 신인선수, 선수현황, 순위정보, 상금정보, 경륜영상관, 경주동영상, 스피돔소식, 이벤트 경륜, 경륜인사이트, 대상경륜방송, 모의베팅, 예상과 후기, 문화교실, 신고센터, 순위예측, 희망길벗 ">
+	<meta name="keywords" content="KCYCLE, 스피돔, 경륜, 스포츠, 경주, 일정, 출주표, 배당률, 베팅, 경륜선수">
+	<meta name="author" content="경륜경정총괄본부">
+	<meta property="og:title" content="KCYCLE 경륜 - KSPO">
+	<meta property="og:description" content="경륜, 광명스피돔, 경륜경정총괄본부, 경륜가이드, 경주일정, 종합경주, 경주출주표, 경주결과, 경주배당률, 경주현황, 심판판정, 통계데이터, 선수조회, 선수전적비교, 신인선수, 선수현황, 순위정보, 상금정보, 경륜영상관, 경주동영상, 스피돔소식, 이벤트 경륜, 경륜인사이트, 대상경륜방송, 예상과 후기, 문화교실, 신고센터, 순위예측, 희망길벗 ">
+	<meta property="og:image" content="/images/favicon/favicon.ico">
+	<meta property="og:url" content="https://www.kcycle.or.kr/">
+
+	<title>KCYCLE 경륜</title>
+
+	<link rel="stylesheet" href="https://cast.kcycle.or.kr/kcycle/common/css/swiper.css">
+	<link rel="stylesheet" href="https://cast.kcycle.or.kr/kcycle/common/css/style.css">
+	<link rel="stylesheet" href="https://cast.kcycle.or.kr/kcycle/common/css/component.css" />
+	<link rel="stylesheet" href="https://cast.kcycle.or.kr/kcycle/common/css/module.css" />
+
+	<script type="text/javascript" src="https://cast.kcycle.or.kr/kcycle/common/js/swiper.min.js"></script>
+	<script type="text/javascript" src="https://cast.kcycle.or.kr/kcycle/common/js/common.js"></script>
+
+	<!-- rMateChartH5 -->
+	<link rel="stylesheet" href="/static/rMateChartH5/css/rMateChartH5.css"/>
+
+	<script type="text/javascript" src="/static/js/jquery/jquery-3.7.0.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery/jquery.i18n.properties.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery/printThis.js"></script>
+
+	<!-- rMateChartH5 -->
+	<script language="javascript"  src="/static/rMateChartH5/rMateChartH5License.js"></script>
+	<script type="text/javascript" src="/static/rMateChartH5/rMateChartH5.js"></script>
+
+	<script type="text/javascript" src="/static/js/common-fn.js"></script>
+	<script type="text/javascript" src="/static/js/common-fetch.js"></script>
+	<script type="text/javascript" src="/static/js/common-validator.js"></script>
+
+	<script type="text/javascript" src="/static/js/common-member.js"></script>
+	<script type="text/javascript" src="/static/js/common-race.js"></script>
+	<script type="text/javascript" src="/static/js/common-racer.js"></script>
+	<script type="text/javascript" src="/static/js/common-video.js"></script>
+	<!-- rMateChartH5 custom -->
+	<script type="text/javascript" src="/static/js/common-chart.js"></script>
+
+	<script type="text/javascript">
+		let alertMessage = null;
+		if(alertMessage) {
+			alert(alertMessage);
+		}
+	</script>
+	<style>
+		pre {
+			white-space: pre-wrap;
+			max-width: 100%;
+		}
+	</style>
+
+</head>
+<body>
+	<div class="skip">
+		<a class="quickBtn" href="#container">본문바로가기</a>
+	</div>
+
+	<!-- 로딩영역 -->
+	<div class="loading">
+	<div class="modSmPopup" style="z-index: 9999">
+		<div class="popupDim">딤영역</div>
+		<div class="popupArea"> <!-- style - 너비값(width), 높이값(height) : 팝업 너비 및 높이 지정 -->
+			<div class="popupContainer">
+				<div class="popupContArea">
+					<div class="popCont">
+						<!-- 팝업 컨텐츠 영역 -->
+						<div class="popImage">
+							<div class="imgBg"><img src="/images/contents/loading_mascot_bg.png" alt="로딩이미지 백그라운드"></div>
+							<div class="imgMc"><img src="/images/contents/loading_mascot.png" alt="로딩이미지 캐릭터"></div>
+						</div>
+
+						<div class="popTitle">
+							<h2>잠시만 기다려주세요!</h2>
+							<p>페이지를 불러오는 중입니다!</p>
+						</div>
+						<!-- //팝업 컨텐츠 영역 -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+	<!-- ./로딩영역 -->
+
+	<div class="wrap">
+		<div class="lytLayout">
+			<div class="layoutArea">
+
+				<!-- 상단영역 -->
+				<div class="layoutTop">
+					<!-- TOP -->
+					<div class="cptHeader">
+						
+	<div class="quickArea">
+		<div class="quickBox">
+			<ul class="guickMenuGroup">
+				<li class="item"><a href="https://www.speedon.or.kr" target="_blank" rel="noopener noreferrer">스피드온</a></li>
+				<li class="item"><a href="https://www.kboat.or.kr" target="_blank" rel="noopener noreferrer">KBOAT</a></li>
+				<li class="item"><a href="https://www.kspo.or.kr/kspo/main/main.do" target="_blank" rel="noopener noreferrer">국민체육진흥공단</a></li>
+				<li class="item"><a href="https://rsup.net/kspo" target="_self">원격지원</a></li>
+				<li class="item"><a href="https://eng.krace.or.kr" target="_self">ENG</a></li>
+				<li class="item">
+					<span class="txt">화면크기</span>
+					<button type="button" class="btnView minus" onclick="zoomView('minus');">작게</button>
+					<span class="viewPer">100%</span>
+					<button type="button" class="btnView plus" onclick="zoomView('plus');">크게</button>
+				</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="headArea">
+		<div class="headBox">
+			<div class="logoBox">
+				<button tyle="button" href="javascript: void(0)" onclick="fnMoveTo(&#39;/main&#39;)">
+					<svg xmlns="http://www.w3.org/2000/svg" width="160" height="26" viewBox="0 0 160 26" fill="none" class="logo">
+						<g clip-path="url(#clip0_269_1320)">
+							<path d="M86.1643 3.03442C84.7223 3.03442 83.5183 3.58351 82.8045 4.17595L73.8715 12.1883L68.219 3.04165H61.6221L69.8773 16.4076L67.2962 26.0599H70.3604C72.1051 26.0599 73.4317 25.0196 73.6841 24.0803C74.506 21.0242 75.4505 17.5274 75.8903 15.8946L90.3027 3.04887H86.1643V3.03442Z" fill="#6F6F71"/>
+							<path d="M36.4888 0H30.8363C28.5292 0 26.6474 0.787506 25.5876 1.68338L11.9178 11.5597C13.0137 7.47769 14.088 3.46069 15.0108 0H11.0598C8.61572 0 6.82047 0.744157 6.3951 2.1241L0 26.0527H3.93655C6.43115 26.0527 8.24802 25.2869 8.63014 23.8564V23.8708C9.42321 20.9086 10.2884 17.6647 11.1608 14.3919L19.0627 24.2971C19.8342 25.258 20.6849 26.0599 23.4751 26.0599H29.5169L19.2069 13.2503L36.4888 0Z" fill="#6F6F71"/>
+							<path d="M120.62 21.4578H118.926C117.852 21.4578 117.116 21.3422 116.749 21.111C116.165 20.7569 115.999 20.1934 116.309 19.1675C116.309 19.1675 119.445 7.63666 120.685 3.02722H118.897C116.46 3.02722 114.672 3.76415 114.24 5.13687L110.382 19.3481C109.82 21.4505 110.043 22.9966 111.002 24.2176C111.954 25.4459 113.54 26.06 115.761 26.0527H128.277C130.094 26.0527 131.348 25.0124 131.601 24.0731L132.3 21.4505H120.62V21.4578Z" fill="#6F6F71"/>
+							<path d="M94.1095 9.73908C94.4844 8.35914 95.8759 7.62221 96.842 7.62221C99.9422 7.62221 107.801 7.62221 107.801 7.62221C109.625 7.62221 110.879 6.58906 111.125 5.64983L111.824 3.02722H96.9285C91.55 3.02722 89.1131 6.50959 88.4426 9.00215L85.6308 19.3409C84.5925 23.2206 86.4094 26.0672 91.0093 26.0455H103.461C105.285 26.0455 106.532 25.0051 106.784 24.0659L107.484 21.4433H94.0879C92.0403 21.4289 90.9804 21.0387 91.5428 19.1603C91.5428 19.1603 93.1506 13.2865 94.1023 9.73186L94.1095 9.73908Z" fill="#6F6F71"/>
+							<path d="M37.6643 9.00218L34.8524 19.3409C33.8142 23.2206 35.6311 26.0672 40.2309 26.0455H52.6895C54.5136 26.0455 55.7609 25.0052 56.0132 24.0659L56.7126 21.4433H43.3167C41.2692 21.4289 40.2093 21.0387 40.7717 19.1603C40.7717 19.1603 42.3795 13.2865 43.3312 9.73188C43.7061 8.35194 45.1048 7.61501 46.0637 7.61501C49.1639 7.61501 57.0226 7.61501 57.0226 7.61501C58.8467 7.61501 60.094 6.58186 60.3463 5.64263L61.0457 3.02002H46.1502C40.7717 3.02002 38.3348 6.50239 37.6643 8.99495V9.00218Z" fill="#6F6F71"/>
+							<path d="M145.097 3.02722C139.719 3.02722 137.282 6.50959 136.611 9.00215L133.8 19.3409C132.761 23.2206 134.585 26.0672 139.178 26.0455H151.629C153.454 26.0455 154.708 25.0051 154.953 24.0659L155.653 21.4433H142.257C140.209 21.4289 139.149 21.0387 139.712 19.1603C139.712 19.1603 139.971 18.1994 140.353 16.8339H153.266C155.083 16.8339 156.337 15.8007 156.59 14.8615L157.289 12.2389H141.608C141.846 11.3502 142.076 10.4977 142.278 9.73908C142.653 8.35914 144.052 7.62221 145.011 7.62221C148.111 7.62221 155.97 7.62221 155.97 7.62221C157.794 7.62221 159.041 6.58906 159.293 5.64983L159.993 3.02722H145.097Z" fill="#6F6F71"/>
+						</g>
+						<defs>
+							<clipPath id="clip0_269_1320">
+								<rect width="160" height="26.0527" fill="white"/>
+							</clipPath>
+						</defs>
+					</svg>
+				</button>
+			</div>
+			<ul class="myMenuGroup">
+				
+				<li class="item ico01">
+					<a href="javascript: void(0)" class="myLink" onclick="fnToggleIntgSearch()">통합검색</a>
+				</li>
+				<li class="item ico02">
+					<a href="/clinic/introduce" class="myLink">희망길벗</a>
+					<div class="myMenuArea">
+						<div class="myMenuBox">
+							<ul class="menuBox">
+								<li class="subItem">
+									<a href="/clinic/introduce">희망길벗 소개</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/history">희망길벗 연혁</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/talk">도박중독의 이해</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/selfdiagnosis">자가진단</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/faq">도박중독 FAQ</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/program">프로그램 안내</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/relatedsite">관련사이트</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/counsel">상담안내</a>
+								</li>
+								<li class="subItem">
+									<a href="/clinic/achive">희망길벗 아카이브</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</li>
+				<li class="item ico03">
+					<a href="/member/login" class="myLink">로그인</a>
+				</li>
+				<li class="item ico04">
+					<a href="/member/join" class="myLink">회원가입</a>
+				</li>
+				
+			</ul>
+		</div>
+	</div>
+
+	<!-- GNB -->
+	<div class="gnbArea">
+		<div class="gnbBox">
+			<ul class="depth1Group">
+				<li class="depth1Menu">
+					<a href="/guide/about/introduce" class="depth1Name" target="_self">경륜 가이드</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/guide/about/introduce" class="depth2Name" target="_self">경륜 알아보기</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/guide/about/introduce" class="depth3Name" target="_self">경륜안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/about/basic" class="depth3Name" target="_self">경륜기초정보</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/about/raceprogress" class="depth3Name" target="_self">경주진행과정</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/about/velodrome" class="depth3Name" target="_self">벨로드롬 가이드</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/guide/enjoy/ticketpurchase" class="depth2Name" target="_self">경륜 즐겨보기</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/guide/enjoy/ticketpurchase" class="depth3Name" target="_self">경주권 구매 가이드</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/enjoy/racecard" class="depth3Name" target="_self">출주표 보는법</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/enjoy/dividendrateboard" class="depth3Name" target="_self">배당률 보는법</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/enjoy/ticketrefund" class="depth3Name" target="_self">경주권 환급</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/guide/learn/bicycle" class="depth2Name" target="_self">경륜 지식쌓기</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/guide/learn/bicycle" class="depth3Name" target="_self">경륜 자전거 안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/racerule" class="depth3Name" target="_self">경주규칙안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/racetactics" class="depth3Name" target="_self">경륜전법소개</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/judgeequip" class="depth3Name" target="_self">경륜심판·장비</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/committee" class="depth3Name" target="_self">제재심의위원회</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/dictionary" class="depth3Name" target="_self">경륜용어사전</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/guide/learn/relatedlaw" class="depth3Name" target="_self">경륜·경정 관련법 안내</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/guide/predictpaper" class="depth2Name" target="_self">경륜예상지</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="javascript: fnOpenWinPopup(&#39;모의베팅&#39;, &#39;/guide/mockbet&#39;)" class="depth2Name" target="_self">모의베팅</a>
+									
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu active">
+					<a href="/race/schedule" class="depth1Name" target="_self">경륜 정보</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/race/schedule" class="depth2Name" target="_self">경주일정</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/info" class="depth2Name" target="_self">종합경주정보</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/card/decision" class="depth2Name" target="_self">경주출주표</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/card/decision" class="depth3Name" target="_self">확정출주표</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/card/undecided" class="depth3Name" target="_self">미확정출주표</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/card/jisoo" class="depth3Name" target="_self">승부수 지표</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/result/general" class="depth2Name" target="_self">경주결과</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/result/general" class="depth3Name" target="_self">통합경주결과</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/result/grand" class="depth3Name" target="_self">대상경주결과</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/dividendrate/final" class="depth2Name" target="_self">경주배당률</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/dividendrate/final" class="depth3Name" target="_self">최종배당률</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/dividendrate/decision" class="depth3Name" target="_self">확정배당률</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/state/breakingnews" class="depth2Name" target="_self">경주현황</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/state/breakingnews" class="depth3Name" target="_self">경주속보</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/state/news" class="depth3Name" target="_self">경주소식</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/state/racerinterview" class="depth3Name" target="_self">출전선수상담</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/race/judge/photo" class="depth2Name" target="_self">심판판정</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/judge/photo" class="depth3Name" target="_self">착순판정사진</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/judge/blackbox" class="depth3Name" target="_self">심판방송</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/judge/sanctionsracer" class="depth3Name" target="_self">심판제재선수</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu active">
+									<a href="/race/stats/dividendrate" class="depth2Name" target="_self">통계데이터</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/race/stats/dividendrate" class="depth3Name" target="_self">배당률 통계</a>
+										</li>
+										<li class="depth3Menu active">
+											<a href="/race/stats/sales" class="depth3Name" target="_self">매출액 통계</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/stats/highdividend" class="depth3Name" target="_self">고배당 순위</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/race/stats/nohit" class="depth3Name" target="_self">무적중 경주</a>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/racer/info" class="depth1Name" target="_self">경륜 선수</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/racer/info" class="depth2Name" target="_self">선수조회</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/compare" class="depth2Name" target="_self">선수전적비교</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/rookie/trainingcentergrade" class="depth2Name" target="_self">신인선수 정보</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/racer/rookie/trainingcentergrade" class="depth3Name" target="_self">훈련원 졸업성적</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/rookie/rehearsalrace" class="depth3Name" target="_self">신인선수 시범경주</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/state/fallinjury" class="depth2Name" target="_self">선수현황</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/racer/state/fallinjury" class="depth3Name" target="_self">낙차부상</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/state/specialpromotion" class="depth3Name" target="_self">특별승강급</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/state/sanction" class="depth3Name" target="_self">제재선수</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/state/trainingsitechange" class="depth3Name" target="_self">훈련지 변경</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/ranking/total" class="depth2Name" target="_self">순위정보</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/racer/ranking/total" class="depth3Name" target="_self">전체성적순위</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/ranking/wintop30" class="depth3Name" target="_self">다승30</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/ranking/winaccrued" class="depth3Name" target="_self">1착 다승 누적순위</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/ranking/winstreaks" class="depth3Name" target="_self">현재 연승순위</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/ranking/mostwinstreaks" class="depth3Name" target="_self">최다 연승순위</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/racer/prize/pymtinfo" class="depth2Name" target="_self">상금정보</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/racer/prize/pymtinfo" class="depth3Name" target="_self">상금 지급 정보</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/racer/prize/ranking" class="depth3Name" target="_self">전체 상금 순위</a>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/broadcast/videoroom" class="depth1Name" target="_self">경륜 영상관</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/broadcast/videoroom" class="depth2Name" target="_self">경륜 영상관</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/racevideo" class="depth2Name" target="_self">경주동영상</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/speedomnews" class="depth2Name" target="_self">스피돔소식</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/event" class="depth2Name" target="_self">이벤트 경륜</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/insite" class="depth2Name" target="_self">경륜 인사이트</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/broadcast/grand" class="depth2Name" target="_self">대상경륜방송</a>
+									
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/customerplaza/predictreview" class="depth1Name" target="_self">고객광장</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/customerplaza/predictreview" class="depth2Name" target="_self">예상과 후기</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/culture" class="depth2Name" target="_self">문화교실</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/notice" class="depth2Name" target="_self">공지사항</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="https://www.kspo.or.kr/kspo/main/contents.do?menuNo=200244" class="depth2Name" target="_blank">고객헌장</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/voc" class="depth2Name" target="_self">고객의 소리</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/faq" class="depth2Name" target="_self">자주묻는질문</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/event/info" class="depth2Name" target="_self">행사안내</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/customerplaza/event/info" class="depth3Name" target="_self">이벤트</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/report/guide" class="depth2Name" target="_self">경륜·경정 신고센터</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/guide" class="depth3Name" target="_self">신고센터 안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/lostticket" class="depth3Name" target="_self">분실경주권 신고</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/cheater" class="depth3Name" target="_self">부정행위자 신고</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/malfeasant" class="depth3Name" target="_self">경륜·경정 불법 현장 신고</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/customerplaza/report/illegalsite" class="depth3Name" target="_self">경륜·경정 불법 사이트 신고</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="https://www.kspo.or.kr/kspo/serviceCenter/reportCenter/list.do?menuNo=200013" class="depth3Name" target="_blank">부조리 신고센터</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="https://www.kspo.or.kr/kspo/serviceCenter/reportCenter/list.do?menuNo=200013" class="depth3Name" target="_blank">예산낭비 신고센터</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/customerplaza/terms/use" class="depth2Name" target="_self">약관</a>
+									
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/company/press" class="depth1Name" target="_self">총괄본부</a>
+					<div class="depth2Area">
+						<div class="depth2Box">
+							<ul class="depth2Group">
+								<li class="depth2Menu">
+									<a href="/company/press" class="depth2Name" target="_self">보도자료</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/bi" class="depth2Name" target="_self">BI소개</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/branch" class="depth2Name" target="_self">지사안내</a>
+									
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/speedom/introduce" class="depth2Name" target="_self">광명스피돔</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/company/speedom/introduce" class="depth3Name" target="_self">광명스피돔 소개</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/speedom/facility" class="depth3Name" target="_self">시설안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/speedom/direction" class="depth3Name" target="_self">오시는 길</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/trainingcenter/introduce" class="depth2Name" target="_self">경륜훈련원</a>
+									<ul class="depth3Group">
+										<li class="depth3Menu">
+											<a href="/company/trainingcenter/introduce" class="depth3Name" target="_self">경륜훈련원 안내</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/trainingcenter/loadmap" class="depth3Name" target="_self">선수 로드맵</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/trainingcenter/cadet" class="depth3Name" target="_self">후보생 졸업현황</a>
+										</li>
+										<li class="depth3Menu">
+											<a href="/company/trainingcenter/direction" class="depth3Name" target="_self">오시는 길</a>
+										</li>
+									</ul>
+								</li>
+								<li class="depth2Menu">
+									<a href="/company/socontr" class="depth2Name" target="_blank">사회공헌</a>
+									
+								</li>
+							</ul>
+							<div class="bnBox">
+								<div class="imgBox">
+									<img src="/images/thum/thum_head.png" alt="메뉴 대표 이미지">
+								</div>
+								<div class="textBox">
+									<p>나를 지키는 구매상한선 준수,<br>즐거운 여가의 시작!</p>
+								</div>
+<!--								<div class="moreBox">-->
+<!--									<a href="#">자세히보기</a>-->
+<!--								</div>-->
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="depth1Menu">
+					<a href="/rankingpredict" class="depth1Name" target="_self">순위예측</a>
+					
+				</li>
+				
+			</ul>
+			<button type="button" class="allMenu" onclick="fnToggleSiteMap()">전체메뉴</button>
+		</div>
+	</div>
+
+	<!-- All Menu -->
+	<div class="allMenuWrap">
+		
+	</div>
+
+	<div id="logoutTime" class="modAlertPopup"> <!-- class - on : 팝업오픈 -->
+		<div class="popupDim">딤영역</div>
+		<div class="popupArea">
+			<div class="popupInMotion">
+				<div class="popupContainer">
+					<div class="popupContArea">
+						<button class="btnPopClose" onclick="closePopup('logoutTime');">닫기</button>
+						<div class="popCont">
+							<!-- 팝업 컨텐츠 영역 -->
+							<p class="alertDt">
+								고객님의 안전한 개인정보보호를 위해 로그인 후<br> 30분간 사용이 없으실 경우 자동으로 로그아웃 됩니다.
+								로그아웃을 원하시지 않으시면 [로그인 연장]을 <br>클릭해주세요
+							</p>
+							<!-- //팝업 컨텐츠 영역 -->
+						</div>
+						<!-- 팝업 하단 영역 -->
+						<div class="popBtm">
+							<button type="button" class="btn gLine" onclick="fnMember.logout()">로그아웃</button>
+							<button type="button" class="btn Primary" onclick="fnMember.session.refresh(); closePopup('logoutTime');">로그인 연장</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input type="hidden" id="activeMenu" value="/race/stats/sales">
+
+	<script type="text/javascript">
+		const activeMenu = document.querySelector("#activeMenu");
+		const BASE_URL = activeMenu ? activeMenu.value : "";
+
+		const fnRace   = new fnCmmRace(BASE_URL);
+		const fnRacer  = new fnCmmRacer(BASE_URL);
+
+		async function fnToggleSiteMap() {
+			const fragment = document.querySelector(".allMenuWrap");
+			if(fragment.children.length == 0) {
+				const result = await fnFetch.get("/cmm/menu/sitemap?path=" + BASE_URL);
+				$(fragment).replaceWith(result);
+
+				all1MenuAction();
+				document.querySelector("body").style.cssText = "height:100%; min-height:100%; overflow:hidden !important;";
+			}
+		}
+	</script>
+
+					</div>
+					<!-- ./TOP -->
+					<!-- 퀵메뉴 -->
+					<div class="cptQuickMenu ">
+						
+	<div class="quickHead">
+		<div class="headTit">나의 활동지수</div>
+		
+		<a href="/member/login" class="linkLogin">로그인</a> <!-- 로그아웃 시 노출 -->
+	</div>
+	<ul class="quickBtns">
+		<li class="quickItem">
+			
+			<a class="quickIco ico01" href="/race/card/decision">경주출주표</a>
+		</li>
+		<li class="quickItem">
+			
+			<a class="quickIco ico02" href="/broadcast/racevideo">경주동영상</a>
+		</li>
+		<li class="quickItem">
+			
+			<a class="quickIco ico03" href="/race/result/general">경주결과</a>
+		</li>
+		<li class="quickItem">
+			
+			<a class="quickIco ico04" href="/race/dividendrate/final">경주배당률</a>
+		</li>
+		<li class="quickItem">
+			
+			<a class="quickIco ico05" href="/customerplaza/predictreview">예상과후기</a>
+		</li>
+		<li class="quickItem">
+			<a class="quickIco ico06" href="javascript: void(0)" onclick="fnPopupActivePointGuide();">활동지수안내</a>
+			
+		</li>
+
+	</ul>
+	<button type="button" class="btnTop">TOP</button>
+
+					</div>
+					<!-- ./퀵메뉴 -->
+				</div>
+				<!-- ./상단영역 -->
+
+				<!-- 통합검색영역 -->
+				
+	<script type="text/javascript">
+		//상단 검색창 활성화 토글
+		async function fnToggleIntgSearch() {
+			const intgSearch = document.querySelector("#intg-search");
+			if(intgSearch) {
+				if(intgSearch.style.display == "none") {
+					intgSearch.style.display = "block";
+					intgSearch.classList.add("on");
+					document.documentElement.classList.add('fixScroll');
+
+					document.querySelector("#keyword").focus();
+
+					try {
+						//최근검색어 + 인기검색어
+						const result = await fnFetch.get("/search/integrated/keyword/recent-popular");
+						const fragment = document.querySelector(".keywordRecentPopular");
+						$(fragment).replaceWith(result);
+
+						const len = $(result).find(".swiper-slide").length;
+						if(len > 0) {
+							new Swiper('.schStxSlide', {
+								slidesPerView: 'auto',
+								freeMode: true,
+								loop: true,
+								navigation: {
+									prevEl: ".schStxSlidePage .prev",
+									nextEl: ".schStxSlidePage .next",
+								},
+							});
+						}
+					} catch (e) {
+						console.error(e);
+					}
+				} else {
+					intgSearch.style.display = "none";
+					intgSearch.classList.remove("on");
+					document.documentElement.classList.remove('fixScroll');
+				}
+			}
+		}
+
+		//키워드 자동 완성
+		async function fnKewordAutoComplete(_this) {
+			try {
+				const schBox = _this.closest(".schBox");
+				const schBoxRel = schBox.querySelector(".schBoxRel");
+				schBoxRel.style.display = "none";
+
+				const keyword = _this.value;
+				if(!keyword) {
+					return;
+				}
+
+				schBoxRel.style.display = "block";
+
+				const formData = new FormData();
+				formData.append("query", keyword);
+				const result = await fnFetch.post("/search/integrated/keyword/auto-complete", formData);
+
+				$(schBoxRel).empty();
+				if(result.length == 0) {
+					schBoxRel.style.display = "none";
+				} else {
+					schBoxRel.style.display = "block";
+					$(schBoxRel).append(result);
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		//키워드 검색
+		function fnKewordSearch(keyword) {
+			if(!keyword) {
+				keyword = document.querySelector("#keyword").value;
+			}
+			if(!keyword) {
+				alert("검색어를 입력해주세요.");
+				document.querySelector("#keyword").focus();
+				return;
+			}
+			fnMoveTo("/search/integrated?query=" + keyword);
+		}
+
+		//최근검색어 단일 삭제
+		async function fnRemoveMyKeyword(flag, keyword) {
+			try {
+				const formData = new FormData();
+				formData.append("query", keyword);
+
+				const url = fnGetUrl("/search/integrated/keyword/recent/delete", flag);
+				const result = await fnFetch.post(url, formData);
+				const fragment = document.querySelector(".keywordRecent" + flag);
+				$(fragment).replaceWith(result);
+
+				const len = $(result).find(".swiper-slide").length;
+				if(len > 0) {
+					new Swiper('.schStxSlide', {
+						slidesPerView: 'auto',
+						freeMode: true,
+						loop: true,
+						navigation: {
+							prevEl: ".schStxSlidePage .prev",
+							nextEl: ".schStxSlidePage .next",
+						},
+					});
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		//최근검색어 전체 삭제
+		async function fnRemoveAllMyKeyword(flag) {
+			try {
+				const url = fnGetUrl("/search/integrated/keyword/recent/delete-all", flag);
+				const result = await fnFetch.post(url);
+				const fragment = document.querySelector(".keywordRecent" + flag);
+				$(fragment).replaceWith(result);
+
+				const len = $(result).find(".swiper-slide").length;
+				if(len > 0) {
+					new Swiper('.schStxSlide', {
+						slidesPerView: 'auto',
+						freeMode: true,
+						loop: true,
+						navigation: {
+							prevEl: ".schStxSlidePage .prev",
+							nextEl: ".schStxSlidePage .next",
+						},
+					});
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	</script>
+	<div class="cptSchHd" id="intg-search" style="display: none">
+		<div class="mView">
+			<div class="mTit">통합검색</div>
+			<button type="button" class="mSchHdClose" onclick="fnToggleIntgSearch()"></button>
+		</div>
+		<div class="schDim"></div>
+		<button type="button" class="schHdClose" onclick="fnToggleIntgSearch()"></button>
+		<div class="cptArea">
+			<div class="inCont">
+				<h2><b>찾으시는 정보</b>를<span class="blk"></span> 입력해주세요.</h2>
+				<div class="schBox">
+					<input type="text" class="schFrmIpt" placeholder="검색어를 입력하세요." title="검색어" id="keyword" oninput="fnKewordAutoComplete(this)" maxlength="30" onkeypress="if(event.keyCode==13){fnKewordSearch(); return false;}" autocomplete="off">
+					<button type="button" class="schFrmIptBtn" onclick="fnKewordSearch();">검색</button>
+					<div class="schBoxRel" style="display: none">
+						
+					</div>
+				</div>
+				<div class="keywordRecentPopular">
+					<div class="comSchStx keywordRecent1">
+						<div class="schStx">
+							<div class="schTit">
+								<h3>최근 검색어</h3>
+								 <!-- 20241127 수정 -->
+							</div>
+
+							<div class="schStxRst">
+								
+								<p class="noStxRst">최근 검색어가 없습니다.</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="comPopularStx keywordPopular">
+						<div class="schStx">
+							<div class="schTit">
+								<h3>인기 검색어</h3>
+								<div class="ri time"></div>
+							</div>
+							<div class="schStxRst">
+								
+								<p class="noStxRst">인기 검색어가 없습니다.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+				<!-- ./통합검색영역 -->
+
+				<!-- 중단영역 -->
+				<div class="layoutContainer" id="container">
+					<!-- 서브 콘텐츠 영역 -->
+					<div class="layoutSubCont">
+						<!-- 서브 탑 (타이틀) -->
+						
+	<div class="cptSubTop bg02">
+		<div class="subTopArea">
+			<ul class="location">
+				<li class="item"><a href="/main">홈</a></li>
+				<li class="item">
+					<a href="/race/schedule">경륜 정보</a>
+				</li>
+				<li class="item">
+					<a href="/race/stats/dividendrate">통계데이터</a>
+				</li>
+				
+			</ul>
+			<div class="subTitle">
+				<a href="/race/stats/sales">
+					<h1>매출액 통계</h1>
+				</a>
+			</div>
+			<div class="subText">
+				
+					<p><b>회차별, 일차별, 경주별로 <br> 최대 매출</b>을 알려드려요. </p>
+				
+				
+			</div>
+			<ul class="addFunc">
+				<li class="item print">
+					<button type="button" class="btnPrint" onclick="fnPrint();">프린트</button>
+				</li>
+				<li class="item share">
+					<button type="button" class="btnShare" onclick="fnClipboard();">공유</button>
+				</li>
+			</ul>
+		</div>
+	</div>
+
+						<!-- ./서브 탑 (타이틀) -->
+
+						<!-- 서브 컨텐츠 (내용) -->
+						
+	<script type="text/javascript">
+	</script>
+
+	<div class="layoutContArea">
+		<div class="comSubInfo">
+			<h2 class="infoTit">경주의 최고 매출액을 통계내어 순위로 안내합니다.</h2>
+			<p class="info">연도를 선택하셔서 회차별, 일차별, 경주별로 최고 매출액을 확인하세요.</p>
+		</div>
+
+		<div class="cptSection">
+			<div class="sectArea">
+
+<!--				선택옵션-->
+				<div class="comTitH2 mRow">
+					<h2>매출액 통계</h2>
+					<div class="right">
+						<div class="frmBox">
+							<select class="iptSlt" id="stndYear" name="stndYear" onchange="fnRace.search.year()" title="연도 선택">
+								<option value="" >전체</option>
+								<option value="2026">2026</option>
+								<option value="2025">2025</option>
+								<option value="2024">2024</option>
+								<option value="2023">2023</option>
+								<option value="2022">2022</option>
+								<option value="2021">2021</option>
+								<option value="2020">2020</option>
+								<option value="2019">2019</option>
+								<option value="2018" selected="selected">2018</option>
+								<option value="2017">2017</option>
+								<option value="2016">2016</option>
+								<option value="2015">2015</option>
+								<option value="2014">2014</option>
+								<option value="2013">2013</option>
+								<option value="2012">2012</option>
+								<option value="2011">2011</option>
+								<option value="2010">2010</option>
+								<option value="2009">2009</option>
+								<option value="2008">2008</option>
+								<option value="2007">2007</option>
+								<option value="2006">2006</option>
+								<option value="2005">2005</option>
+								<option value="2004">2004</option>
+								<option value="2003">2003</option>
+								<option value="2002">2002</option>
+								<option value="2001">2001</option>
+								<option value="2000">2000</option>
+								<option value="1999">1999</option>
+								<option value="1998">1998</option>
+							</select>
+						</div>
+					</div>
+				</div>
+
+				<div class="comTitH3">
+					<h3>회차별 최고 매출액</h3>
+				</div>
+				<!-- 회차별 최고 매출액 -->
+				<div class="comDataTable both">
+					<div class="tableArea">
+						<table>
+							<caption></caption>
+							<colgroup>
+								<col style="width:20%">
+								<col style="width:50%">
+								<col style="width:30%">
+							</colgroup>
+							<thead>
+								<tr>
+									<th>순위</th>
+									<th>회차</th>
+									<th>매출액(단위 : 원)</th>
+								</tr>
+							</thead>
+							<tbody>
+								
+									<tr class="num">
+										<th>1</th>
+										<td>
+											2018년 51회차 (
+											2018-12-28 ~
+											2018-12-30)
+										</td>
+										<td>45,110,609,900</td>
+									</tr>
+									<tr class="num">
+										<th>2</th>
+										<td>
+											2018년 37회차 (
+											2018-09-22 ~
+											

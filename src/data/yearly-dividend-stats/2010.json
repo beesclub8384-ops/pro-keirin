@@ -1,0 +1,116 @@
+{
+  "year": 2010,
+  "highDividends": [
+    {
+      "poolType": "단승식",
+      "amount": "128.7",
+      "raceDate": "2010년 22회차 2일차 제02경주(06/12)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "연승식",
+      "amount": "41.8",
+      "raceDate": "2010년 22회차 1일차 제07경주(06/11)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "연승식",
+      "amount": "41.8",
+      "raceDate": "2010년 11회차 1일차 제08경주(03/26)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍승식",
+      "amount": "1,714.5",
+      "raceDate": "2010년 9회차 2일차 제14경주(03/13)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "복승식",
+      "amount": "428.9",
+      "raceDate": "2010년 9회차 2일차 제14경주(03/13)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼복승식",
+      "amount": "1,465.4",
+      "raceDate": "2010년 9회차 2일차 제14경주(03/13)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    }
+  ],
+  "distribution": [
+    {
+      "poolType": "단승식",
+      "range1": "1,862",
+      "range2": "88.9",
+      "range3": "145",
+      "range4": "6.9",
+      "range5": "72",
+      "range6": "3.4",
+      "range7": "12",
+      "range8": "0.6"
+    },
+    {
+      "poolType": "연승식",
+      "range1": "4,011",
+      "range2": "96",
+      "range3": "138",
+      "range4": "3.3",
+      "range5": "31",
+      "range6": "0.7",
+      "range7": "0",
+      "range8": "0"
+    },
+    {
+      "poolType": "쌍승식",
+      "range1": "1,291",
+      "range2": "61.4",
+      "range3": "297",
+      "range4": "14.1",
+      "range5": "280",
+      "range6": "13.3",
+      "range7": "133",
+      "range8": "6.3"
+    },
+    {
+      "poolType": "복승식",
+      "range1": "1,556",
+      "range2": "74.3",
+      "range3": "221",
+      "range4": "10.6",
+      "range5": "203",
+      "range6": "9.7",
+      "range7": "91",
+      "range8": "4.3"
+    },
+    {
+      "poolType": "삼복승식",
+      "range1": "1,240",
+      "range2": "59.2",
+      "range3": "358",
+      "range4": "17.1",
+      "range5": "279",
+      "range6": "13.3",
+      "range7": "141",
+      "range8": "6.7"
+    }
+  ]
+}

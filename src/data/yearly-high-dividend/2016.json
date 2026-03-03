@@ -1,0 +1,255 @@
+{
+  "year": 2016,
+  "tables": [
+    {
+      "poolType": "단승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "134.4",
+          "raceDate": "2016년 07월 22일 30회차 1일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "87.1",
+          "raceDate": "2016년 07월 01일 27회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "87.1",
+          "raceDate": "2016년 03월 19일 12회차 2일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "68.0",
+          "raceDate": "2016년 07월 24일 30회차 3일차 제 05경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "65.0",
+          "raceDate": "2016년 06월 05일 23회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "연승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "83.6",
+          "raceDate": "2016년 08월 14일 33회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "43.8",
+          "raceDate": "2016년 01월 23일 04회차 2일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "41.9",
+          "raceDate": "2016년 06월 17일 25회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "41.6",
+          "raceDate": "2016년 11월 27일 46회차 3일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "40.0",
+          "raceDate": "2016년 05월 06일 19회차 1일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,031.8",
+          "raceDate": "2016년 06월 10일 24회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "819.3",
+          "raceDate": "2016년 08월 07일 32회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "749.2",
+          "raceDate": "2016년 08월 21일 34회차 3일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "683.9",
+          "raceDate": "2016년 07월 22일 30회차 1일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "668.5",
+          "raceDate": "2016년 01월 17일 03회차 3일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "294.8",
+          "raceDate": "2016년 06월 10일 24회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "285.1",
+          "raceDate": "2016년 07월 01일 27회차 1일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "228.0",
+          "raceDate": "2016년 08월 07일 32회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "203.5",
+          "raceDate": "2016년 05월 01일 18회차 3일차 제 03경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "200.7",
+          "raceDate": "2016년 07월 22일 30회차 1일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "801.0",
+          "raceDate": "2016년 06월 04일 23회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "755.5",
+          "raceDate": "2016년 07월 01일 27회차 1일차 제 07경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "641.0",
+          "raceDate": "2016년 08월 20일 34회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "513.0",
+          "raceDate": "2016년 09월 02일 36회차 1일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "471.0",
+          "raceDate": "2016년 10월 16일 40회차 3일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    }
+  ]
+}

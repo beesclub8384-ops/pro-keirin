@@ -1,0 +1,107 @@
+{
+  "year": 2012,
+  "highDividends": [
+    {
+      "poolType": "단승식",
+      "amount": "84.6",
+      "raceDate": "2012년 2회차 2일차 제14경주(01/14)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "연승식",
+      "amount": "33.7",
+      "raceDate": "2012년 39회차 1일차 제12경주(10/12)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍승식",
+      "amount": "1,320.0",
+      "raceDate": "2012년 22회차 2일차 제11경주(06/09)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "복승식",
+      "amount": "407.9",
+      "raceDate": "2012년 22회차 2일차 제14경주(06/09)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼복승식",
+      "amount": "484.5",
+      "raceDate": "2012년 40회차 2일차 제03경주(10/20)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    }
+  ],
+  "distribution": [
+    {
+      "poolType": "단승식",
+      "range1": "1,873",
+      "range2": "88.9",
+      "range3": "158",
+      "range4": "7.5",
+      "range5": "71",
+      "range6": "3.4",
+      "range7": "6",
+      "range8": "0.3"
+    },
+    {
+      "poolType": "연승식",
+      "range1": "4,091",
+      "range2": "97.1",
+      "range3": "108",
+      "range4": "2.6",
+      "range5": "15",
+      "range6": "0.4",
+      "range7": "0",
+      "range8": "0"
+    },
+    {
+      "poolType": "쌍승식",
+      "range1": "1,177",
+      "range2": "55.5",
+      "range3": "363",
+      "range4": "17.1",
+      "range5": "355",
+      "range6": "16.7",
+      "range7": "159",
+      "range8": "7.5"
+    },
+    {
+      "poolType": "복승식",
+      "range1": "1,498",
+      "range2": "70.9",
+      "range3": "298",
+      "range4": "14.1",
+      "range5": "238",
+      "range6": "11.3",
+      "range7": "63",
+      "range8": "3"
+    },
+    {
+      "poolType": "삼복승식",
+      "range1": "1,103",
+      "range2": "52.3",
+      "range3": "454",
+      "range4": "21.5",
+      "range5": "337",
+      "range6": "16",
+      "range7": "164",
+      "range8": "7.8"
+    }
+  ]
+}

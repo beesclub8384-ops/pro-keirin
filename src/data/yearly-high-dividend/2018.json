@@ -1,0 +1,355 @@
+{
+  "year": 2018,
+  "tables": [
+    {
+      "poolType": "단승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "170.8",
+          "raceDate": "2018년 08월 03일 30회차 1일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "105.4",
+          "raceDate": "2018년 10월 05일 39회차 1일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "91.1",
+          "raceDate": "2018년 06월 02일 22회차 2일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "80.1",
+          "raceDate": "2018년 10월 20일 41회차 2일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "77.1",
+          "raceDate": "2018년 11월 11일 44회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "연승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "74.1",
+          "raceDate": "2018년 12월 08일 48회차 2일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "56.8",
+          "raceDate": "2018년 09월 15일 36회차 2일차 제 08경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "50.3",
+          "raceDate": "2018년 12월 28일 51회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "46.0",
+          "raceDate": "2018년 11월 09일 44회차 1일차 제 04경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "43.0",
+          "raceDate": "2018년 11월 30일 47회차 1일차 제 03경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "2,227.0",
+          "raceDate": "2018년 10월 06일 39회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "1,950.7",
+          "raceDate": "2018년 12월 28일 51회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "1,515.1",
+          "raceDate": "2018년 12월 29일 51회차 2일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "1,415.7",
+          "raceDate": "2018년 07월 20일 28회차 1일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "1,172.5",
+          "raceDate": "2018년 02월 25일 08회차 3일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "903.9",
+          "raceDate": "2018년 07월 20일 28회차 1일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "722.7",
+          "raceDate": "2018년 12월 28일 51회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "374.7",
+          "raceDate": "2018년 02월 25일 08회차 3일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "327.0",
+          "raceDate": "2018년 10월 06일 39회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "279.2",
+          "raceDate": "2018년 04월 08일 14회차 3일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,660.6",
+          "raceDate": "2018년 07월 20일 28회차 1일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "1,548.4",
+          "raceDate": "2018년 12월 28일 51회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "1,402.3",
+          "raceDate": "2018년 07월 28일 29회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "921.8",
+          "raceDate": "2018년 04월 22일 16회차 3일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "813.1",
+          "raceDate": "2018년 10월 06일 39회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "14,813.6",
+          "raceDate": "2018년 07월 20일 28회차 1일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "9,702.3",
+          "raceDate": "2018년 10월 06일 39회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "8,802.3",
+          "raceDate": "2018년 12월 28일 51회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "8,301.0",
+          "raceDate": "2018년 02월 25일 08회차 3일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "7,676.8",
+          "raceDate": "2018년 01월 27일 04회차 2일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "8,886.1",
+          "raceDate": "2018년 12월 28일 51회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "1,902.8",
+          "raceDate": "2018년 12월 01일 47회차 2일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "1,633.9",
+          "raceDate": "2018년 12월 16일 49회차 3일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "1,528.3",
+          "raceDate": "2018년 12월 29일 51회차 2일차 제 11경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "1,195.2",
+          "raceDate": "2018년 11월 23일 46회차 1일차 제 12경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    }
+  ]
+}

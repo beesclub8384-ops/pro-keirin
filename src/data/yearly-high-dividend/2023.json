@@ -1,0 +1,355 @@
+{
+  "year": 2023,
+  "tables": [
+    {
+      "poolType": "단승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "146.5",
+          "raceDate": "2023년 03월 11일 10회차 2일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "129.6",
+          "raceDate": "2023년 11월 18일 45회차 2일차 제 06경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "122.0",
+          "raceDate": "2023년 10월 21일 41회차 2일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "115.2",
+          "raceDate": "2023년 12월 23일 50회차 2일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "76.7",
+          "raceDate": "2023년 12월 01일 47회차 1일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "연승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "70.9",
+          "raceDate": "2023년 11월 18일 45회차 2일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "50.0",
+          "raceDate": "2023년 03월 11일 10회차 2일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "48.3",
+          "raceDate": "2023년 12월 03일 47회차 3일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "40.8",
+          "raceDate": "2023년 11월 10일 44회차 1일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "40.5",
+          "raceDate": "2023년 02월 10일 06회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,862.6",
+          "raceDate": "2023년 10월 21일 41회차 2일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "1,792.3",
+          "raceDate": "2023년 04월 07일 14회차 1일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "1,461.6",
+          "raceDate": "2023년 08월 26일 34회차 2일차 제 03경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "1,239.2",
+          "raceDate": "2023년 03월 04일 09회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "1,108.2",
+          "raceDate": "2023년 03월 11일 10회차 2일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "550.9",
+          "raceDate": "2023년 12월 29일 51회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "509.8",
+          "raceDate": "2023년 03월 04일 09회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "368.0",
+          "raceDate": "2023년 08월 04일 31회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "352.1",
+          "raceDate": "2023년 10월 21일 41회차 2일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "258.9",
+          "raceDate": "2023년 02월 03일 05회차 1일차 제 10경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "1,035.2",
+          "raceDate": "2023년 10월 21일 41회차 2일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "743.1",
+          "raceDate": "2023년 04월 07일 14회차 1일차 제 15경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "602.9",
+          "raceDate": "2023년 04월 15일 15회차 2일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "584.8",
+          "raceDate": "2023년 03월 04일 09회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "504.6",
+          "raceDate": "2023년 12월 29일 51회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "삼쌍승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "19,533.2",
+          "raceDate": "2023년 10월 21일 41회차 2일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "10,474.6",
+          "raceDate": "2023년 03월 04일 09회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "5,589.3",
+          "raceDate": "2023년 08월 26일 34회차 2일차 제 03경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "5,273.6",
+          "raceDate": "2023년 04월 15일 15회차 2일차 제 13경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "5,073.8",
+          "raceDate": "2023년 03월 11일 10회차 2일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    },
+    {
+      "poolType": "쌍복승식",
+      "rows": [
+        {
+          "rank": 1,
+          "amount": "13,586.1",
+          "raceDate": "2023년 10월 21일 41회차 2일차 제 02경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 2,
+          "amount": "6,285.4",
+          "raceDate": "2023년 03월 11일 10회차 2일차 제 09경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 3,
+          "amount": "5,236.5",
+          "raceDate": "2023년 12월 29일 51회차 1일차 제 01경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 4,
+          "amount": "4,702.2",
+          "raceDate": "2023년 08월 26일 34회차 2일차 제 03경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        },
+        {
+          "rank": 5,
+          "amount": "4,424.8",
+          "raceDate": "2023년 03월 04일 09회차 2일차 제 14경주",
+          "round": "",
+          "day": "",
+          "raceNo": "",
+          "combination": ""
+        }
+      ]
+    }
+  ]
+}

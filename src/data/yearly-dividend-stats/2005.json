@@ -1,0 +1,107 @@
+{
+  "year": 2005,
+  "highDividends": [
+    {
+      "poolType": "단승식",
+      "amount": "788.6",
+      "raceDate": "2005년 29회차 1일차 제06경주(09/09)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "연승식",
+      "amount": "86.8",
+      "raceDate": "2005년 29회차 1일차 제06경주(09/09)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "쌍승식",
+      "amount": "953.5",
+      "raceDate": "2005년 21회차 3일차 제03경주(07/17)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "복승식",
+      "amount": "270.1",
+      "raceDate": "2005년 21회차 3일차 제03경주(07/17)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    },
+    {
+      "poolType": "삼복승식",
+      "amount": "2,037.8",
+      "raceDate": "2005년 31회차 2일차 제10경주(10/01)",
+      "round": "",
+      "day": "",
+      "raceNo": "",
+      "combination": ""
+    }
+  ],
+  "distribution": [
+    {
+      "poolType": "단승식",
+      "range1": "1,517",
+      "range2": "89.8",
+      "range3": "114",
+      "range4": "6.7",
+      "range5": "50",
+      "range6": "3",
+      "range7": "7",
+      "range8": "0.4"
+    },
+    {
+      "poolType": "연승식",
+      "range1": "3,250",
+      "range2": "96.4",
+      "range3": "99",
+      "range4": "2.9",
+      "range5": "19",
+      "range6": "0.6",
+      "range7": "2",
+      "range8": "0.1"
+    },
+    {
+      "poolType": "쌍승식",
+      "range1": "1,146",
+      "range2": "67.5",
+      "range3": "226",
+      "range4": "13.3",
+      "range5": "183",
+      "range6": "10.8",
+      "range7": "84",
+      "range8": "4.9"
+    },
+    {
+      "poolType": "복승식",
+      "range1": "1,322",
+      "range2": "78.2",
+      "range3": "178",
+      "range4": "10.5",
+      "range5": "122",
+      "range6": "7.2",
+      "range7": "52",
+      "range8": "3.1"
+    },
+    {
+      "poolType": "삼복승식",
+      "range1": "1,118",
+      "range2": "66",
+      "range3": "240",
+      "range4": "14.2",
+      "range5": "211",
+      "range6": "12.5",
+      "range7": "59",
+      "range8": "3.5"
+    }
+  ]
+}

@@ -1,0 +1,1743 @@
+{
+  "year": 2007,
+  "totalRecords": 193,
+  "records": [
+    {
+      "rank": 1,
+      "racerName": "조호성",
+      "grade": "S1",
+      "birthYear": "1974",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 2,
+      "racerName": "홍석한",
+      "grade": "S1",
+      "birthYear": "1975",
+      "origin": "충남",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 3,
+      "racerName": "김영섭",
+      "grade": "S1",
+      "birthYear": "1975",
+      "origin": "서울",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 4,
+      "racerName": "김민철",
+      "grade": "S1",
+      "birthYear": "1979",
+      "origin": "전남",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 5,
+      "racerName": "김배영",
+      "grade": "S1",
+      "birthYear": "1978",
+      "origin": "광주",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 6,
+      "racerName": "최순영",
+      "grade": "S1",
+      "birthYear": "1982",
+      "origin": "경기",
+      "runDays": 39,
+      "totalPrize": ""
+    },
+    {
+      "rank": 7,
+      "racerName": "노태경",
+      "grade": "S1",
+      "birthYear": "1983",
+      "origin": "광주",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 8,
+      "racerName": "장보규",
+      "grade": "S1",
+      "birthYear": "1974",
+      "origin": "대구",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 9,
+      "racerName": "이경곤",
+      "grade": "S1",
+      "birthYear": "1973",
+      "origin": "전남",
+      "runDays": 43,
+      "totalPrize": ""
+    },
+    {
+      "rank": 10,
+      "racerName": "이수원",
+      "grade": "S1",
+      "birthYear": "1980",
+      "origin": "대구",
+      "runDays": 39,
+      "totalPrize": ""
+    },
+    {
+      "rank": 11,
+      "racerName": "송경방",
+      "grade": "S1",
+      "birthYear": "1982",
+      "origin": "광주",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 12,
+      "racerName": "박일호",
+      "grade": "S1",
+      "birthYear": "1974",
+      "origin": "경북",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 13,
+      "racerName": "방희성",
+      "grade": "S1",
+      "birthYear": "1980",
+      "origin": "경기",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 14,
+      "racerName": "여민호",
+      "grade": "S1",
+      "birthYear": "1972",
+      "origin": "경남",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 15,
+      "racerName": "윤진철",
+      "grade": "S1",
+      "birthYear": "1970",
+      "origin": "서울",
+      "runDays": 37,
+      "totalPrize": ""
+    },
+    {
+      "rank": 16,
+      "racerName": "정점식",
+      "grade": "S2",
+      "birthYear": "1968",
+      "origin": "전남",
+      "runDays": 44,
+      "totalPrize": ""
+    },
+    {
+      "rank": 17,
+      "racerName": "이유진",
+      "grade": "S1",
+      "birthYear": "1976",
+      "origin": "전북",
+      "runDays": 39,
+      "totalPrize": ""
+    },
+    {
+      "rank": 18,
+      "racerName": "김현경",
+      "grade": "S1",
+      "birthYear": "1981",
+      "origin": "충남",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 19,
+      "racerName": "김봉민",
+      "grade": "S1",
+      "birthYear": "1975",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 20,
+      "racerName": "김종재",
+      "grade": "S2",
+      "birthYear": "1978",
+      "origin": "전북",
+      "runDays": 39,
+      "totalPrize": ""
+    },
+    {
+      "rank": 21,
+      "racerName": "배민구",
+      "grade": "S1",
+      "birthYear": "1982",
+      "origin": "부산",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 22,
+      "racerName": "공민우",
+      "grade": "S1",
+      "birthYear": "1980",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 23,
+      "racerName": "차봉수",
+      "grade": "S1",
+      "birthYear": "1980",
+      "origin": "경남",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 24,
+      "racerName": "양희진",
+      "grade": "S2",
+      "birthYear": "1980",
+      "origin": "전남",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 25,
+      "racerName": "장태찬",
+      "grade": "S3",
+      "birthYear": "1976",
+      "origin": "충북",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 26,
+      "racerName": "정  관",
+      "grade": "A1",
+      "birthYear": "1978",
+      "origin": "광주",
+      "runDays": 39,
+      "totalPrize": ""
+    },
+    {
+      "rank": 27,
+      "racerName": "문희덕",
+      "grade": "S2",
+      "birthYear": "1980",
+      "origin": "인천",
+      "runDays": 34,
+      "totalPrize": ""
+    },
+    {
+      "rank": 28,
+      "racerName": "정덕이",
+      "grade": "S3",
+      "birthYear": "1971",
+      "origin": "경북",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 29,
+      "racerName": "주광일",
+      "grade": "S1",
+      "birthYear": "1971",
+      "origin": "전남",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 30,
+      "racerName": "정춘호",
+      "grade": "S2",
+      "birthYear": "1978",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 31,
+      "racerName": "최병길",
+      "grade": "S3",
+      "birthYear": "1978",
+      "origin": "광주",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 32,
+      "racerName": "허은회",
+      "grade": "S3",
+      "birthYear": "1965",
+      "origin": "충남",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 33,
+      "racerName": "이홍주",
+      "grade": "S1",
+      "birthYear": "1977",
+      "origin": "충남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 34,
+      "racerName": "안효운",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "경기",
+      "runDays": 42,
+      "totalPrize": ""
+    },
+    {
+      "rank": 35,
+      "racerName": "송기윤",
+      "grade": "S3",
+      "birthYear": "1976",
+      "origin": "서울",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 36,
+      "racerName": "정성기",
+      "grade": "S3",
+      "birthYear": "1969",
+      "origin": "충북",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 37,
+      "racerName": "이동근",
+      "grade": "S2",
+      "birthYear": "1981",
+      "origin": "대전",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 38,
+      "racerName": "최용진",
+      "grade": "S1",
+      "birthYear": "1977",
+      "origin": "경남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 39,
+      "racerName": "조성래",
+      "grade": "S3",
+      "birthYear": "1977",
+      "origin": "경남",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 40,
+      "racerName": "정진호",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "전남",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 41,
+      "racerName": "이용희",
+      "grade": "S2",
+      "birthYear": "1981",
+      "origin": "경기",
+      "runDays": 34,
+      "totalPrize": ""
+    },
+    {
+      "rank": 42,
+      "racerName": "전대홍",
+      "grade": "S1",
+      "birthYear": "1976",
+      "origin": "경기",
+      "runDays": 32,
+      "totalPrize": ""
+    },
+    {
+      "rank": 43,
+      "racerName": "임범석",
+      "grade": "S3",
+      "birthYear": "1977",
+      "origin": "서울",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 44,
+      "racerName": "이종필",
+      "grade": "S3",
+      "birthYear": "1977",
+      "origin": "경기",
+      "runDays": 39,
+      "totalPrize": ""
+    },
+    {
+      "rank": 45,
+      "racerName": "배학성",
+      "grade": "A1",
+      "birthYear": "1974",
+      "origin": "전북",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 46,
+      "racerName": "최준형",
+      "grade": "S3",
+      "birthYear": "1980",
+      "origin": "인천",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 47,
+      "racerName": "김종모",
+      "grade": "A1",
+      "birthYear": "1974",
+      "origin": "전남",
+      "runDays": 31,
+      "totalPrize": ""
+    },
+    {
+      "rank": 48,
+      "racerName": "박진우",
+      "grade": "S2",
+      "birthYear": "1977",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 49,
+      "racerName": "박덕인",
+      "grade": "S3",
+      "birthYear": "1978",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 50,
+      "racerName": "김원호",
+      "grade": "S2",
+      "birthYear": "1980",
+      "origin": "대전",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 51,
+      "racerName": "송대호",
+      "grade": "S2",
+      "birthYear": "1976",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 52,
+      "racerName": "최원재",
+      "grade": "A1",
+      "birthYear": "1981",
+      "origin": "전북",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 53,
+      "racerName": "임권빈",
+      "grade": "A1",
+      "birthYear": "1969",
+      "origin": "충남",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 54,
+      "racerName": "한상진",
+      "grade": "S2",
+      "birthYear": "1980",
+      "origin": "인천",
+      "runDays": 34,
+      "totalPrize": ""
+    },
+    {
+      "rank": 55,
+      "racerName": "최정헌",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "강원",
+      "runDays": 39,
+      "totalPrize": ""
+    },
+    {
+      "rank": 56,
+      "racerName": "박성호",
+      "grade": "S3",
+      "birthYear": "1982",
+      "origin": "부산",
+      "runDays": 31,
+      "totalPrize": ""
+    },
+    {
+      "rank": 57,
+      "racerName": "고병수",
+      "grade": "S2",
+      "birthYear": "1979",
+      "origin": "강원",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 58,
+      "racerName": "윤영수",
+      "grade": "S2",
+      "birthYear": "1973",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 59,
+      "racerName": "이흥주",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "경남",
+      "runDays": 31,
+      "totalPrize": ""
+    },
+    {
+      "rank": 60,
+      "racerName": "백동호",
+      "grade": "S3",
+      "birthYear": "1977",
+      "origin": "광주",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 61,
+      "racerName": "김동관",
+      "grade": "S2",
+      "birthYear": "1985",
+      "origin": "경기",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 62,
+      "racerName": "박인찬",
+      "grade": "S2",
+      "birthYear": "1977",
+      "origin": "대전",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 63,
+      "racerName": "홍미웅",
+      "grade": "S3",
+      "birthYear": "1970",
+      "origin": "경남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 64,
+      "racerName": "신우삼",
+      "grade": "S2",
+      "birthYear": "1974",
+      "origin": "부산",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 65,
+      "racerName": "최해용",
+      "grade": "S2",
+      "birthYear": "1979",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 66,
+      "racerName": "이한성",
+      "grade": "S3",
+      "birthYear": "1975",
+      "origin": "광주",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 67,
+      "racerName": "김주상",
+      "grade": "S3",
+      "birthYear": "1983",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 68,
+      "racerName": "이진국",
+      "grade": "S3",
+      "birthYear": "1980",
+      "origin": "경남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 69,
+      "racerName": "권영민",
+      "grade": "A2",
+      "birthYear": "1979",
+      "origin": "대전",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 70,
+      "racerName": "조영근",
+      "grade": "A1",
+      "birthYear": "1973",
+      "origin": "경북",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 71,
+      "racerName": "이규봉",
+      "grade": "A1",
+      "birthYear": "1975",
+      "origin": "경북",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 72,
+      "racerName": "신영극",
+      "grade": "S3",
+      "birthYear": "1972",
+      "origin": "경남",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 73,
+      "racerName": "이창희",
+      "grade": "S3",
+      "birthYear": "1977",
+      "origin": "경북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 74,
+      "racerName": "박종현",
+      "grade": "A1",
+      "birthYear": "1968",
+      "origin": "경기",
+      "runDays": 31,
+      "totalPrize": ""
+    },
+    {
+      "rank": 75,
+      "racerName": "오진우",
+      "grade": "A1",
+      "birthYear": "1979",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 76,
+      "racerName": "임  섭",
+      "grade": "A1",
+      "birthYear": "1974",
+      "origin": "광주",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 77,
+      "racerName": "박희운",
+      "grade": "A2",
+      "birthYear": "1981",
+      "origin": "경북",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 78,
+      "racerName": "배영근",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 79,
+      "racerName": "곽종헌",
+      "grade": "A1",
+      "birthYear": "1972",
+      "origin": "서울",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 80,
+      "racerName": "이길섭",
+      "grade": "S2",
+      "birthYear": "1979",
+      "origin": "강원",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 81,
+      "racerName": "권문석",
+      "grade": "S3",
+      "birthYear": "1977",
+      "origin": "경남",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 82,
+      "racerName": "신용수",
+      "grade": "A1",
+      "birthYear": "1973",
+      "origin": "서울",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 83,
+      "racerName": "박광진",
+      "grade": "S2",
+      "birthYear": "1975",
+      "origin": "경남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 84,
+      "racerName": "김만섭",
+      "grade": "S3",
+      "birthYear": "1978",
+      "origin": "충북",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 85,
+      "racerName": "조창인",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "광주",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 86,
+      "racerName": "양승용",
+      "grade": "A1",
+      "birthYear": "1981",
+      "origin": "대구",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 87,
+      "racerName": "김성윤",
+      "grade": "S2",
+      "birthYear": "1973",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 88,
+      "racerName": "김영호",
+      "grade": "A1",
+      "birthYear": "1970",
+      "origin": "충남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 89,
+      "racerName": "김성헌",
+      "grade": "A1",
+      "birthYear": "1982",
+      "origin": "충북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 90,
+      "racerName": "장용진",
+      "grade": "S3",
+      "birthYear": "1979",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 91,
+      "racerName": "조봉희",
+      "grade": "A2",
+      "birthYear": "1981",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 92,
+      "racerName": "오정석",
+      "grade": "A1",
+      "birthYear": "1980",
+      "origin": "충남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 93,
+      "racerName": "강성민",
+      "grade": "A1",
+      "birthYear": "1981",
+      "origin": "전남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 94,
+      "racerName": "김상근",
+      "grade": "A1",
+      "birthYear": "1980",
+      "origin": "경남",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 95,
+      "racerName": "윤필준",
+      "grade": "A1",
+      "birthYear": "1980",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 96,
+      "racerName": "이경수",
+      "grade": "S3",
+      "birthYear": "1979",
+      "origin": "인천",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 97,
+      "racerName": "김성용",
+      "grade": "S3",
+      "birthYear": "1977",
+      "origin": "충북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 98,
+      "racerName": "김병섭",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 99,
+      "racerName": "하수용",
+      "grade": "A1",
+      "birthYear": "1980",
+      "origin": "서울",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 100,
+      "racerName": "김민욱",
+      "grade": "A2",
+      "birthYear": "1978",
+      "origin": "경남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 101,
+      "racerName": "정진욱",
+      "grade": "A1",
+      "birthYear": "1982",
+      "origin": "대전",
+      "runDays": 31,
+      "totalPrize": ""
+    },
+    {
+      "rank": 102,
+      "racerName": "김창수",
+      "grade": "S3",
+      "birthYear": "1979",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 103,
+      "racerName": "김일규",
+      "grade": "S3",
+      "birthYear": "1981",
+      "origin": "충북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 104,
+      "racerName": "이승현",
+      "grade": "A1",
+      "birthYear": "1982",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 105,
+      "racerName": "박경덕",
+      "grade": "A1",
+      "birthYear": "1980",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 106,
+      "racerName": "정찬영",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "경기",
+      "runDays": 31,
+      "totalPrize": ""
+    },
+    {
+      "rank": 107,
+      "racerName": "김시국",
+      "grade": "A2",
+      "birthYear": "1981",
+      "origin": "강원",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 108,
+      "racerName": "전병일",
+      "grade": "A2",
+      "birthYear": "1974",
+      "origin": "대전",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 109,
+      "racerName": "용석길",
+      "grade": "A2",
+      "birthYear": "1971",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 110,
+      "racerName": "박주혁",
+      "grade": "A1",
+      "birthYear": "1981",
+      "origin": "인천",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 111,
+      "racerName": "한기봉",
+      "grade": "A1",
+      "birthYear": "1978",
+      "origin": "강원",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 112,
+      "racerName": "김명중",
+      "grade": "A2",
+      "birthYear": "1977",
+      "origin": "경남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 113,
+      "racerName": "김정훈",
+      "grade": "S3",
+      "birthYear": "1980",
+      "origin": "서울",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 114,
+      "racerName": "정찬건",
+      "grade": "A2",
+      "birthYear": "1977",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 115,
+      "racerName": "정세연",
+      "grade": "A2",
+      "birthYear": "1969",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 116,
+      "racerName": "임영완",
+      "grade": "A1",
+      "birthYear": "1977",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 117,
+      "racerName": "감병삼",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "경남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 118,
+      "racerName": "이우정",
+      "grade": "A3",
+      "birthYear": "1981",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 119,
+      "racerName": "김창규",
+      "grade": "A1",
+      "birthYear": "1971",
+      "origin": "충남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 120,
+      "racerName": "김환진",
+      "grade": "A2",
+      "birthYear": "1979",
+      "origin": "충남",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 121,
+      "racerName": "이제인",
+      "grade": "A2",
+      "birthYear": "1979",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 122,
+      "racerName": "최문석",
+      "grade": "A2",
+      "birthYear": "1974",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 123,
+      "racerName": "곽충원",
+      "grade": "A2",
+      "birthYear": "1977",
+      "origin": "경남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 124,
+      "racerName": "남태희",
+      "grade": "A1",
+      "birthYear": "1972",
+      "origin": "충북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 125,
+      "racerName": "임형윤",
+      "grade": "A1",
+      "birthYear": "1974",
+      "origin": "전남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 126,
+      "racerName": "원종구",
+      "grade": "A3",
+      "birthYear": "1973",
+      "origin": "강원",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 127,
+      "racerName": "이효석",
+      "grade": "A1",
+      "birthYear": "1981",
+      "origin": "대전",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 128,
+      "racerName": "김재영",
+      "grade": "A2",
+      "birthYear": "1979",
+      "origin": "경북",
+      "runDays": 36,
+      "totalPrize": ""
+    },
+    {
+      "rank": 129,
+      "racerName": "유현근",
+      "grade": "A1",
+      "birthYear": "1979",
+      "origin": "전남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 130,
+      "racerName": "김광록",
+      "grade": "A3",
+      "birthYear": "1978",
+      "origin": "전남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 131,
+      "racerName": "김용남",
+      "grade": "A1",
+      "birthYear": "1976",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 132,
+      "racerName": "이인섭",
+      "grade": "A2",
+      "birthYear": "1981",
+      "origin": "강원",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 133,
+      "racerName": "원종배",
+      "grade": "A2",
+      "birthYear": "1965",
+      "origin": "경북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 134,
+      "racerName": "장철기",
+      "grade": "A3",
+      "birthYear": "1977",
+      "origin": "전북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 135,
+      "racerName": "이천호",
+      "grade": "A3",
+      "birthYear": "1970",
+      "origin": "충남",
+      "runDays": 32,
+      "totalPrize": ""
+    },
+    {
+      "rank": 136,
+      "racerName": "함창선",
+      "grade": "A3",
+      "birthYear": "1978",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 137,
+      "racerName": "김성기",
+      "grade": "A3",
+      "birthYear": "1974",
+      "origin": "인천",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 138,
+      "racerName": "김기남",
+      "grade": "A3",
+      "birthYear": "1974",
+      "origin": "강원",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 139,
+      "racerName": "김범용",
+      "grade": "B1",
+      "birthYear": "1972",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 140,
+      "racerName": "권우주",
+      "grade": "A2",
+      "birthYear": "1980",
+      "origin": "부산",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 141,
+      "racerName": "고정현",
+      "grade": "A2",
+      "birthYear": "1974",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 142,
+      "racerName": "김정우",
+      "grade": "A3",
+      "birthYear": "1977",
+      "origin": "강원",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 143,
+      "racerName": "김유신",
+      "grade": "A2",
+      "birthYear": "1974",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 144,
+      "racerName": "박학규",
+      "grade": "A3",
+      "birthYear": "1972",
+      "origin": "충남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 145,
+      "racerName": "지종오",
+      "grade": "A2",
+      "birthYear": "1972",
+      "origin": "충남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 146,
+      "racerName": "김지은",
+      "grade": "A3",
+      "birthYear": "1973",
+      "origin": "광주",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 147,
+      "racerName": "현정운",
+      "grade": "A3",
+      "birthYear": "1971",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 148,
+      "racerName": "원웅재",
+      "grade": "B1",
+      "birthYear": "1971",
+      "origin": "경기",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 149,
+      "racerName": "강동국",
+      "grade": "B1",
+      "birthYear": "1974",
+      "origin": "경남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 150,
+      "racerName": "김기욱",
+      "grade": "A3",
+      "birthYear": "1976",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 151,
+      "racerName": "백장문",
+      "grade": "A2",
+      "birthYear": "1980",
+      "origin": "경북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 152,
+      "racerName": "장탁상",
+      "grade": "B1",
+      "birthYear": "1977",
+      "origin": "전북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 153,
+      "racerName": "김경남",
+      "grade": "B1",
+      "birthYear": "1968",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 154,
+      "racerName": "유진석",
+      "grade": "B1",
+      "birthYear": "1971",
+      "origin": "경기",
+      "runDays": 31,
+      "totalPrize": ""
+    },
+    {
+      "rank": 155,
+      "racerName": "고민순",
+      "grade": "B1",
+      "birthYear": "1976",
+      "origin": "강원",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 156,
+      "racerName": "김우병",
+      "grade": "B2",
+      "birthYear": "1972",
+      "origin": "서울",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 157,
+      "racerName": "주석춘",
+      "grade": "A3",
+      "birthYear": "1975",
+      "origin": "전북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 158,
+      "racerName": "민인기",
+      "grade": "A3",
+      "birthYear": "1961",
+      "origin": "충남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 159,
+      "racerName": "박수환",
+      "grade": "B1",
+      "birthYear": "1977",
+      "origin": "강원",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 160,
+      "racerName": "류재은",
+      "grade": "A3",
+      "birthYear": "1979",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 161,
+      "racerName": "이상근",
+      "grade": "B1",
+      "birthYear": "1968",
+      "origin": "경북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 162,
+      "racerName": "주태승",
+      "grade": "B1",
+      "birthYear": "1970",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 163,
+      "racerName": "강일원",
+      "grade": "B2",
+      "birthYear": "1972",
+      "origin": "전북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 164,
+      "racerName": "이경필",
+      "grade": "A3",
+      "birthYear": "1973",
+      "origin": "인천",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 165,
+      "racerName": "박계준",
+      "grade": "B1",
+      "birthYear": "1972",
+      "origin": "강원",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 166,
+      "racerName": "함명주",
+      "grade": "B1",
+      "birthYear": "1980",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 167,
+      "racerName": "진영호",
+      "grade": "B1",
+      "birthYear": "1979",
+      "origin": "경북",
+      "runDays": 33,
+      "totalPrize": ""
+    },
+    {
+      "rank": 168,
+      "racerName": "문재희",
+      "grade": "A3",
+      "birthYear": "1976",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 169,
+      "racerName": "배현기",
+      "grade": "B1",
+      "birthYear": "1975",
+      "origin": "경북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 170,
+      "racerName": "박현영",
+      "grade": "B1",
+      "birthYear": "1980",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 171,
+      "racerName": "김재웅",
+      "grade": "A3",
+      "birthYear": "1980",
+      "origin": "충남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 172,
+      "racerName": "김희종",
+      "grade": "B1",
+      "birthYear": "1975",
+      "origin": "충북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 173,
+      "racerName": "권정호",
+      "grade": "B1",
+      "birthYear": "1971",
+      "origin": "경북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 174,
+      "racerName": "서성덕",
+      "grade": "B1",
+      "birthYear": "1977",
+      "origin": "충북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 175,
+      "racerName": "정성근",
+      "grade": "B2",
+      "birthYear": "1970",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 176,
+      "racerName": "이길은",
+      "grade": "B2",
+      "birthYear": "1980",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 177,
+      "racerName": "오치열",
+      "grade": "B2",
+      "birthYear": "1974",
+      "origin": "전남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 178,
+      "racerName": "최수용",
+      "grade": "B2",
+      "birthYear": "1972",
+      "origin": "대구",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 179,
+      "racerName": "황규선",
+      "grade": "B2",
+      "birthYear": "1970",
+      "origin": "충남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 180,
+      "racerName": "배종채",
+      "grade": "B3",
+      "birthYear": "1973",
+      "origin": "전남",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 181,
+      "racerName": "황남식",
+      "grade": "B3",
+      "birthYear": "1975",
+      "origin": "강원",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 182,
+      "racerName": "이성원",
+      "grade": "B2",
+      "birthYear": "1968",
+      "origin": "인천",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 183,
+      "racerName": "정성훈",
+      "grade": "B2",
+      "birthYear": "1981",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 184,
+      "racerName": "조응선",
+      "grade": "B2",
+      "birthYear": "1963",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 185,
+      "racerName": "허  남",
+      "grade": "B2",
+      "birthYear": "1975",
+      "origin": "경기",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 186,
+      "racerName": "장일남",
+      "grade": "B3",
+      "birthYear": "1979",
+      "origin": "강원",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 187,
+      "racerName": "양승하",
+      "grade": "B2",
+      "birthYear": "1974",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 188,
+      "racerName": "김용하",
+      "grade": "B3",
+      "birthYear": "1980",
+      "origin": "경북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 189,
+      "racerName": "전  호",
+      "grade": "B2",
+      "birthYear": "1976",
+      "origin": "경북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 190,
+      "racerName": "김재호",
+      "grade": "B3",
+      "birthYear": "1980",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 191,
+      "racerName": "김응수",
+      "grade": "B2",
+      "birthYear": "1974",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 192,
+      "racerName": "이병태",
+      "grade": "B3",
+      "birthYear": "1966",
+      "origin": "충북",
+      "runDays": 30,
+      "totalPrize": ""
+    },
+    {
+      "rank": 193,
+      "racerName": "장세진",
+      "grade": "B3",
+      "birthYear": "1977",
+      "origin": "서울",
+      "runDays": 30,
+      "totalPrize": ""
+    }
+  ]
+}
