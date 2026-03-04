@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getAvailableYears,
-  loadDividendStats,
-  loadSalesStats,
-  loadHighDividend,
-  loadNoHitRaces,
-} from "@/lib/data-loader";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
@@ -13,17 +7,46 @@ export async function GET(request: NextRequest) {
   const year = sp.get("year");
 
   if (!type) {
+    // Return available years for each stat type
+    const [dividend, sales, highDividend] = await Promise.all([
+      supabase
+        .from("statistics_data")
+        .select("year")
+        .eq("stat_type", "dividend")
+        .not("year", "is", null)
+        .order("year", { ascending: false }),
+      supabase
+        .from("statistics_data")
+        .select("year")
+        .eq("stat_type", "sales")
+        .not("year", "is", null)
+        .order("year", { ascending: false }),
+      supabase
+        .from("statistics_data")
+        .select("year")
+        .eq("stat_type", "high-dividend")
+        .not("year", "is", null)
+        .order("year", { ascending: false }),
+    ]);
+
     return NextResponse.json({
-      dividendYears: getAvailableYears("yearly-dividend-stats"),
-      salesYears: getAvailableYears("yearly-sales-stats"),
-      highDividendYears: getAvailableYears("yearly-high-dividend"),
+      dividendYears: (dividend.data || []).map((r) => r.year),
+      salesYears: (sales.data || []).map((r) => r.year),
+      highDividendYears: (highDividend.data || []).map((r) => r.year),
     });
   }
 
   try {
     if (type === "no-hit") {
-      const data = loadNoHitRaces();
-      return NextResponse.json({ data });
+      const { data, error } = await supabase
+        .from("statistics_data")
+        .select("data")
+        .eq("stat_type", "no-hit")
+        .is("year", null)
+        .single();
+
+      if (error || !data) return NextResponse.json({ error: "Data not found" }, { status: 404 });
+      return NextResponse.json({ data: data.data });
     }
 
     if (!year) {
@@ -32,25 +55,16 @@ export async function GET(request: NextRequest) {
 
     const yearNum = parseInt(year, 10);
 
-    if (type === "dividend") {
-      const all = loadDividendStats();
-      const found = all.find((d) => d.year === yearNum);
-      if (!found) return NextResponse.json({ error: "Data not found" }, { status: 404 });
-      return NextResponse.json({ data: found });
-    }
+    if (type === "dividend" || type === "sales" || type === "high-dividend") {
+      const { data, error } = await supabase
+        .from("statistics_data")
+        .select("data")
+        .eq("stat_type", type)
+        .eq("year", yearNum)
+        .single();
 
-    if (type === "sales") {
-      const all = loadSalesStats();
-      const found = all.find((d) => d.year === yearNum);
-      if (!found) return NextResponse.json({ error: "Data not found" }, { status: 404 });
-      return NextResponse.json({ data: found });
-    }
-
-    if (type === "high-dividend") {
-      const all = loadHighDividend();
-      const found = all.find((d) => d.year === yearNum);
-      if (!found) return NextResponse.json({ error: "Data not found" }, { status: 404 });
-      return NextResponse.json({ data: found });
+      if (error || !data) return NextResponse.json({ error: "Data not found" }, { status: 404 });
+      return NextResponse.json({ data: data.data });
     }
 
     return NextResponse.json({ error: "Invalid type" }, { status: 400 });

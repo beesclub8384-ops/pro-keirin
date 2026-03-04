@@ -1,26 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getAvailableYears,
-  loadYearlyRacerProfiles,
-  loadRankingData,
-  type RacerProfile,
-  type RankingEntry,
-} from "@/lib/data-loader";
-
-// Cache ranking data
-let rankingCache: Map<string, RankingEntry> | null = null;
-
-function getRankingMap(): Map<string, RankingEntry> {
-  if (rankingCache) return rankingCache;
-  const data = loadRankingData();
-  rankingCache = new Map();
-  for (const yearData of data) {
-    for (const r of yearData.rankings) {
-      rankingCache.set(`${r.name}|${yearData.year}`, r);
-    }
-  }
-  return rankingCache;
-}
+import { supabase } from "@/lib/supabase";
+import { transformRacerProfile, transformRanking } from "@/lib/db-transformers";
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
@@ -28,7 +8,14 @@ export async function GET(request: NextRequest) {
   const year = sp.get("year");
 
   if (!q) {
-    const years = getAvailableYears("yearly-racer-profile");
+    // Return available years
+    const { data, error } = await supabase
+      .from("racer_profiles")
+      .select("year")
+      .order("year", { ascending: false });
+
+    if (error) return NextResponse.json({ years: [] });
+    const years = [...new Set(data.map((r) => r.year))];
     return NextResponse.json({ years });
   }
 
@@ -37,41 +24,53 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
-  const rankingMap = getRankingMap();
-  const results: (RacerProfile & { ranking?: RankingEntry })[] = [];
+  // Search racer profiles with name matching
+  let profileQuery = supabase
+    .from("racer_profiles")
+    .select("*")
+    .ilike("name", `%${query}%`)
+    .order("year", { ascending: false })
+    .limit(200);
 
   if (year) {
-    // Search specific year
-    const yearNum = parseInt(year, 10);
-    try {
-      const profiles = loadYearlyRacerProfiles(yearNum);
-      for (const p of profiles) {
-        if (p.name.includes(query)) {
-          const rKey = `${p.name}|${p.year}`;
-          results.push({ ...p, ranking: rankingMap.get(rKey) });
-        }
+    profileQuery = profileQuery.eq("year", parseInt(year, 10));
+  }
+
+  const { data: profiles, error: profileErr } = await profileQuery;
+
+  if (profileErr || !profiles) {
+    return NextResponse.json({ query, results: [] });
+  }
+
+  // Get ranking data for matched profiles
+  const nameYearPairs = profiles.map((p) => ({ name: p.name, year: p.year }));
+  const uniqueYears = [...new Set(nameYearPairs.map((p) => p.year))];
+
+  // Fetch rankings for the relevant years
+  const rankingMap = new Map<string, ReturnType<typeof transformRanking>>();
+
+  for (const y of uniqueYears) {
+    const names = nameYearPairs.filter((p) => p.year === y).map((p) => p.name);
+    const { data: rankings } = await supabase
+      .from("rankings")
+      .select("*")
+      .eq("year", y)
+      .in("name", names);
+
+    if (rankings) {
+      for (const r of rankings) {
+        const transformed = transformRanking(r);
+        rankingMap.set(`${r.name}|${r.year}`, transformed);
       }
-    } catch {
-      // year not found
-    }
-  } else {
-    // Search across all years (most recent first, limit results)
-    const years = getAvailableYears("yearly-racer-profile");
-    for (const y of years) {
-      try {
-        const profiles = loadYearlyRacerProfiles(y);
-        for (const p of profiles) {
-          if (p.name.includes(query)) {
-            const rKey = `${p.name}|${p.year}`;
-            results.push({ ...p, ranking: rankingMap.get(rKey) });
-          }
-        }
-      } catch {
-        continue;
-      }
-      if (results.length >= 200) break;
     }
   }
 
-  return NextResponse.json({ query, results: results.slice(0, 200) });
+  const results = profiles.map((p) => {
+    const profile = transformRacerProfile(p);
+    const rKey = `${p.name}|${p.year}`;
+    const ranking = rankingMap.get(rKey);
+    return { ...profile, ranking: ranking ? (({ year: _y, ...rest }) => rest)(ranking) : undefined };
+  });
+
+  return NextResponse.json({ query, results });
 }

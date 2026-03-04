@@ -27,9 +27,21 @@
     "fetch-dividend-stats": "tsx scripts/fetch-dividend-stats.ts",
     "fetch-sales-stats": "tsx scripts/fetch-sales-stats.ts",
     "fetch-high-dividend": "tsx scripts/fetch-high-dividend.ts",
-    "fetch-no-hit-races": "tsx scripts/fetch-no-hit-races.ts"
+    "fetch-no-hit-races": "tsx scripts/fetch-no-hit-races.ts",
+    "seed": "tsx scripts/seed/seed-all.ts",
+    "seed:races": "tsx scripts/seed/seed-races.ts",
+    "seed:odds": "tsx scripts/seed/seed-race-odds.ts",
+    "seed:decision-cards": "tsx scripts/seed/seed-decision-cards.ts",
+    "seed:entries": "tsx scripts/seed/seed-entries.ts",
+    "seed:racer-profiles": "tsx scripts/seed/seed-racer-profiles.ts",
+    "seed:rankings": "tsx scripts/seed/seed-rankings.ts",
+    "seed:racer-ids": "tsx scripts/seed/seed-racer-ids.ts",
+    "seed:sanctions": "tsx scripts/seed/seed-sanctions.ts",
+    "seed:statistics": "tsx scripts/seed/seed-statistics.ts",
+    "seed:reference": "tsx scripts/seed/seed-reference.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.98.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
