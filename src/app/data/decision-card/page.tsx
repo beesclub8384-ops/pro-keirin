@@ -18,10 +18,12 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BackNumber } from "@/components/ui/back-number";
 
 interface Entry {
   backNo: number;
   racerId: string;
+  name: string;
   generation: number;
   age: number;
   winRateVenue: number;
@@ -195,6 +197,7 @@ export default function DecisionCardPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12">번호</TableHead>
+                          <TableHead className="w-20">선수명</TableHead>
                           <TableHead className="w-20">기수/나이</TableHead>
                           <TableHead className="w-20">승률(광명)</TableHead>
                           <TableHead className="w-20">연대율</TableHead>
@@ -209,10 +212,9 @@ export default function DecisionCardPage() {
                         {race.entries.map((entry) => (
                           <TableRow key={entry.backNo}>
                             <TableCell>
-                              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">
-                                {entry.backNo}
-                              </span>
+                              <BackNumber no={entry.backNo} />
                             </TableCell>
+                            <TableCell className="font-medium">{entry.name}</TableCell>
                             <TableCell className="text-sm">
                               {entry.generation}기/{entry.age}세
                             </TableCell>

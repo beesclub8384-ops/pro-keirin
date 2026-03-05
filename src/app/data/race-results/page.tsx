@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BackNumber } from "@/components/ui/back-number";
 
 interface RaceOdds {
   단승: number;
@@ -40,6 +41,8 @@ interface RaceResult {
   disqualified: string;
   warning: string;
   caution: string;
+  withdrawal: string;
+  finish: string;
   record200m: string;
   speed200m: number;
 }
@@ -227,37 +230,50 @@ export default function RaceResultsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-16">착순</TableHead>
-                          <TableHead className="w-16">번호</TableHead>
+                          <TableHead className="w-12 text-center">번호</TableHead>
                           <TableHead>선수명</TableHead>
-                          <TableHead>주행시간</TableHead>
-                          <TableHead className="w-20">착차</TableHead>
-                          <TableHead className="w-20">전법</TableHead>
-                          <TableHead className="w-24">200m</TableHead>
+                          <TableHead className="w-12 text-center">착순</TableHead>
+                          <TableHead className="w-16 text-center">착차</TableHead>
+                          <TableHead className="text-center">주행시간</TableHead>
+                          <TableHead className="w-16 text-center">승부수</TableHead>
+                          <TableHead className="w-12 text-center">실격</TableHead>
+                          <TableHead className="w-12 text-center">경고</TableHead>
+                          <TableHead className="w-12 text-center">주의</TableHead>
+                          <TableHead className="w-16 text-center">기권구분</TableHead>
+                          <TableHead className="w-16 text-center">골인구분</TableHead>
+                          <TableHead className="w-20 text-center">200M시속</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {race.results
-                          .sort((a, b) => a.rank - b.rank)
+                          .sort((a, b) => a.backNo - b.backNo)
                           .map((r) => (
-                            <TableRow key={r.backNo}>
-                              <TableCell className="font-bold">{r.rank}</TableCell>
-                              <TableCell>
-                                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">
-                                  {r.backNo}
-                                </span>
+                            <TableRow
+                              key={r.backNo}
+                              className={r.rank >= 1 && r.rank <= 3 ? "bg-red-50" : ""}
+                            >
+                              <TableCell className="text-center">
+                                <BackNumber no={r.backNo} />
                               </TableCell>
                               <TableCell className="font-medium">{r.name}</TableCell>
-                              <TableCell className="font-mono text-sm">{r.raceTime}</TableCell>
-                              <TableCell>{r.gap}</TableCell>
-                              <TableCell>
-                                {r.tactic !== "-" && (
+                              <TableCell className="text-center font-bold">{r.rank}</TableCell>
+                              <TableCell className="text-center">{r.gap}</TableCell>
+                              <TableCell className="text-center font-mono text-sm">{r.raceTime}</TableCell>
+                              <TableCell className="text-center">
+                                {r.tactic !== "-" ? (
                                   <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${tacticColor(r.tactic)}`}>
                                     {r.tactic}
                                   </span>
+                                ) : (
+                                  "-"
                                 )}
                               </TableCell>
-                              <TableCell className="font-mono text-sm">{r.record200m}</TableCell>
+                              <TableCell className="text-center text-sm">{r.disqualified}</TableCell>
+                              <TableCell className="text-center text-sm">{r.warning}</TableCell>
+                              <TableCell className="text-center text-sm">{r.caution}</TableCell>
+                              <TableCell className="text-center text-sm">{r.withdrawal}</TableCell>
+                              <TableCell className="text-center text-sm">{r.finish}</TableCell>
+                              <TableCell className="text-center font-mono text-sm">{r.speed200m > 0 ? r.speed200m : "-"}</TableCell>
                             </TableRow>
                           ))}
                       </TableBody>
@@ -268,31 +284,33 @@ export default function RaceResultsPage() {
                   {race.odds && (
                     <div>
                       <h4 className="mb-2 text-sm font-semibold text-muted-foreground">배당률</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {race.odds.단승 > 0 && (
-                          <Badge variant="outline">단승 {race.odds.단승}</Badge>
-                        )}
-                        {race.odds.연승1착 > 0 && (
-                          <Badge variant="outline">연승1착 {race.odds.연승1착}</Badge>
-                        )}
-                        {race.odds.연승2착 > 0 && (
-                          <Badge variant="outline">연승2착 {race.odds.연승2착}</Badge>
-                        )}
-                        {race.odds.쌍승 > 0 && (
-                          <Badge variant="outline">쌍승 {race.odds.쌍승}</Badge>
-                        )}
-                        {race.odds.복승 > 0 && (
-                          <Badge variant="outline">복승 {race.odds.복승}</Badge>
-                        )}
-                        {race.odds.삼복승 > 0 && (
-                          <Badge variant="outline">삼복승 {race.odds.삼복승}</Badge>
-                        )}
-                        {race.odds.삼쌍승 > 0 && (
-                          <Badge variant="outline">삼쌍승 {race.odds.삼쌍승}</Badge>
-                        )}
-                        {race.odds.쌍복승 > 0 && (
-                          <Badge variant="outline">쌍복승 {race.odds.쌍복승}</Badge>
-                        )}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b text-muted-foreground">
+                              <th className="px-3 py-2 text-center font-medium">단승</th>
+                              <th className="px-3 py-2 text-center font-medium">연승1착</th>
+                              <th className="px-3 py-2 text-center font-medium">연승2착</th>
+                              <th className="px-3 py-2 text-center font-medium">쌍승</th>
+                              <th className="px-3 py-2 text-center font-medium">복승</th>
+                              <th className="px-3 py-2 text-center font-medium">삼복승</th>
+                              <th className="px-3 py-2 text-center font-medium">삼쌍승</th>
+                              <th className="px-3 py-2 text-center font-medium">쌍복승</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td className="px-3 py-2 text-center font-mono font-semibold">{race.odds.단승 || "-"}</td>
+                              <td className="px-3 py-2 text-center font-mono font-semibold">{race.odds.연승1착 || "-"}</td>
+                              <td className="px-3 py-2 text-center font-mono font-semibold">{race.odds.연승2착 || "-"}</td>
+                              <td className="px-3 py-2 text-center font-mono font-semibold">{race.odds.쌍승 || "-"}</td>
+                              <td className="px-3 py-2 text-center font-mono font-semibold">{race.odds.복승 || "-"}</td>
+                              <td className="px-3 py-2 text-center font-mono font-semibold">{race.odds.삼복승 || "-"}</td>
+                              <td className="px-3 py-2 text-center font-mono font-semibold">{race.odds.삼쌍승 || "-"}</td>
+                              <td className="px-3 py-2 text-center font-mono font-semibold">{race.odds.쌍복승 || "-"}</td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   )}

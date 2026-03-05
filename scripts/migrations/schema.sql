@@ -1,6 +1,9 @@
 -- Pro-Keirin Supabase PostgreSQL Schema
 -- Run this in Supabase SQL Editor
 
+.env.local의 SUPABASE_SERVICE_ROLE_KEY를 이걸로 교체해줘:
+SUPABASE_SERVICE_ROLE_KEY=RwNI13Dri4ZFXs_eAjMk3A_A5t0WnPN
+
 -- Extension for Korean text trigram search
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 

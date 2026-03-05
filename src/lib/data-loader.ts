@@ -263,7 +263,19 @@ export interface NoHitRace {
   pools: { poolType: string; winNo: string; dividend: string; sales: string }[];
 }
 
+// --- Racer ID Types ---
+
+export interface RacerIdEntry {
+  racerId: string;
+  name: string;
+  rank: number;
+}
+
 // --- Loaders ---
+
+export function loadRacerIds(year: number): RacerIdEntry[] {
+  return loadJSON<RacerIdEntry[]>(path.join(getYearlyDir("racer-ids"), `${year}.json`));
+}
 
 export function loadYearlyRaceDetail(year: number): RaceDetailYear {
   return loadJSON<RaceDetailYear>(path.join(getYearlyDir("yearly-race-detail"), `${year}.json`));
@@ -286,7 +298,10 @@ export function loadRacerProfiles(): RacerProfile[] {
 }
 
 export function loadYearlyRacerProfiles(year: number): RacerProfile[] {
-  return loadJSON<RacerProfile[]>(path.join(getYearlyDir("yearly-racer-profile"), `${year}.json`));
+  const data = loadJSON<{ year: number; totalRacers: number; profiles: RacerProfile[] }>(
+    path.join(getYearlyDir("yearly-racer-profile"), `${year}.json`)
+  );
+  return data.profiles;
 }
 
 export function loadRankingData(): RankingYear[] {
