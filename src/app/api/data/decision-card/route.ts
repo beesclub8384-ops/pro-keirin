@@ -3,28 +3,27 @@ import { getSupabase } from "@/lib/supabase";
 import { assembleDCPages } from "@/lib/db-transformers";
 
 export async function GET(request: NextRequest) {
-  const sp = request.nextUrl.searchParams;
-  const year = sp.get("year");
-  const round = sp.get("round");
-  const day = sp.get("day");
-
-  const supabase = getSupabase();
-
-  if (!year) {
-    // Return available years
-    const { data, error } = await supabase
-      .from("decision_card_pages")
-      .select("year")
-      .order("year", { ascending: false });
-
-    if (error) return NextResponse.json({ years: [] });
-    const years = [...new Set(data.map((r) => r.year))];
-    return NextResponse.json({ years });
-  }
-
-  const yearNum = parseInt(year, 10);
-
   try {
+    const supabase = getSupabase();
+    const sp = request.nextUrl.searchParams;
+    const year = sp.get("year");
+    const round = sp.get("round");
+    const day = sp.get("day");
+
+    if (!year) {
+      // Return available years
+      const { data, error } = await supabase
+        .from("decision_card_pages")
+        .select("year")
+        .order("year", { ascending: false });
+
+      if (error) return NextResponse.json({ error: error.message, years: [] }, { status: 500 });
+      const years = [...new Set(data.map((r) => r.year))];
+      return NextResponse.json({ years });
+    }
+
+    const yearNum = parseInt(year, 10);
+
     if (!round) {
       // Return meta: rounds and days
       const { data: pages, error } = await supabase
@@ -32,9 +31,8 @@ export async function GET(request: NextRequest) {
         .select("round, day")
         .eq("year", yearNum);
 
-      if (error || !pages) return NextResponse.json({ error: "Data not found" }, { status: 404 });
+      if (error || !pages) return NextResponse.json({ error: error?.message || "Data not found" }, { status: 404 });
 
-      // Count total pages
       const totalPages = pages.length;
 
       const roundDayMap = new Map<number, Set<number>>();
@@ -69,7 +67,7 @@ export async function GET(request: NextRequest) {
 
     const { data: pageRows, error: pageErr } = await pageQuery;
     if (pageErr || !pageRows || pageRows.length === 0) {
-      return NextResponse.json({ error: "Data not found" }, { status: 404 });
+      return NextResponse.json({ error: pageErr?.message || "Data not found" }, { status: 404 });
     }
 
     const pageIds = pageRows.map((p) => p.id);
@@ -81,7 +79,7 @@ export async function GET(request: NextRequest) {
       .in("page_id", pageIds);
 
     if (raceErr) {
-      return NextResponse.json({ error: "Data not found" }, { status: 404 });
+      return NextResponse.json({ error: raceErr.message }, { status: 404 });
     }
 
     const raceIds = (raceRows || []).map((r) => r.id);
@@ -89,7 +87,6 @@ export async function GET(request: NextRequest) {
     // Fetch entries for these races
     let entryRows: Array<Record<string, unknown>> = [];
     if (raceIds.length > 0) {
-      // Fetch in chunks to avoid query size limits
       for (let i = 0; i < raceIds.length; i += 200) {
         const chunk = raceIds.slice(i, i + 200);
         const { data: entries } = await supabase
@@ -170,7 +167,8 @@ export async function GET(request: NextRequest) {
       day: dayNum,
       pages,
     });
-  } catch {
-    return NextResponse.json({ error: "Data not found" }, { status: 404 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

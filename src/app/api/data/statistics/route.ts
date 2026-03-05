@@ -2,43 +2,42 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
-  const sp = request.nextUrl.searchParams;
-  const type = sp.get("type");
-  const year = sp.get("year");
-
-  const supabase = getSupabase();
-
-  if (!type) {
-    // Return available years for each stat type
-    const [dividend, sales, highDividend] = await Promise.all([
-      supabase
-        .from("statistics_data")
-        .select("year")
-        .eq("stat_type", "dividend")
-        .not("year", "is", null)
-        .order("year", { ascending: false }),
-      supabase
-        .from("statistics_data")
-        .select("year")
-        .eq("stat_type", "sales")
-        .not("year", "is", null)
-        .order("year", { ascending: false }),
-      supabase
-        .from("statistics_data")
-        .select("year")
-        .eq("stat_type", "high-dividend")
-        .not("year", "is", null)
-        .order("year", { ascending: false }),
-    ]);
-
-    return NextResponse.json({
-      dividendYears: (dividend.data || []).map((r) => r.year),
-      salesYears: (sales.data || []).map((r) => r.year),
-      highDividendYears: (highDividend.data || []).map((r) => r.year),
-    });
-  }
-
   try {
+    const supabase = getSupabase();
+    const sp = request.nextUrl.searchParams;
+    const type = sp.get("type");
+    const year = sp.get("year");
+
+    if (!type) {
+      // Return available years for each stat type
+      const [dividend, sales, highDividend] = await Promise.all([
+        supabase
+          .from("statistics_data")
+          .select("year")
+          .eq("stat_type", "dividend")
+          .not("year", "is", null)
+          .order("year", { ascending: false }),
+        supabase
+          .from("statistics_data")
+          .select("year")
+          .eq("stat_type", "sales")
+          .not("year", "is", null)
+          .order("year", { ascending: false }),
+        supabase
+          .from("statistics_data")
+          .select("year")
+          .eq("stat_type", "high-dividend")
+          .not("year", "is", null)
+          .order("year", { ascending: false }),
+      ]);
+
+      return NextResponse.json({
+        dividendYears: (dividend.data || []).map((r) => r.year),
+        salesYears: (sales.data || []).map((r) => r.year),
+        highDividendYears: (highDividend.data || []).map((r) => r.year),
+      });
+    }
+
     if (type === "no-hit") {
       const { data, error } = await supabase
         .from("statistics_data")
@@ -47,7 +46,7 @@ export async function GET(request: NextRequest) {
         .is("year", null)
         .single();
 
-      if (error || !data) return NextResponse.json({ error: "Data not found" }, { status: 404 });
+      if (error || !data) return NextResponse.json({ error: error?.message || "Data not found" }, { status: 404 });
       return NextResponse.json({ data: data.data });
     }
 
@@ -65,12 +64,13 @@ export async function GET(request: NextRequest) {
         .eq("year", yearNum)
         .single();
 
-      if (error || !data) return NextResponse.json({ error: "Data not found" }, { status: 404 });
+      if (error || !data) return NextResponse.json({ error: error?.message || "Data not found" }, { status: 404 });
       return NextResponse.json({ data: data.data });
     }
 
     return NextResponse.json({ error: "Invalid type" }, { status: 400 });
-  } catch {
-    return NextResponse.json({ error: "Data not found" }, { status: 404 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

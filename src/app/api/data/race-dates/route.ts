@@ -2,48 +2,52 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
-  const sp = request.nextUrl.searchParams;
-  const year = sp.get("year");
+  try {
+    const supabase = getSupabase();
+    const sp = request.nextUrl.searchParams;
+    const year = sp.get("year");
 
-  const supabase = getSupabase();
+    if (!year) {
+      // Return available years
+      const { data, error } = await supabase
+        .from("races")
+        .select("year")
+        .order("year", { ascending: false });
 
-  if (!year) {
-    // Return available years
+      if (error) return NextResponse.json({ error: error.message, years: [] }, { status: 500 });
+
+      const years = [...new Set(data.map((r) => r.year))];
+      return NextResponse.json({ years });
+    }
+
+    const yearNum = parseInt(year, 10);
+
+    // Get distinct dates with round/day for the year
     const { data, error } = await supabase
       .from("races")
-      .select("year")
-      .order("year", { ascending: false });
+      .select("date, round, day")
+      .eq("year", yearNum)
+      .order("date", { ascending: true });
 
-    if (error) return NextResponse.json({ years: [] });
-
-    const years = [...new Set(data.map((r) => r.year))];
-    return NextResponse.json({ years });
-  }
-
-  const yearNum = parseInt(year, 10);
-
-  // Get distinct dates with round/day for the year
-  const { data, error } = await supabase
-    .from("races")
-    .select("date, round, day")
-    .eq("year", yearNum)
-    .order("date", { ascending: true });
-
-  if (error) {
-    return NextResponse.json({ year: yearNum, dates: [] });
-  }
-
-  // Deduplicate by date
-  const dateMap = new Map<string, { round: number; day: number }>();
-  for (const r of data) {
-    if (!dateMap.has(r.date)) {
-      dateMap.set(r.date, { round: r.round, day: r.day });
+    if (error) {
+      return NextResponse.json({ error: error.message, year: yearNum, dates: [] }, { status: 500 });
     }
+
+    // Deduplicate by date
+    const dateMap = new Map<string, { round: number; day: number }>();
+    for (const r of data) {
+      if (!dateMap.has(r.date)) {
+        dateMap.set(r.date, { round: r.round, day: r.day });
+      }
+    }
+
+    const dates = Array.from(dateMap.entries())
+      .map(([date, meta]) => ({ date, round: meta.round, day: meta.day }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return NextResponse.json({ year: yearNum, dates });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
-
-  const dates = Array.from(dateMap.entries())
-    .map(([date, meta]) => ({ date, round: meta.round, day: meta.day }))
-    .sort((a, b) => a.date.localeCompare(b.date));
-
-  return NextResponse.json({ year: yearNum, dates });
 }

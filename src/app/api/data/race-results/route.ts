@@ -3,28 +3,27 @@ import { getSupabase } from "@/lib/supabase";
 import { transformRaceWithResults } from "@/lib/db-transformers";
 
 export async function GET(request: NextRequest) {
-  const sp = request.nextUrl.searchParams;
-  const year = sp.get("year");
-  const round = sp.get("round");
-  const day = sp.get("day");
-
-  const supabase = getSupabase();
-
-  if (!year) {
-    // Return available years
-    const { data, error } = await supabase
-      .from("races")
-      .select("year")
-      .order("year", { ascending: false });
-
-    if (error) return NextResponse.json({ years: [] });
-    const years = [...new Set(data.map((r) => r.year))];
-    return NextResponse.json({ years });
-  }
-
-  const yearNum = parseInt(year, 10);
-
   try {
+    const supabase = getSupabase();
+    const sp = request.nextUrl.searchParams;
+    const year = sp.get("year");
+    const round = sp.get("round");
+    const day = sp.get("day");
+
+    if (!year) {
+      // Return available years
+      const { data, error } = await supabase
+        .from("races")
+        .select("year")
+        .order("year", { ascending: false });
+
+      if (error) return NextResponse.json({ error: error.message, years: [] }, { status: 500 });
+      const years = [...new Set(data.map((r) => r.year))];
+      return NextResponse.json({ years });
+    }
+
+    const yearNum = parseInt(year, 10);
+
     if (!round) {
       // Return meta: rounds/days + totalRaces
       const { data: races, error } = await supabase
@@ -32,7 +31,7 @@ export async function GET(request: NextRequest) {
         .select("round, day")
         .eq("year", yearNum);
 
-      if (error || !races) return NextResponse.json({ error: "Data not found" }, { status: 404 });
+      if (error || !races) return NextResponse.json({ error: error?.message || "Data not found" }, { status: 404 });
 
       const totalRaces = races.length;
       const roundDayMap = new Map<number, Set<number>>();
@@ -67,7 +66,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: raceRows, error: raceErr } = await raceQuery;
-    if (raceErr || !raceRows) return NextResponse.json({ error: "Data not found" }, { status: 404 });
+    if (raceErr || !raceRows) return NextResponse.json({ error: raceErr?.message || "Data not found" }, { status: 404 });
 
     const raceIds = raceRows.map((r) => r.id);
 
@@ -118,7 +117,8 @@ export async function GET(request: NextRequest) {
       day: dayNum,
       races,
     });
-  } catch {
-    return NextResponse.json({ error: "Data not found" }, { status: 404 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
