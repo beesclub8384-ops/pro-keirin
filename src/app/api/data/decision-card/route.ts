@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase, getDistinctYears, fetchAllRows } from "@/lib/supabase";
 import { assembleDCPages } from "@/lib/db-transformers";
 
 export async function GET(request: NextRequest) {
@@ -11,14 +11,7 @@ export async function GET(request: NextRequest) {
     const day = sp.get("day");
 
     if (!year) {
-      // Return available years
-      const { data, error } = await supabase
-        .from("decision_card_pages")
-        .select("year")
-        .order("year", { ascending: false });
-
-      if (error) return NextResponse.json({ error: error.message, years: [] }, { status: 500 });
-      const years = [...new Set(data.map((r) => r.year))];
+      const years = await getDistinctYears("decision_card_pages");
       return NextResponse.json({ years });
     }
 
@@ -73,27 +66,27 @@ export async function GET(request: NextRequest) {
     const pageIds = pageRows.map((p) => p.id);
 
     // Fetch races for these pages
-    const { data: raceRows, error: raceErr } = await supabase
-      .from("decision_card_races")
-      .select("id, page_id, race_no, start_time, laps, race_type")
-      .in("page_id", pageIds);
+    const raceRows = await fetchAllRows(
+      supabase
+        .from("decision_card_races")
+        .select("id, page_id, race_no, start_time, laps, race_type")
+        .in("page_id", pageIds)
+    );
 
-    if (raceErr) {
-      return NextResponse.json({ error: raceErr.message }, { status: 404 });
-    }
+    const raceIds = raceRows.map((r) => (r as { id: number }).id);
 
-    const raceIds = (raceRows || []).map((r) => r.id);
-
-    // Fetch entries for these races
+    // Fetch entries for these races (chunked to avoid query size limits)
     let entryRows: Array<Record<string, unknown>> = [];
     if (raceIds.length > 0) {
       for (let i = 0; i < raceIds.length; i += 200) {
         const chunk = raceIds.slice(i, i + 200);
-        const { data: entries } = await supabase
-          .from("decision_card_entries")
-          .select("*")
-          .in("dc_race_id", chunk);
-        if (entries) entryRows.push(...entries);
+        const chunkEntries = await fetchAllRows(
+          supabase
+            .from("decision_card_entries")
+            .select("*")
+            .in("dc_race_id", chunk)
+        );
+        entryRows.push(...chunkEntries);
       }
     }
 

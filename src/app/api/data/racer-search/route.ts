@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase, getDistinctYears } from "@/lib/supabase";
 import { transformRacerProfile, transformRanking } from "@/lib/db-transformers";
 
 export async function GET(request: NextRequest) {
@@ -10,14 +10,7 @@ export async function GET(request: NextRequest) {
     const year = sp.get("year");
 
     if (!q) {
-      // Return available years
-      const { data, error } = await supabase
-        .from("racer_profiles")
-        .select("year")
-        .order("year", { ascending: false });
-
-      if (error) return NextResponse.json({ error: error.message, years: [] }, { status: 500 });
-      const years = [...new Set(data.map((r) => r.year))];
+      const years = await getDistinctYears("racer_profiles");
       return NextResponse.json({ years });
     }
 

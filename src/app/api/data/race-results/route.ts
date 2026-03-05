@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase, getDistinctYears, fetchAllRows } from "@/lib/supabase";
 import { transformRaceWithResults } from "@/lib/db-transformers";
 
 export async function GET(request: NextRequest) {
@@ -11,33 +11,24 @@ export async function GET(request: NextRequest) {
     const day = sp.get("day");
 
     if (!year) {
-      // Return available years
-      const { data, error } = await supabase
-        .from("races")
-        .select("year")
-        .order("year", { ascending: false });
-
-      if (error) return NextResponse.json({ error: error.message, years: [] }, { status: 500 });
-      const years = [...new Set(data.map((r) => r.year))];
+      const years = await getDistinctYears("races");
       return NextResponse.json({ years });
     }
 
     const yearNum = parseInt(year, 10);
 
     if (!round) {
-      // Return meta: rounds/days + totalRaces
-      const { data: races, error } = await supabase
-        .from("races")
-        .select("round, day")
-        .eq("year", yearNum);
-
-      if (error || !races) return NextResponse.json({ error: error?.message || "Data not found" }, { status: 404 });
+      // Paginate to get ALL races for this year (can exceed 1000)
+      const races = await fetchAllRows(
+        supabase.from("races").select("round, day").eq("year", yearNum)
+      );
 
       const totalRaces = races.length;
       const roundDayMap = new Map<number, Set<number>>();
       for (const race of races) {
-        if (!roundDayMap.has(race.round)) roundDayMap.set(race.round, new Set());
-        roundDayMap.get(race.round)!.add(race.day);
+        const r = race as { round: number; day: number };
+        if (!roundDayMap.has(r.round)) roundDayMap.set(r.round, new Set());
+        roundDayMap.get(r.round)!.add(r.day);
       }
 
       const rounds = Array.from(roundDayMap.entries())
@@ -53,7 +44,7 @@ export async function GET(request: NextRequest) {
     const roundNum = parseInt(round, 10);
     const dayNum = day ? parseInt(day, 10) : null;
 
-    // Fetch races
+    // Fetch races (per round+day, max ~50 rows)
     let raceQuery = supabase
       .from("races")
       .select("*")

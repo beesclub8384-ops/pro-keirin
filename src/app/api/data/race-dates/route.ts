@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase, getDistinctYears, fetchAllRows } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,34 +8,24 @@ export async function GET(request: NextRequest) {
     const year = sp.get("year");
 
     if (!year) {
-      // Return available years
-      const { data, error } = await supabase
-        .from("races")
-        .select("year")
-        .order("year", { ascending: false });
-
-      if (error) return NextResponse.json({ error: error.message, years: [] }, { status: 500 });
-
-      const years = [...new Set(data.map((r) => r.year))];
+      const years = await getDistinctYears("races");
       return NextResponse.json({ years });
     }
 
     const yearNum = parseInt(year, 10);
 
-    // Get distinct dates with round/day for the year
-    const { data, error } = await supabase
-      .from("races")
-      .select("date, round, day")
-      .eq("year", yearNum)
-      .order("date", { ascending: true });
-
-    if (error) {
-      return NextResponse.json({ error: error.message, year: yearNum, dates: [] }, { status: 500 });
-    }
+    // Get all dates for the year (can exceed 1000)
+    const data = await fetchAllRows(
+      supabase
+        .from("races")
+        .select("date, round, day")
+        .eq("year", yearNum)
+        .order("date", { ascending: true })
+    );
 
     // Deduplicate by date
     const dateMap = new Map<string, { round: number; day: number }>();
-    for (const r of data) {
+    for (const r of data as Array<{ date: string; round: number; day: number }>) {
       if (!dateMap.has(r.date)) {
         dateMap.set(r.date, { round: r.round, day: r.day });
       }
