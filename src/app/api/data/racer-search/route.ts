@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { transformRacerProfile, transformRanking } from "@/lib/db-transformers";
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const q = sp.get("q");
   const year = sp.get("year");
+
+  const supabase = getSupabase();
 
   if (!q) {
     // Return available years

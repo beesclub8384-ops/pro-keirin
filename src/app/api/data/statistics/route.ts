@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const type = sp.get("type");
   const year = sp.get("year");
+
+  const supabase = getSupabase();
 
   if (!type) {
     // Return available years for each stat type

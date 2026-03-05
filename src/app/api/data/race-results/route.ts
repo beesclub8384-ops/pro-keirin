@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { transformRaceWithResults } from "@/lib/db-transformers";
 
 export async function GET(request: NextRequest) {
@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
   const year = sp.get("year");
   const round = sp.get("round");
   const day = sp.get("day");
+
+  const supabase = getSupabase();
 
   if (!year) {
     // Return available years
