@@ -11,6 +11,24 @@ const supabase = createClient(
 
 const DATA_DIR = path.join(process.cwd(), "src", "data");
 const BATCH_SIZE = 500;
+const PAGE_SIZE = 1000;
+
+/** Paginated fetch to bypass PostgREST 1000-row limit */
+async function fetchAllRows<T = Record<string, unknown>>(
+  query: { range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }> }
+): Promise<T[]> {
+  let all: T[] = [];
+  let offset = 0;
+  while (true) {
+    const { data, error } = await query.range(offset, offset + PAGE_SIZE - 1);
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) break;
+    all = all.concat(data);
+    if (data.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  return all;
+}
 
 function getYears(subDir: string): number[] {
   const dir = path.join(DATA_DIR, subDir);
@@ -68,14 +86,14 @@ async function seedRaces() {
       }
     }
 
-    // Now fetch race IDs for this year to link results
-    const { data: insertedRaces, error: fetchErr } = await supabase
-      .from("races")
-      .select("id, year, round, day, race_no")
-      .eq("year", year);
-
-    if (fetchErr || !insertedRaces) {
-      console.error(`  Error fetching race IDs for ${year}:`, fetchErr?.message);
+    // Now fetch ALL race IDs for this year to link results (paginated)
+    let insertedRaces: Array<{ id: number; year: number; round: number; day: number; race_no: number }>;
+    try {
+      insertedRaces = await fetchAllRows(
+        supabase.from("races").select("id, year, round, day, race_no").eq("year", year)
+      );
+    } catch (e) {
+      console.error(`  Error fetching race IDs for ${year}:`, (e as Error).message);
       continue;
     }
 

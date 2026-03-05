@@ -11,6 +11,24 @@ const supabase = createClient(
 
 const DATA_DIR = path.join(process.cwd(), "src", "data");
 const BATCH_SIZE = 500;
+const PAGE_SIZE = 1000;
+
+/** Paginated fetch to bypass PostgREST 1000-row limit */
+async function fetchAllRows<T = Record<string, unknown>>(
+  query: { range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }> }
+): Promise<T[]> {
+  let all: T[] = [];
+  let offset = 0;
+  while (true) {
+    const { data, error } = await query.range(offset, offset + PAGE_SIZE - 1);
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) break;
+    all = all.concat(data);
+    if (data.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  return all;
+}
 
 async function seedRaceOdds() {
   const filePath = path.join(DATA_DIR, "race-data.json");
@@ -32,16 +50,15 @@ async function seedRaceOdds() {
   const raceIdMap = new Map<string, number>();
 
   for (const year of years) {
-    const { data: races, error } = await supabase
-      .from("races")
-      .select("id, date, race_no")
-      .eq("year", year);
-    if (error) {
-      console.error(`Error fetching races for ${year}:`, error.message);
-      continue;
-    }
-    for (const r of races || []) {
-      raceIdMap.set(`${r.date}|${r.race_no}`, r.id);
+    try {
+      const races = await fetchAllRows<{ id: number; date: string; race_no: number }>(
+        supabase.from("races").select("id, date, race_no").eq("year", year)
+      );
+      for (const r of races) {
+        raceIdMap.set(`${r.date}|${r.race_no}`, r.id);
+      }
+    } catch (e) {
+      console.error(`Error fetching races for ${year}:`, (e as Error).message);
     }
   }
 
