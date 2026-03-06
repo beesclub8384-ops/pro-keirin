@@ -169,6 +169,7 @@ export async function GET(request: NextRequest) {
         recent3_score_venue: string | null;
         recent3_score_total: string | null;
         performance_rank: string | null;
+        is_absent: boolean | null;
         name?: string;
       }>
     );

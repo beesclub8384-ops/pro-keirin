@@ -44,6 +44,8 @@ interface RacerEntry {
   recent3ScoreTotal: string;    // 종합
   // 성적순위
   performanceRank: string;
+  // 결장 여부
+  isAbsent: boolean;
 }
 
 interface RecentPerformance {
@@ -220,20 +222,53 @@ function parseEntryTable(tableHtml: string): RacerEntry[] {
   const rows = extractTableRows(tableHtml);
 
   // 데이터 행 (헤더 행 스킵 - th 포함 행)
-  for (const cells of rows) {
-    if (cells.length < 10) continue;
+  // 결장 행 감지를 위해 원본 <tr> 태그도 참조
+  const trs = [...tableHtml.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)];
 
-    // Cell 0: 등번호, racerId, 기수/나이, 사진
-    const cell0 = cells[0];
-    // racerId: fnRacer.popup('20210004', '2024') 또는 fnRacer.popup(&#39;20190018&#39;)
+  for (const tr of trs) {
+    const trHtml = tr[1];
+    const cells = [...trHtml.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)];
+    if (cells.length === 0) continue;
+
+    const cell0 = cells[0][1].trim();
+
+    // racerId 추출 (헤더 행이면 skip)
     const raceridMatch = cell0.match(/fnRacer\.popup\([^)]*?(\d{8,})/);
-    if (!raceridMatch) continue;  // 헤더 행
+    if (!raceridMatch) continue;
 
     const racerId = raceridMatch[1];
 
-    // 등번호: 보통 첫 번째 텍스트
+    // 등번호
     const backNoMatch = cellText(cell0).match(/^(\d)/);
     const backNo = backNoMatch ? parseInt(backNoMatch[1]) : 0;
+
+    // 결장 감지: colspan이 있는 td에 "결" + "장" 텍스트
+    const hasColspan = /colspan\s*=\s*["']\d+["']/.test(trHtml);
+    const absentText = cellText(cells.length > 1 ? cells[1][1] : "");
+    const isAbsent = hasColspan && cells.length <= 3 && /결\s*장/.test(absentText);
+
+    if (isAbsent) {
+      // 결장 선수: 기수/나이, 사진만 파싱하고 나머지는 빈 값
+      const genAgeMatch = cell0.match(/(\d+)기\s*\/?\s*(\d+)세/);
+      const generation = genAgeMatch ? parseInt(genAgeMatch[1]) : 0;
+      const age = genAgeMatch ? parseInt(genAgeMatch[2]) : 0;
+      const photoMatch = cell0.match(/<img[^>]*src=["']([^"']+)["']/);
+      const photoUrl = photoMatch ? photoMatch[1] : "";
+
+      entries.push({
+        backNo, racerId, generation, age, photoUrl, isAbsent: true,
+        winRateVenue: 0, top2RateVenue: 0, top3RateVenue: 0,
+        winRateTotal: 0, top2RateTotal: 0, top3RateTotal: 0,
+        place1st: 0, place2nd: 0, place3rd: 0,
+        tacticPreemptTotal: "", tacticPushTotal: "", tacticChaseTotal: "", tacticMarkTotal: "",
+        tacticPreemptRound: "", tacticPushRound: "", tacticChaseRound: "", tacticMarkRound: "",
+        gradeAdjust: "", recent3ScoreVenue: "", recent3ScoreTotal: "", performanceRank: "",
+      });
+      continue;
+    }
+
+    // 정상 출전 선수: 기존 파싱 로직
+    if (cells.length < 10) continue;
 
     // 기수/나이: "10기/32세"
     const genAgeMatch = cell0.match(/(\d+)기\s*\/?\s*(\d+)세/);
@@ -246,7 +281,7 @@ function parseEntryTable(tableHtml: string): RacerEntry[] {
 
     // Cell 4-6: 승률/연대율/삼연대율 (광명/종합 구분)
     // 셀 구조에 따라 위치가 다를 수 있으므로 유연하게 처리
-    const ct = (idx: number) => cellText(cells[idx] || "");
+    const ct = (idx: number) => cellText(cells[idx]?.[1] || "");
 
     // 셀들의 숫자 값 추출
     const winRateVenue = safeNum(ct(4));
@@ -297,6 +332,7 @@ function parseEntryTable(tableHtml: string): RacerEntry[] {
       generation,
       age,
       photoUrl,
+      isAbsent: false,
       winRateVenue,
       top2RateVenue,
       top3RateVenue,
@@ -576,6 +612,26 @@ function mergeAll(): void {
 async function main() {
   if (!fs.existsSync(YEARLY_DIR)) {
     fs.mkdirSync(YEARLY_DIR, { recursive: true });
+  }
+
+  // SEED_YEAR 환경변수: 특정 연도만 재수집 (기존 파일 삭제 후 재수집)
+  const seedYear = parseInt(process.env.SEED_YEAR || "0", 10);
+
+  if (seedYear > 0) {
+    console.log(`확정출주표 ${seedYear}년 재수집 시작...\n`);
+    // 기존 checkpoint 삭제하여 강제 재수집
+    const cpPath = getCheckpointPath(seedYear);
+    if (fs.existsSync(cpPath)) fs.unlinkSync(cpPath);
+    const progPath = getProgressPath(seedYear);
+    if (fs.existsSync(progPath)) fs.unlinkSync(progPath);
+
+    console.log(`=== ${seedYear}년 ===`);
+    const pages = await fetchYear(seedYear);
+    saveCheckpoint(seedYear, pages);
+    clearProgress(seedYear);
+    console.log(`  ${seedYear}년 완료: ${pages.length}페이지\n`);
+    console.log("\n=== 확정출주표 수집 완료 ===");
+    return;
   }
 
   console.log("확정출주표 데이터 수집 시작...");

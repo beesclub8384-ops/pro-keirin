@@ -184,6 +184,7 @@ interface DCEntryRow {
   recent3_score_venue: string | null;
   recent3_score_total: string | null;
   performance_rank: string | null;
+  is_absent: boolean | null;
   name?: string; // joined from racer_ids
 }
 
@@ -215,6 +216,7 @@ export function transformDCEntry(row: DCEntryRow): DecisionCardEntry & { name: s
     recent3ScoreVenue: row.recent3_score_venue ?? "",
     recent3ScoreTotal: row.recent3_score_total ?? "",
     performanceRank: row.performance_rank ?? "",
+    isAbsent: row.is_absent ?? false,
     name: row.name ?? "",
   };
 }

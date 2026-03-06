@@ -99,6 +99,7 @@ export interface DecisionCardEntry {
   recent3ScoreVenue: string;
   recent3ScoreTotal: string;
   performanceRank: string;
+  isAbsent: boolean;
 }
 
 export interface DecisionCardRace {

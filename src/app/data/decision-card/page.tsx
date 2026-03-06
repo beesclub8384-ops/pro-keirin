@@ -43,6 +43,7 @@ interface Entry {
   recent3ScoreVenue: string;
   recent3ScoreTotal: string;
   performanceRank: string;
+  isAbsent?: boolean;
 }
 
 interface DecisionRace {
@@ -210,25 +211,38 @@ export default function DecisionCardPage() {
                       </TableHeader>
                       <TableBody>
                         {race.entries.map((entry) => (
-                          <TableRow key={entry.backNo}>
+                          <TableRow key={entry.backNo} className={entry.isAbsent ? "opacity-60" : ""}>
                             <TableCell>
                               <BackNumber no={entry.backNo} />
                             </TableCell>
-                            <TableCell className="font-medium">{entry.name}</TableCell>
-                            <TableCell className="text-sm">
-                              {entry.generation}기/{entry.age}세
+                            <TableCell className="font-medium">
+                              <span className="flex items-center gap-1">
+                                {entry.name}
+                                {entry.isAbsent && (
+                                  <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-900/40 dark:text-red-400">결장</span>
+                                )}
+                              </span>
                             </TableCell>
-                            <TableCell className="font-medium">{entry.winRateVenue}%</TableCell>
-                            <TableCell>{entry.top2RateVenue}%</TableCell>
-                            <TableCell>{entry.top3RateVenue}%</TableCell>
-                            <TableCell className="text-sm">
-                              {entry.place1st}/{entry.place2nd}/{entry.place3rd}
-                            </TableCell>
-                            <TableCell className="text-xs">{entry.gradeAdjust}</TableCell>
-                            <TableCell className="font-mono text-sm">
-                              {entry.recent3ScoreTotal}
-                            </TableCell>
-                            <TableCell className="text-sm">{entry.performanceRank}</TableCell>
+                            {entry.isAbsent ? (
+                              <TableCell colSpan={8} className="text-center text-xs text-muted-foreground">—</TableCell>
+                            ) : (
+                              <>
+                                <TableCell className="text-sm">
+                                  {entry.generation}기/{entry.age}세
+                                </TableCell>
+                                <TableCell className="font-medium">{entry.winRateVenue}%</TableCell>
+                                <TableCell>{entry.top2RateVenue}%</TableCell>
+                                <TableCell>{entry.top3RateVenue}%</TableCell>
+                                <TableCell className="text-sm">
+                                  {entry.place1st}/{entry.place2nd}/{entry.place3rd}
+                                </TableCell>
+                                <TableCell className="text-xs">{entry.gradeAdjust}</TableCell>
+                                <TableCell className="font-mono text-sm">
+                                  {entry.recent3ScoreTotal}
+                                </TableCell>
+                                <TableCell className="text-sm">{entry.performanceRank}</TableCell>
+                              </>
+                            )}
                           </TableRow>
                         ))}
                       </TableBody>
@@ -250,7 +264,7 @@ export default function DecisionCardPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {race.entries.map((entry) => (
+                          {race.entries.filter((e) => !e.isAbsent).map((entry) => (
                             <tr key={entry.backNo} className="border-t">
                               <td className="px-2 py-1 font-medium">{entry.backNo}</td>
                               <td className="px-2 py-1 text-center">{entry.tacticPreemptTotal || "-"}</td>

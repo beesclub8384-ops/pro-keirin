@@ -178,6 +178,7 @@ async function seedDecisionCards() {
             recent3_score_venue: entry.recent3ScoreVenue || null,
             recent3_score_total: entry.recent3ScoreTotal || null,
             performance_rank: entry.performanceRank || null,
+            is_absent: entry.isAbsent ?? false,
           });
         }
       }

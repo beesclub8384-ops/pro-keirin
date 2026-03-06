@@ -143,6 +143,7 @@ CREATE TABLE decision_card_entries (
   recent3_score_venue TEXT,
   recent3_score_total TEXT,
   performance_rank TEXT,
+  is_absent BOOLEAN NOT NULL DEFAULT false,
   UNIQUE (dc_race_id, back_no)
 );
 
