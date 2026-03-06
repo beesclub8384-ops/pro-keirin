@@ -210,7 +210,7 @@ export default function DecisionCardPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {race.entries.map((entry) => (
+                        {[...race.entries].sort((a, b) => a.backNo - b.backNo).map((entry) => (
                           <TableRow key={entry.backNo} className={entry.isAbsent ? "opacity-60" : ""}>
                             <TableCell>
                               <BackNumber no={entry.backNo} />
@@ -264,13 +264,13 @@ export default function DecisionCardPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {race.entries.filter((e) => !e.isAbsent).map((entry) => (
-                            <tr key={entry.backNo} className="border-t">
+                          {[...race.entries].sort((a, b) => a.backNo - b.backNo).map((entry) => (
+                            <tr key={entry.backNo} className={`border-t${entry.isAbsent ? " opacity-60" : ""}`}>
                               <td className="px-2 py-1 font-medium">{entry.backNo}</td>
-                              <td className="px-2 py-1 text-center">{entry.tacticPreemptTotal || "-"}</td>
-                              <td className="px-2 py-1 text-center">{entry.tacticPushTotal || "-"}</td>
-                              <td className="px-2 py-1 text-center">{entry.tacticChaseTotal || "-"}</td>
-                              <td className="px-2 py-1 text-center">{entry.tacticMarkTotal || "-"}</td>
+                              <td className="px-2 py-1 text-center">{entry.isAbsent ? "—" : (entry.tacticPreemptTotal || "-")}</td>
+                              <td className="px-2 py-1 text-center">{entry.isAbsent ? "—" : (entry.tacticPushTotal || "-")}</td>
+                              <td className="px-2 py-1 text-center">{entry.isAbsent ? "—" : (entry.tacticChaseTotal || "-")}</td>
+                              <td className="px-2 py-1 text-center">{entry.isAbsent ? "—" : (entry.tacticMarkTotal || "-")}</td>
                             </tr>
                           ))}
                         </tbody>
