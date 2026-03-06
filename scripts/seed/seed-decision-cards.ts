@@ -11,6 +11,24 @@ const supabase = createClient(
 
 const DATA_DIR = path.join(process.cwd(), "src", "data");
 const BATCH_SIZE = 500;
+const PAGE_SIZE = 1000;
+
+/** Paginated fetch to bypass PostgREST 1000-row limit */
+async function fetchAllRows<T = Record<string, unknown>>(
+  query: { range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }> }
+): Promise<T[]> {
+  let all: T[] = [];
+  let offset = 0;
+  while (true) {
+    const { data, error } = await query.range(offset, offset + PAGE_SIZE - 1);
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) break;
+    all = all.concat(data);
+    if (data.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  return all;
+}
 
 function getYears(subDir: string): number[] {
   const dir = path.join(DATA_DIR, subDir);
@@ -100,25 +118,24 @@ async function seedDecisionCards() {
       if (error) console.error(`  Error inserting DC races batch:`, error.message);
     }
 
-    // 4. Fetch inserted race IDs
+    // 4. Fetch inserted race IDs (paginated to bypass 1000-row limit)
     const pageIds = Array.from(pageIdMap.values());
     const dcRaceIdMap = new Map<string, number>();
 
-    // Fetch in chunks since pageIds might be large
     for (let i = 0; i < pageIds.length; i += 100) {
       const chunk = pageIds.slice(i, i + 100);
-      const { data: insertedRaces, error: rFetchErr } = await supabase
-        .from("decision_card_races")
-        .select("id, page_id, race_no")
-        .in("page_id", chunk);
-
-      if (rFetchErr || !insertedRaces) {
-        console.error(`  Error fetching DC race IDs:`, rFetchErr?.message);
-        continue;
-      }
-
-      for (const r of insertedRaces) {
-        dcRaceIdMap.set(`${r.page_id}|${r.race_no}`, r.id);
+      try {
+        const insertedRaces = await fetchAllRows<{ id: number; page_id: number; race_no: number }>(
+          supabase
+            .from("decision_card_races")
+            .select("id, page_id, race_no")
+            .in("page_id", chunk)
+        );
+        for (const r of insertedRaces) {
+          dcRaceIdMap.set(`${r.page_id}|${r.race_no}`, r.id);
+        }
+      } catch (e) {
+        console.error(`  Error fetching DC race IDs:`, (e as Error).message);
       }
     }
 
