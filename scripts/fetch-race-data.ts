@@ -41,7 +41,7 @@ if (!SERVICE_KEY) {
 
 // 경륜 시작: 2000년 (광명돔 개장)
 const START_YEAR = 2000;
-const END_YEAR = 2025;
+const END_YEAR = 2026;
 const YEARS = Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, i) => String(START_YEAR + i));
 
 const PAGE_SIZE = 100;
