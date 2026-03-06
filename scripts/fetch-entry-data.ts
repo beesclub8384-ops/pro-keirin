@@ -109,7 +109,7 @@ const API_BASE =
   "https://apis.data.go.kr/B551014/SRVC_OD_API_CRA_RACE_ORGAN/TODZ_API_CRA_RACE_ORGAN_I";
 
 const START_YEAR = 2003;
-const END_YEAR = 2025;
+const END_YEAR = 2026;
 const YEARS = Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, i) => String(START_YEAR + i));
 
 const PAGE_SIZE = 100;

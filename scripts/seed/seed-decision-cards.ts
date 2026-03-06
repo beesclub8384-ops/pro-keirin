@@ -40,7 +40,9 @@ function getYears(subDir: string): number[] {
 }
 
 async function seedDecisionCards() {
-  const years = getYears("yearly-decision-card");
+  const allYears = getYears("yearly-decision-card");
+  const targetYear = parseInt(process.env.SEED_YEAR || "0", 10);
+  const years = targetYear > 0 ? allYears.filter((y) => y === targetYear) : allYears;
   console.log(`Seeding decision cards for ${years.length} years...`);
 
   for (const year of years) {

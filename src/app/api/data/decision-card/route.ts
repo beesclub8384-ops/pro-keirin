@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Join racer names from racer_ids
+    // Join racer names from racer_ids (fallback to closest previous year)
     const racerIdSet = new Set(
       entryRows.map((e) => e.racer_id as string).filter(Boolean)
     );
@@ -98,12 +98,31 @@ export async function GET(request: NextRequest) {
 
     if (racerIdSet.size > 0) {
       const racerIds = Array.from(racerIdSet);
+
+      // Determine which year to use: try yearNum first, fallback to latest available
+      let nameYear = yearNum;
+      const { count } = await supabase
+        .from("racer_ids")
+        .select("*", { count: "exact", head: true })
+        .eq("year", yearNum);
+      if (!count || count === 0) {
+        const { data: fallbackRow } = await supabase
+          .from("racer_ids")
+          .select("year")
+          .lt("year", yearNum)
+          .order("year", { ascending: false })
+          .limit(1);
+        if (fallbackRow?.length) {
+          nameYear = fallbackRow[0].year;
+        }
+      }
+
       for (let i = 0; i < racerIds.length; i += 200) {
         const chunk = racerIds.slice(i, i + 200);
         const { data: racerIdRows } = await supabase
           .from("racer_ids")
           .select("racer_id, name")
-          .eq("year", yearNum)
+          .eq("year", nameYear)
           .in("racer_id", chunk);
         if (racerIdRows) {
           for (const r of racerIdRows) {
