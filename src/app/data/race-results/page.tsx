@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -19,6 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BackNumber } from "@/components/ui/back-number";
+import { RaceTabNav } from "@/components/race-tab-nav";
 
 interface RaceOdds {
   단승: number;
@@ -200,10 +201,11 @@ export default function RaceResultsPage() {
         </div>
       ) : (
         <div className="space-y-6">
+          <RaceTabNav raceNos={races.map((r) => r.raceNo).sort((a, b) => a - b)} />
           {races
             .sort((a, b) => a.raceNo - b.raceNo)
             .map((race) => (
-              <Card key={race.raceNo}>
+              <Card key={race.raceNo} id={`race-${race.raceNo}`} className="scroll-mt-16">
                 <CardHeader className="pb-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <CardTitle className="text-lg">{race.raceNo}경주</CardTitle>

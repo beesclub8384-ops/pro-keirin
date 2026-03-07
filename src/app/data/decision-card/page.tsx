@@ -19,6 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BackNumber } from "@/components/ui/back-number";
+import { RaceTabNav } from "@/components/race-tab-nav";
 
 interface Entry {
   backNo: number;
@@ -178,11 +179,13 @@ export default function DecisionCardPage() {
           {selectedYear ? "출주표 데이터가 없습니다." : "연도를 선택해주세요."}
         </div>
       ) : (
-        pages.map((page) =>
+        <>
+        <RaceTabNav raceNos={pages.flatMap((p) => p.races.map((r) => r.raceNo)).sort((a, b) => a - b)} />
+        {pages.map((page) =>
           page.races
             .sort((a, b) => a.raceNo - b.raceNo)
             .map((race) => (
-              <Card key={`${page.round}-${page.day}-${race.raceNo}`} className="overflow-hidden">
+              <Card key={`${page.round}-${page.day}-${race.raceNo}`} id={`race-${race.raceNo}`} className="scroll-mt-16 overflow-hidden">
                 <CardHeader className="pb-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <CardTitle className="text-lg">{race.raceNo}경주</CardTitle>
@@ -280,7 +283,8 @@ export default function DecisionCardPage() {
                 </CardContent>
               </Card>
             ))
-        )
+        )}
+        </>
       )}
     </div>
   );
