@@ -1,0 +1,44 @@
+name: Weekly Odds Update (data.go.kr)
+
+# 매주 수요일 KST 03:00 = UTC 화요일 18:00
+on:
+  schedule:
+    - cron: '0 18 * * 2'
+  workflow_dispatch:
+
+jobs:
+  fetch-enrich-seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      DATA_GO_KR_API_KEY: ${{ secrets.DATA_GO_KR_API_KEY }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch race data (current year)
+        run: npx tsx scripts/fetch-race-data.ts --year $(date -u +%Y)
+
+      - name: Enrich race results
+        run: npx tsx scripts/enrich-race-results.ts
+
+      - name: Seed races + results
+        run: npx tsx scripts/seed/seed-races.ts
+
+      - name: Seed race odds
+        run: npx tsx scripts/seed/seed-race-odds.ts

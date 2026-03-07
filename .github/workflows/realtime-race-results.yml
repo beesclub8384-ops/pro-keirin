@@ -1,0 +1,43 @@
+name: Realtime Race Results (kcycle)
+
+# 금/토/일 KST 12:50~19:00 = UTC 03:50~10:00 (매 10분)
+# cron은 UTC 기준. 한국 금=UTC 목밤~금, 한국 토=UTC 금밤~토, 한국 일=UTC 토밤~일
+# KST 금/토/일 12:50~19:00 → UTC 금/토/일 03:50~10:00 (같은 UTC 날짜)
+on:
+  schedule:
+    # 매 10분, UTC 04~09시 (KST 13~18시), 목/금/토 (KST 금/토/일)
+    - cron: '*/10 4-9 * * 4,5,6'
+    # xx:50분, UTC 03시 (KST 12:50)
+    - cron: '50 3 * * 4,5,6'
+    # xx:00분, UTC 10시 (KST 19:00)
+    - cron: '0 10 * * 4,5,6'
+  workflow_dispatch:
+
+jobs:
+  fetch-and-seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch race details for today
+        run: npx tsx scripts/fetch-race-detail.ts --date today
+
+      - name: Seed to Supabase
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/seed/seed-races.ts

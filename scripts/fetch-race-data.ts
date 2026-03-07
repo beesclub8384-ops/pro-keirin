@@ -1,6 +1,7 @@
 // ============================================================
 // 경륜 경주결과 데이터 수집 스크립트 (전체 연도, 중단 재개 지원)
 // 사용법: npm run fetch-data
+//         npm run fetch-data -- --year 2026  (특정 연도만 재수집)
 // - 연도별 checkpoint 파일을 src/data/yearly/에 저장
 // - 중단 후 재실행하면 이미 수집된 연도는 건너뜀
 // - 모든 연도 수집 후 race-data.json으로 병합
@@ -32,10 +33,21 @@ interface RaceOddsRecord {
   };
 }
 
+// --- CLI: --year 옵션 파싱 ---
+function parseYearArg(): string | null {
+  const idx = process.argv.indexOf("--year");
+  if (idx === -1) return null;
+  const val = process.argv[idx + 1];
+  if (!val || !/^\d{4}$/.test(val)) { console.error("ERROR: --year 값이 필요합니다 (예: 2026)"); process.exit(1); }
+  return val;
+}
+
+const TARGET_YEAR = parseYearArg();
+
 // --- 설정 ---
 const SERVICE_KEY = process.env.DATA_GO_KR_API_KEY;
 if (!SERVICE_KEY) {
-  console.error("ERROR: DATA_GO_KR_API_KEY가 .env.local에 설정되지 않았습니다.");
+  console.error("ERROR: DATA_GO_KR_API_KEY가 .env.local 또는 환경변수에 설정되지 않았습니다.");
   process.exit(1);
 }
 
@@ -236,6 +248,18 @@ async function main() {
     fs.mkdirSync(YEARLY_DIR, { recursive: true });
   }
 
+  // --year 모드: 특정 연도만 재수집 (기존 checkpoint 덮어쓰기)
+  if (TARGET_YEAR) {
+    console.log(`경륜 경주결과 수집 (단일 연도): ${TARGET_YEAR}년`);
+    const records = await fetchYear(TARGET_YEAR);
+    saveYearCheckpoint(TARGET_YEAR, records);
+    console.log(`  ${TARGET_YEAR}년 완료: 광명 ${records.length}건\n`);
+    mergeAllYears();
+    console.log("\n=== 단일 연도 수집 완료 ===");
+    return;
+  }
+
+  // 전체 모드
   console.log("경륜 경주결과 데이터 수집 시작...");
   console.log(`수집 범위: ${START_YEAR}~${END_YEAR}년, 대상: 광명`);
   console.log(`페이지 크기: ${PAGE_SIZE}\n`);

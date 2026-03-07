@@ -1,12 +1,30 @@
 // ============================================================
 // 경주결과 상세 데이터 수집 스크립트 (전체 연도, 중단 재개 지원)
 // 사용법: npm run fetch-race-detail
+//         npm run fetch-race-detail -- --date 2026-03-07
+//         npm run fetch-race-detail -- --date today
 // kcycle.or.kr HTML 스크래핑
 // 환경(날씨/풍향/풍속), 선수별(착차/주행시간/승부수), 위반 데이터
 // ============================================================
 
 import * as fs from "fs";
 import * as path from "path";
+
+// --- CLI: --date 옵션 파싱 ---
+function parseDateArg(): string | null {
+  const idx = process.argv.indexOf("--date");
+  if (idx === -1) return null;
+  const val = process.argv[idx + 1];
+  if (!val) { console.error("ERROR: --date 값이 필요합니다 (YYYY-MM-DD 또는 today)"); process.exit(1); }
+  if (val === "today") {
+    const kst = new Date(Date.now() + 9 * 3600 * 1000);
+    return kst.toISOString().slice(0, 10);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) { console.error("ERROR: 날짜 형식이 잘못됨:", val); process.exit(1); }
+  return val;
+}
+
+const TARGET_DATE = parseDateArg();
 
 // --- 타입 ---
 interface RaceEnvironment {
@@ -98,7 +116,7 @@ interface RaceTarget {
   date: string;
 }
 
-function loadRaceTargets(year: number): RaceTarget[] {
+function loadRaceTargets(year: number, filterDate?: string | null): RaceTarget[] {
   const entryPath = path.join(ENTRY_DIR, `${year}.json`);
   if (!fs.existsSync(entryPath)) {
     console.log(`  WARNING: ${entryPath} 없음`);
@@ -109,6 +127,7 @@ function loadRaceTargets(year: number): RaceTarget[] {
   const seen = new Map<string, RaceTarget>();
 
   for (const e of entries) {
+    if (filterDate && e.date !== filterDate) continue;
     const key = `${e.week}-${e.day}-${e.raceNo}`;
     if (!seen.has(key)) {
       seen.set(key, {
@@ -302,8 +321,8 @@ function clearProgress(year: number): void {
 }
 
 // --- 단일 연도 수집 ---
-async function fetchYear(year: number): Promise<YearRaceDetail> {
-  const targets = loadRaceTargets(year);
+async function fetchYear(year: number, filterDate?: string | null): Promise<YearRaceDetail> {
+  const targets = loadRaceTargets(year, filterDate);
   if (targets.length === 0) {
     console.log(`  ${year}년: entry 데이터 없음`);
     return { year, totalRaces: 0, races: [] };
@@ -398,6 +417,34 @@ async function main() {
     fs.mkdirSync(YEARLY_DIR, { recursive: true });
   }
 
+  // --date 모드: 특정 날짜만 수집
+  if (TARGET_DATE) {
+    const year = parseInt(TARGET_DATE.slice(0, 4), 10);
+    console.log(`경주결과 상세 수집 (단일 날짜): ${TARGET_DATE}`);
+    const targets = loadRaceTargets(year, TARGET_DATE);
+    if (targets.length === 0) {
+      console.log(`  ${TARGET_DATE}: 해당 날짜에 경주 없음 (entry 데이터 미존재)`);
+      return;
+    }
+    console.log(`  ${targets.length}개 경주 대상\n`);
+
+    // 기존 연도 데이터 로드 후 해당 날짜 데이터 교체
+    const existing = loadCheckpoint(year);
+    const prevRaces = existing ? existing.races.filter(r => r.date !== TARGET_DATE) : [];
+
+    const newData = await fetchYear(year, TARGET_DATE);
+    const merged = [...prevRaces, ...newData.races];
+    merged.sort((a, b) => a.date.localeCompare(b.date) || a.raceNo - b.raceNo);
+
+    saveCheckpoint(year, { year, totalRaces: merged.length, races: merged });
+    console.log(`\n  ${TARGET_DATE}: ${newData.totalRaces}건 수집, 연도 합계: ${merged.length}건`);
+
+    mergeAll();
+    console.log("\n=== 단일 날짜 수집 완료 ===");
+    return;
+  }
+
+  // 전체 모드
   console.log("경주결과 상세 데이터 수집 시작...");
   console.log(`수집 범위: ${START_YEAR}~${END_YEAR}년, 대상: 광명\n`);
 
