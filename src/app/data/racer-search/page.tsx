@@ -54,6 +54,10 @@ interface RacerResult {
   racerId: string;
   name: string;
   year: number;
+  birthYear: string;
+  height: number;
+  weight: number;
+  bloodType: string;
   gradeChange: string;
   winRate: number;
   top2Rate: number;
@@ -232,6 +236,21 @@ export default function RacerSearchPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    )}
+
+                    {/* Body Info */}
+                    {(racer.birthYear || racer.height > 0 || racer.bloodType) && (
+                      <div className="flex flex-wrap gap-3 text-sm">
+                        {racer.birthYear && (
+                          <Badge variant="outline">출생 {racer.birthYear}</Badge>
+                        )}
+                        {racer.height > 0 && racer.weight > 0 && (
+                          <Badge variant="outline">{racer.height}cm / {racer.weight}kg</Badge>
+                        )}
+                        {racer.bloodType && (
+                          <Badge variant="outline">{racer.bloodType}</Badge>
+                        )}
+                      </div>
                     )}
 
                     {/* Profile */}

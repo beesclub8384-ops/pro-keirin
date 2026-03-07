@@ -266,6 +266,10 @@ interface RacerProfileRow {
   racer_id: string;
   name: string;
   year: number;
+  birth_year: string | null;
+  height: number | null;
+  weight: number | null;
+  blood_type: string | null;
   grade_change: string | null;
   win_rate: number | null;
   top2_rate: number | null;
@@ -288,6 +292,10 @@ export function transformRacerProfile(row: RacerProfileRow): RacerProfile {
     racerId: row.racer_id,
     name: row.name,
     year: row.year,
+    birthYear: row.birth_year ?? "",
+    height: row.height ?? 0,
+    weight: row.weight ?? 0,
+    bloodType: row.blood_type ?? "",
     gradeChange: row.grade_change ?? "",
     winRate: row.win_rate ?? 0,
     top2Rate: row.top2_rate ?? 0,

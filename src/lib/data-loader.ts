@@ -177,6 +177,10 @@ export interface RacerProfile {
   racerId: string;
   name: string;
   year: number;
+  birthYear: string;
+  height: number;
+  weight: number;
+  bloodType: string;
   gradeChange: string;
   winRate: number;
   top2Rate: number;

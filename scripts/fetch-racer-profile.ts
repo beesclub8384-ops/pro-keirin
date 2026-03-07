@@ -14,6 +14,11 @@ interface RacerProfile {
   racerId: string;
   name: string;
   year: number;
+  // 신체정보 (.infoItem)
+  birthYear: string;     // "73년 09월 15일"
+  height: number;        // 175 (cm)
+  weight: number;        // 85 (kg)
+  bloodType: string;     // "O형"
   // Table 0: 기본 정보
   gradeChange: string;   // (전)SS -> (현)SS
   winRate: number;        // 승률(%)
@@ -200,7 +205,34 @@ async function fetchRacerIdsForYear(year: number): Promise<RacerIdEntry[]> {
 // Phase 2: 프로필 페이지 파싱
 // ==========================================================
 
+function parseInfoItems(html: string): { birthYear: string; height: number; weight: number; bloodType: string } {
+  const result = { birthYear: "", height: 0, weight: 0, bloodType: "" };
+
+  // Extract all <b class="tit">...</b><i class="txt">...</i> pairs from infoItem
+  const items = [...html.matchAll(/<b class="tit">([\s\S]*?)<\/b>\s*<i class="txt">([\s\S]*?)<\/i>/g)];
+  for (const m of items) {
+    const key = m[1].replace(/<[^>]*>/g, "").trim();
+    const val = decodeHtml(m[2].replace(/<[^>]*>/g, "").trim()).replace(/\s+/g, " ");
+
+    if (key === "출생년도") {
+      result.birthYear = val;
+    } else if (key.includes("신장") && key.includes("체중")) {
+      const hm = val.match(/(\d+)\s*cm/);
+      const wm = val.match(/(\d+)\s*kg/);
+      if (hm) result.height = parseInt(hm[1]);
+      if (wm) result.weight = parseInt(wm[1]);
+    } else if (key === "혈액형") {
+      result.bloodType = val;
+    }
+  }
+
+  return result;
+}
+
 function parseProfile(html: string, racerId: string, name: string, year: number): RacerProfile | null {
+  // 신체정보 파싱 (.infoItem)
+  const bodyInfo = parseInfoItems(html);
+
   // 테이블 파싱
   const tables = [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/g)];
   if (tables.length < 9) return null;
@@ -232,6 +264,11 @@ function parseProfile(html: string, racerId: string, name: string, year: number)
     racerId,
     name,
     year,
+    // 신체정보
+    birthYear: bodyInfo.birthYear,
+    height: bodyInfo.height,
+    weight: bodyInfo.weight,
+    bloodType: bodyInfo.bloodType,
     // Table 0
     gradeChange: t0[0] || "",
     winRate: safeNum(t0[1] || "0"),
