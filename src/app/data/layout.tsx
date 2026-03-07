@@ -1,40 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
 import {
-  Trophy,
-  ClipboardList,
-  UserSearch,
-  BarChart3,
   ChevronLeft,
   ChevronRight,
-  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-
-const sidebarItems = [
-  { label: "경주결과", href: "/data/race-results", icon: Trophy },
-  { label: "출주표", href: "/data/decision-card", icon: ClipboardList },
-  { label: "선수 검색", href: "/data/racer-search", icon: UserSearch },
-  { label: "통계", href: "/data/statistics", icon: BarChart3 },
-];
 
 interface RaceDate {
   date: string;
   round: number;
   day: number;
-}
-
-interface QuickResult {
-  racerId: string;
-  name: string;
-  year: number;
-  gradeChange: string;
-  winRate: number;
-  top2Rate: number;
 }
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -44,27 +21,12 @@ export default function DataLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
   const router = useRouter();
   // --- Calendar state ---
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
   const [calMonth, setCalMonth] = useState(now.getMonth()); // 0-indexed
   const [raceDates, setRaceDates] = useState<RaceDate[]>([]);
-
-  // --- Quick search state ---
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<QuickResult[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  // Determine current viewing date from page context
-  // Pages store year/round/day in search params or we detect from pathname
-  const currentViewDate = useMemo(() => {
-    // If we're on race-results or decision-card, there's no date param directly
-    // but we can use it if passed via URL later
-    return null;
-  }, []);
 
   // Load race dates for the calendar month's year
   useEffect(() => {
@@ -137,97 +99,12 @@ export default function DataLayout({
   const getDateStr = (day: number) =>
     `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-  // --- Quick search ---
-  const doQuickSearch = useCallback(async (q: string) => {
-    if (!q.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    setSearchLoading(true);
-    try {
-      const res = await fetch(
-        `/api/data/racer-search?q=${encodeURIComponent(q.trim())}&year=${now.getFullYear()}`
-      );
-      const d = await res.json();
-      // Deduplicate by racerId, take first (most recent)
-      const seen = new Set<string>();
-      const unique: QuickResult[] = [];
-      for (const r of d.results || []) {
-        if (!seen.has(r.racerId)) {
-          seen.add(r.racerId);
-          unique.push(r);
-        }
-        if (unique.length >= 5) break;
-      }
-      setSearchResults(unique);
-    } finally {
-      setSearchLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => doQuickSearch(searchQuery), 300);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [searchQuery, doQuickSearch]);
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
-      {/* Mobile Tab Bar */}
-      <div className="flex gap-1 overflow-x-auto pb-4 lg:hidden scrollbar-hide">
-        {sidebarItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-brand text-white"
-                  : "bg-muted text-foreground/70 hover:bg-muted/80"
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          );
-        })}
-      </div>
-
       <div className="flex gap-6">
         {/* Desktop Sidebar */}
         <aside className="hidden lg:block w-56 shrink-0">
           <div className="sticky top-32 space-y-5">
-            {/* Navigation */}
-            <nav className="space-y-1">
-              <h2 className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                데이터 조회
-              </h2>
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-brand/10 text-brand"
-                        : "text-foreground/70 hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-
             {/* Mini Calendar */}
             <div className="rounded-lg border bg-card p-3">
               <div className="mb-2 flex items-center justify-between">
@@ -283,49 +160,6 @@ export default function DataLayout({
                 <span className="inline-block h-2.5 w-2.5 rounded-sm bg-green-100" />
                 경주일
               </p>
-            </div>
-
-            {/* Quick Racer Search */}
-            <div className="space-y-2">
-              <h3 className="px-1 text-xs font-semibold text-muted-foreground">
-                선수 빠른검색
-              </h3>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="선수명"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8 pl-8 text-xs"
-                />
-              </div>
-              {searchQuery.trim() && (
-                <div className="rounded-md border bg-card">
-                  {searchLoading ? (
-                    <div className="px-3 py-2 text-xs text-muted-foreground">
-                      검색 중...
-                    </div>
-                  ) : searchResults.length === 0 ? (
-                    <div className="px-3 py-2 text-xs text-muted-foreground">
-                      결과 없음
-                    </div>
-                  ) : (
-                    searchResults.map((r) => (
-                      <Link
-                        key={r.racerId}
-                        href={`/data/racer-search?q=${encodeURIComponent(r.name)}`}
-                        onClick={() => setSearchQuery("")}
-                        className="flex items-center justify-between px-3 py-2 text-xs hover:bg-muted transition-colors border-b last:border-b-0"
-                      >
-                        <span className="font-medium">{r.name}</span>
-                        <span className="text-muted-foreground">
-                          승 {r.winRate}%
-                        </span>
-                      </Link>
-                    ))
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </aside>
