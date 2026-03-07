@@ -80,7 +80,7 @@ async function seedRaces() {
       const batch = raceRows.slice(i, i + BATCH_SIZE);
       const { error } = await supabase
         .from("races")
-        .upsert(batch, { onConflict: "year,round,day,race_no", ignoreDuplicates: true });
+        .upsert(batch, { onConflict: "year,round,day,race_no" });
       if (error) {
         console.error(`  Error inserting races batch ${i}:`, error.message);
       }
@@ -133,7 +133,7 @@ async function seedRaces() {
       const batch = resultRows.slice(i, i + BATCH_SIZE);
       const { error } = await supabase
         .from("race_results")
-        .upsert(batch, { onConflict: "race_id,back_no", ignoreDuplicates: true });
+        .upsert(batch, { onConflict: "race_id,back_no" });
       if (error) {
         console.error(`  Error inserting results batch ${i}:`, error.message);
       }
