@@ -82,9 +82,18 @@ async function seedRaceSchedule() {
     }>;
     const year = data.year as number;
 
-    console.log(`\n${year}년: ${schedule.length}일 시딩...`);
+    // 중복 제거 (year,round,day 기준)
+    const seen = new Set<string>();
+    const unique = schedule.filter((s) => {
+      const key = `${year}-${s.round}-${s.day}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
-    const rows = schedule.map((s) => ({
+    console.log(`\n${year}년: ${schedule.length}일 → 중복 제거 후 ${unique.length}일 시딩...`);
+
+    const rows = unique.map((s) => ({
       year,
       date: s.date,
       round: s.round,
@@ -93,7 +102,7 @@ async function seedRaceSchedule() {
 
     const { error } = await supabase
       .from("race_schedule")
-      .upsert(rows, { onConflict: "year,round,day" });
+      .upsert(rows, { onConflict: "year,round,day", ignoreDuplicates: true });
 
     if (error) {
       console.error(`  오류: ${error.message}`);
