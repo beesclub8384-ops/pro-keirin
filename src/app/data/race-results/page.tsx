@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BackNumber } from "@/components/ui/back-number";
 import { RaceTabNav } from "@/components/race-tab-nav";
+import Link from "next/link";
 
 interface RaceOdds {
   단승: number;
@@ -262,7 +263,9 @@ export default function RaceResultsPage() {
                                 <span className="flex items-center gap-1">
                                   {r.name}
                                   {r.training && (
-                                    <Badge variant="outline" className="text-xs">{r.training}</Badge>
+                                    <Link href={`/training/${encodeURIComponent(r.training)}`} onClick={(e) => e.stopPropagation()}>
+                                      <Badge variant="outline" className="text-xs cursor-pointer hover:bg-accent">{r.training}</Badge>
+                                    </Link>
                                   )}
                                 </span>
                               </TableCell>
