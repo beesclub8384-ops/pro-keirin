@@ -355,7 +355,7 @@ async function seedOdds(
 
   const { error } = await supabase
     .from("race_odds")
-    .upsert(rows, { onConflict: "date,race_no", ignoreDuplicates: true });
+    .upsert(rows, { onConflict: "date,race_no" });
   if (error) throw new Error(`race_odds upsert failed: ${error.message}`);
 
   return rows.length;
@@ -401,6 +401,36 @@ export async function fetchAndSeedLatestResults(
   } catch {
     totalRaces = 16;
     console.log(`  요약 조회 실패, 기본 16경주 시도`);
+  }
+
+  // 2-1. DB에 이미 수집된 경주 수 확인 → 완전하면 스킵
+  const { count: dbRaceCount } = await supabase
+    .from("races")
+    .select("*", { count: "exact", head: true })
+    .eq("year", year)
+    .eq("round", round)
+    .eq("day", day);
+
+  const existingCount = dbRaceCount || 0;
+
+  if (existingCount > 0 && existingCount >= totalRaces) {
+    // 배당도 이미 있는지 확인
+    const { count: dbOddsCount } = await supabase
+      .from("race_odds")
+      .select("*", { count: "exact", head: true })
+      .eq("date", dateStr);
+
+    if ((dbOddsCount || 0) >= totalRaces) {
+      console.log(`  이미 완전히 수집됨 (DB ${existingCount}경주, 배당 ${dbOddsCount}건) → 스킵`);
+      return {
+        success: true, date: dateStr,
+        racesCount: existingCount, resultsCount: 0, oddsCount: dbOddsCount || 0,
+        message: "이미 완전히 수집된 날짜입니다",
+      };
+    }
+    console.log(`  DB ${existingCount}경주 수집됨, 배당 ${dbOddsCount || 0}건 → 배당 재수집`);
+  } else if (existingCount > 0) {
+    console.log(`  DB ${existingCount}경주 < 실제 ${totalRaces}경주 → 재수집`);
   }
 
   // 3. kcycle에서 경주별 상세 수집
