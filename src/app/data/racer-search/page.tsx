@@ -90,6 +90,7 @@ export default function RacerSearchPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [profileYears, setProfileYears] = useState<Record<string, string>>({});
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     fetch("/api/data/racer-search")
@@ -102,12 +103,21 @@ export default function RacerSearchPage() {
       setResults([]);
       return;
     }
+    // 이전 요청 취소
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = new AbortController();
+
     setLoading(true);
     try {
       const yearParam = year !== "all" ? `&year=${year}` : "";
-      const res = await fetch(`/api/data/racer-search?q=${encodeURIComponent(q.trim())}${yearParam}`);
+      const res = await fetch(
+        `/api/data/racer-search?q=${encodeURIComponent(q.trim())}${yearParam}`,
+        { signal: abortRef.current.signal }
+      );
       const d = await res.json();
       setResults(d.results || []);
+    } catch (e) {
+      if ((e as Error).name === "AbortError") return; // 취소된 요청은 무시
     } finally {
       setLoading(false);
     }
