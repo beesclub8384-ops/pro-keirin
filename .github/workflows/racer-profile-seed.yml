@@ -1,0 +1,50 @@
+name: Racer Profile Seed
+
+# 선수 프로필 크롤링 + Supabase 시딩
+# 사전 조건: Supabase에서 scripts/migrations/add-body-info.sql 실행 필요
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_year:
+        description: '시작 연도'
+        required: false
+        default: '2023'
+      end_year:
+        description: '종료 연도'
+        required: false
+        default: '2025'
+
+jobs:
+  fetch-and-seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch racer profiles
+        env:
+          START_YEAR: ${{ github.event.inputs.start_year }}
+          END_YEAR: ${{ github.event.inputs.end_year }}
+        run: npx tsx scripts/fetch-racer-profile.ts
+
+      - name: Seed to Supabase
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          START_YEAR: ${{ github.event.inputs.start_year }}
+          END_YEAR: ${{ github.event.inputs.end_year }}
+        run: npx tsx scripts/seed/seed-racer-profiles.ts

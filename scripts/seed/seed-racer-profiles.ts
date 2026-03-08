@@ -22,7 +22,10 @@ function getYears(subDir: string): number[] {
 }
 
 async function seedRacerProfiles() {
-  const years = getYears("yearly-racer-profile");
+  const startYear = parseInt(process.env.START_YEAR || "0", 10);
+  const endYear = parseInt(process.env.END_YEAR || "9999", 10);
+  const allYears = getYears("yearly-racer-profile");
+  const years = startYear ? allYears.filter((y) => y >= startYear && y <= endYear) : allYears;
   console.log(`Seeding racer profiles for ${years.length} years...`);
 
   for (const year of years) {
@@ -61,7 +64,7 @@ async function seedRacerProfiles() {
       const batch = rows.slice(i, i + BATCH_SIZE);
       const { error } = await supabase
         .from("racer_profiles")
-        .upsert(batch, { onConflict: "racer_id,year", ignoreDuplicates: true });
+        .upsert(batch, { onConflict: "racer_id,year" });
       if (error) console.error(`  Error inserting profiles batch ${i}:`, error.message);
     }
   }
