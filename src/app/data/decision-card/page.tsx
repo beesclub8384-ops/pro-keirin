@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -71,6 +72,12 @@ interface RoundMeta {
 }
 
 export default function DecisionCardPage() {
+  const searchParams = useSearchParams();
+  const paramYear = searchParams.get("year");
+  const paramRound = searchParams.get("round");
+  const paramDay = searchParams.get("day");
+  const initializedRef = useRef(false);
+
   const [years, setYears] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState("");
   const [rounds, setRounds] = useState<RoundMeta[]>([]);
@@ -85,33 +92,57 @@ export default function DecisionCardPage() {
       .then((r) => r.json())
       .then((d) => {
         setYears(d.years || []);
-        if (d.years?.length) setSelectedYear(String(d.years[0]));
+        if (paramYear) {
+          setSelectedYear(paramYear);
+        } else if (d.years?.length) {
+          setSelectedYear(String(d.years[0]));
+        }
       });
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!selectedYear) return;
-    setSelectedRound("");
-    setSelectedDay("");
-    setPages([]);
+    if (!initializedRef.current) {
+      // 첫 로드: round/day 리셋하지 않음 (URL 파라미터 우선)
+    } else {
+      setSelectedRound("");
+      setSelectedDay("");
+      setPages([]);
+    }
     fetch(`/api/data/decision-card?year=${selectedYear}`)
       .then((r) => r.json())
       .then((d) => {
-        setRounds(d.rounds || []);
-        if (d.rounds?.length) setSelectedRound(String(d.rounds[d.rounds.length - 1].round));
+        const roundsList: RoundMeta[] = d.rounds || [];
+        setRounds(roundsList);
+        if (roundsList.length > 0) {
+          if (!initializedRef.current && paramRound) {
+            setSelectedRound(paramRound);
+          } else {
+            // 최신 회차 선택
+            setSelectedRound(String(roundsList[roundsList.length - 1].round));
+          }
+        }
       });
-  }, [selectedYear]);
+  }, [selectedYear]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!selectedRound) return;
-    setSelectedDay("");
-    setPages([]);
+    if (initializedRef.current) {
+      setSelectedDay("");
+      setPages([]);
+    }
     const found = rounds.find((r) => r.round === parseInt(selectedRound, 10));
     if (found) {
       setDays(found.days);
-      setSelectedDay(String(found.days[0]));
+      if (!initializedRef.current && paramDay) {
+        setSelectedDay(paramDay);
+      } else {
+        // 가장 큰 일차(최신) 선택
+        setSelectedDay(String(found.days[found.days.length - 1]));
+      }
+      initializedRef.current = true;
     }
-  }, [selectedRound, rounds]);
+  }, [selectedRound, rounds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadData = useCallback(async () => {
     if (!selectedYear || !selectedRound || !selectedDay) return;
