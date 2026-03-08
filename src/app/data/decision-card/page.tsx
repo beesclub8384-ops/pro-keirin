@@ -20,7 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BackNumber } from "@/components/ui/back-number";
 import { RaceTabNav } from "@/components/race-tab-nav";
-import { getTrainingColor } from "@/lib/training-colors";
 
 interface Entry {
   backNo: number;
@@ -224,7 +223,7 @@ export default function DecisionCardPage() {
                               <span className="flex items-center gap-1">
                                 {entry.name}
                                 {entry.training && (
-                                  <Badge variant="outline" className={`text-xs px-1 py-0 ${getTrainingColor(entry.training)}`}>{entry.training}</Badge>
+                                  <Badge variant="outline" className="text-xs">{entry.training}</Badge>
                                 )}
                                 {entry.isAbsent && (
                                   <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-900/40 dark:text-red-400">결장</span>

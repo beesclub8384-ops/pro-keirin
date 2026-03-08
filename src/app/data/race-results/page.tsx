@@ -20,7 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BackNumber } from "@/components/ui/back-number";
 import { RaceTabNav } from "@/components/race-tab-nav";
-import { getTrainingColor } from "@/lib/training-colors";
 
 interface RaceOdds {
   단승: number;
@@ -263,7 +262,7 @@ export default function RaceResultsPage() {
                                 <span className="flex items-center gap-1">
                                   {r.name}
                                   {r.training && (
-                                    <Badge variant="outline" className={`text-xs px-1 py-0 ${getTrainingColor(r.training)}`}>{r.training}</Badge>
+                                    <Badge variant="outline" className="text-xs">{r.training}</Badge>
                                   )}
                                 </span>
                               </TableCell>
