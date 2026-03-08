@@ -45,6 +45,7 @@ interface Entry {
   recent3ScoreTotal: string;
   performanceRank: string;
   isAbsent?: boolean;
+  training: string;
 }
 
 interface DecisionRace {
@@ -221,6 +222,9 @@ export default function DecisionCardPage() {
                             <TableCell className="font-medium">
                               <span className="flex items-center gap-1">
                                 {entry.name}
+                                {entry.training && (
+                                  <Badge variant="outline" className="text-xs px-1 py-0">{entry.training}</Badge>
+                                )}
                                 {entry.isAbsent && (
                                   <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-900/40 dark:text-red-400">결장</span>
                                 )}

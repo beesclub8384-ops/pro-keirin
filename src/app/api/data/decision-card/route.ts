@@ -90,11 +90,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Join racer names from racer_ids (fallback to closest previous year)
+    // Join racer names + training from racer_ids / racer_profiles (fallback to closest previous year)
     const racerIdSet = new Set(
       entryRows.map((e) => e.racer_id as string).filter(Boolean)
     );
     const nameMap = new Map<string, string>();
+    const trainingMap = new Map<string, string>();
 
     if (racerIdSet.size > 0) {
       const racerIds = Array.from(racerIdSet);
@@ -130,12 +131,47 @@ export async function GET(request: NextRequest) {
           }
         }
       }
+
+      // Fetch training from racer_profiles (same year logic)
+      let profileYear = yearNum;
+      const { count: profileCount } = await supabase
+        .from("racer_profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("year", yearNum);
+      if (!profileCount || profileCount === 0) {
+        const { data: fallbackRow } = await supabase
+          .from("racer_profiles")
+          .select("year")
+          .lt("year", yearNum)
+          .order("year", { ascending: false })
+          .limit(1);
+        if (fallbackRow?.length) {
+          profileYear = fallbackRow[0].year;
+        }
+      }
+
+      for (let i = 0; i < racerIds.length; i += 200) {
+        const chunk = racerIds.slice(i, i + 200);
+        const { data: profileRows } = await supabase
+          .from("racer_profiles")
+          .select("racer_id, training")
+          .eq("year", profileYear)
+          .in("racer_id", chunk);
+        if (profileRows) {
+          for (const r of profileRows) {
+            const raw = (r.training as string) || "";
+            const location = raw.split("/")[0].trim();
+            trainingMap.set(r.racer_id, location);
+          }
+        }
+      }
     }
 
-    // Attach names to entries
+    // Attach names + training to entries
     const enrichedEntries = entryRows.map((e) => ({
       ...e,
       name: nameMap.get(e.racer_id as string) || "",
+      training: trainingMap.get(e.racer_id as string) || "",
     }));
 
     const pages = assembleDCPages(
@@ -171,6 +207,7 @@ export async function GET(request: NextRequest) {
         performance_rank: string | null;
         is_absent: boolean | null;
         name?: string;
+        training?: string;
       }>
     );
 

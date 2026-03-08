@@ -40,6 +40,7 @@ export interface RaceDetailResult {
   finish: string;
   record200m: string;
   speed200m: number;
+  training: string;
 }
 
 export interface RaceDetailEnvironment {
@@ -100,6 +101,7 @@ export interface DecisionCardEntry {
   recent3ScoreTotal: string;
   performanceRank: string;
   isAbsent: boolean;
+  training: string;
 }
 
 export interface DecisionCardRace {

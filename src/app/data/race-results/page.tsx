@@ -46,6 +46,7 @@ interface RaceResult {
   finish: string;
   record200m: string;
   speed200m: number;
+  training: string;
 }
 
 interface RaceEnvironment {
@@ -257,7 +258,14 @@ export default function RaceResultsPage() {
                               <TableCell className="text-center">
                                 <BackNumber no={r.backNo} />
                               </TableCell>
-                              <TableCell className="font-medium">{r.name}</TableCell>
+                              <TableCell className="font-medium">
+                                <span className="flex items-center gap-1">
+                                  {r.name}
+                                  {r.training && (
+                                    <Badge variant="outline" className="text-xs px-1 py-0">{r.training}</Badge>
+                                  )}
+                                </span>
+                              </TableCell>
                               <TableCell className="text-center font-bold">{r.rank}</TableCell>
                               <TableCell className="text-center">{r.gap}</TableCell>
                               <TableCell className="text-center font-mono text-sm">{r.raceTime}</TableCell>

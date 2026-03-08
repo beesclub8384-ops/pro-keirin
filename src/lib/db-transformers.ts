@@ -61,6 +61,7 @@ interface RaceResultRow {
   finish: string | null;
   record_200m: string | null;
   speed_200m: number | null;
+  training?: string;
 }
 
 interface OddsRow {
@@ -89,6 +90,7 @@ export function transformRaceResult(row: RaceResultRow): RaceDetailResult {
     finish: row.finish ?? "",
     record200m: row.record_200m ?? "",
     speed200m: row.speed_200m ?? 0,
+    training: row.training ?? "",
   };
 }
 
@@ -186,9 +188,10 @@ interface DCEntryRow {
   performance_rank: string | null;
   is_absent: boolean | null;
   name?: string; // joined from racer_ids
+  training?: string; // joined from racer_profiles
 }
 
-export function transformDCEntry(row: DCEntryRow): DecisionCardEntry & { name: string } {
+export function transformDCEntry(row: DCEntryRow): DecisionCardEntry & { name: string; training: string } {
   return {
     backNo: row.back_no,
     racerId: row.racer_id ?? "",
@@ -218,6 +221,7 @@ export function transformDCEntry(row: DCEntryRow): DecisionCardEntry & { name: s
     performanceRank: row.performance_rank ?? "",
     isAbsent: row.is_absent ?? false,
     name: row.name ?? "",
+    training: row.training ?? "",
   };
 }
 

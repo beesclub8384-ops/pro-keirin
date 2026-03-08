@@ -94,6 +94,51 @@ export async function GET(request: NextRequest) {
       if (data) oddsRows.push(...data);
     }
 
+    // Fetch training from racer_profiles by name
+    const nameSet = new Set(resultRows.map((r) => r.name as string).filter(Boolean));
+    const trainingByName = new Map<string, string>();
+
+    if (nameSet.size > 0) {
+      const names = Array.from(nameSet);
+      let profileYear = yearNum;
+      const { count: profileCount } = await supabase
+        .from("racer_profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("year", yearNum);
+      if (!profileCount || profileCount === 0) {
+        const { data: fallbackRow } = await supabase
+          .from("racer_profiles")
+          .select("year")
+          .lt("year", yearNum)
+          .order("year", { ascending: false })
+          .limit(1);
+        if (fallbackRow?.length) {
+          profileYear = fallbackRow[0].year;
+        }
+      }
+
+      for (let i = 0; i < names.length; i += 200) {
+        const chunk = names.slice(i, i + 200);
+        const { data: profileRows } = await supabase
+          .from("racer_profiles")
+          .select("name, training")
+          .eq("year", profileYear)
+          .in("name", chunk);
+        if (profileRows) {
+          for (const r of profileRows) {
+            const raw = (r.training as string) || "";
+            const location = raw.split("/")[0].trim();
+            trainingByName.set(r.name, location);
+          }
+        }
+      }
+    }
+
+    // Attach training to result rows
+    for (const r of resultRows) {
+      (r as Record<string, unknown>).training = trainingByName.get(r.name as string) || "";
+    }
+
     // Group results by race_id
     const resultsByRace = new Map<number, typeof resultRows>();
     for (const r of resultRows) {
