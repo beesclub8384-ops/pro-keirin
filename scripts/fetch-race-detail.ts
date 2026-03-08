@@ -7,8 +7,12 @@
 // 환경(날씨/풍향/풍속), 선수별(착차/주행시간/승부수), 위반 데이터
 // ============================================================
 
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
 import * as fs from "fs";
 import * as path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 // --- CLI: --date 옵션 파싱 ---
 function parseDateArg(): string | null {
@@ -321,8 +325,8 @@ function clearProgress(year: number): void {
 }
 
 // --- 단일 연도 수집 ---
-async function fetchYear(year: number, filterDate?: string | null): Promise<YearRaceDetail> {
-  const targets = loadRaceTargets(year, filterDate);
+async function fetchYear(year: number, filterDate?: string | null, preloadedTargets?: RaceTarget[]): Promise<YearRaceDetail> {
+  const targets = preloadedTargets || loadRaceTargets(year, filterDate);
   if (targets.length === 0) {
     console.log(`  ${year}년: entry 데이터 없음`);
     return { year, totalRaces: 0, races: [] };
@@ -421,9 +425,50 @@ async function main() {
   if (TARGET_DATE) {
     const year = parseInt(TARGET_DATE.slice(0, 4), 10);
     console.log(`경주결과 상세 수집 (단일 날짜): ${TARGET_DATE}`);
-    const targets = loadRaceTargets(year, TARGET_DATE);
+
+    // 1. 로컬 entry 파일에서 round/day 조회 시도
+    let targets = loadRaceTargets(year, TARGET_DATE);
+
+    // 2. 로컬에 없으면 Supabase decision_card_pages에서 조회
     if (targets.length === 0) {
-      console.log(`  ${TARGET_DATE}: 해당 날짜에 경주 없음 (entry 데이터 미존재)`);
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseKey) {
+        console.log(`  로컬 entry 없음 → Supabase에서 round/day 조회`);
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data: dcPage } = await supabase
+          .from("decision_card_pages")
+          .select("round, day")
+          .eq("date", TARGET_DATE)
+          .single();
+
+        if (dcPage) {
+          const { round, day: dayNum } = dcPage;
+          console.log(`  ${year}년 ${round}회차 ${dayNum}일차`);
+
+          // kcycle 요약 페이지에서 경주 수 파악
+          let totalRaces = 16;
+          try {
+            const summaryUrl = `https://www.kcycle.or.kr/race/result/general/popup/txt/${year}/${round}/${dayNum}`;
+            const summaryRes = await fetch(summaryUrl);
+            if (summaryRes.ok) {
+              const summaryHtml = await summaryRes.text();
+              const matches = summaryHtml.match(/(광명)\s+(\d+)\s*경주/g);
+              if (matches && matches.length > 0) totalRaces = matches.length;
+            }
+          } catch { /* 실패 시 기본 16 */ }
+          console.log(`  경주 수: ${totalRaces}`);
+
+          for (let raceNo = 1; raceNo <= totalRaces; raceNo++) {
+            targets.push({ round, day: dayNum, raceNo, date: TARGET_DATE });
+          }
+        }
+      }
+    }
+
+    if (targets.length === 0) {
+      console.log(`  ${TARGET_DATE}: 해당 날짜에 경주 없음 (entry/Supabase 데이터 미존재)`);
       return;
     }
     console.log(`  ${targets.length}개 경주 대상\n`);
@@ -432,7 +477,7 @@ async function main() {
     const existing = loadCheckpoint(year);
     const prevRaces = existing ? existing.races.filter(r => r.date !== TARGET_DATE) : [];
 
-    const newData = await fetchYear(year, TARGET_DATE);
+    const newData = await fetchYear(year, TARGET_DATE, targets);
     const merged = [...prevRaces, ...newData.races];
     merged.sort((a, b) => a.date.localeCompare(b.date) || a.raceNo - b.raceNo);
 
