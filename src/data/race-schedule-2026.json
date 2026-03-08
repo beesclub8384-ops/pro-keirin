@@ -1,161 +1,948 @@
 {
   "year": 2026,
-  "totalDays": 31,
+  "totalDays": 157,
   "schedule": [
     {
       "date": "2026-01-02",
       "round": 1,
-      "day": 1
+      "day": 1,
+      "label": ""
     },
     {
       "date": "2026-01-03",
       "round": 1,
-      "day": 2
+      "day": 2,
+      "label": ""
     },
     {
       "date": "2026-01-04",
       "round": 1,
-      "day": 3
+      "day": 3,
+      "label": ""
     },
     {
       "date": "2026-01-09",
       "round": 2,
-      "day": 1
+      "day": 1,
+      "label": ""
     },
     {
       "date": "2026-01-10",
       "round": 2,
-      "day": 2
+      "day": 2,
+      "label": ""
     },
     {
       "date": "2026-01-11",
       "round": 2,
-      "day": 3
+      "day": 3,
+      "label": ""
     },
     {
       "date": "2026-01-16",
       "round": 3,
-      "day": 1
+      "day": 1,
+      "label": ""
     },
     {
       "date": "2026-01-17",
       "round": 3,
-      "day": 2
+      "day": 2,
+      "label": ""
     },
     {
       "date": "2026-01-18",
       "round": 3,
-      "day": 3
+      "day": 3,
+      "label": ""
     },
     {
       "date": "2026-01-23",
       "round": 4,
-      "day": 1
+      "day": 1,
+      "label": ""
     },
     {
       "date": "2026-01-24",
       "round": 4,
-      "day": 2
+      "day": 2,
+      "label": ""
     },
     {
       "date": "2026-01-25",
       "round": 4,
-      "day": 3
+      "day": 3,
+      "label": ""
     },
     {
       "date": "2026-01-30",
       "round": 5,
-      "day": 1
+      "day": 1,
+      "label": ""
     },
     {
       "date": "2026-01-31",
       "round": 5,
-      "day": 2
+      "day": 2,
+      "label": ""
     },
     {
       "date": "2026-02-01",
       "round": 5,
-      "day": 3
+      "day": 3,
+      "label": ""
     },
     {
       "date": "2026-02-06",
       "round": 6,
-      "day": 1
+      "day": 1,
+      "label": ""
     },
     {
       "date": "2026-02-07",
       "round": 6,
-      "day": 2
+      "day": 2,
+      "label": ""
     },
     {
       "date": "2026-02-08",
-      "round": 6,
-      "day": 3
+      "round": 7,
+      "day": 3,
+      "label": ""
     },
     {
       "date": "2026-02-13",
       "round": 7,
-      "day": 1
+      "day": 1,
+      "label": "스피드온배"
     },
     {
       "date": "2026-02-14",
       "round": 7,
-      "day": 2
+      "day": 2,
+      "label": "스피드온배"
     },
     {
       "date": "2026-02-15",
       "round": 7,
-      "day": 3
+      "day": 3,
+      "label": "스피드온배"
     },
     {
       "date": "2026-02-20",
       "round": 8,
-      "day": 1
+      "day": 1,
+      "label": ""
     },
     {
       "date": "2026-02-21",
       "round": 8,
-      "day": 2
+      "day": 2,
+      "label": ""
     },
     {
       "date": "2026-02-22",
       "round": 8,
-      "day": 3
+      "day": 3,
+      "label": ""
     },
     {
       "date": "2026-02-27",
       "round": 9,
-      "day": 1
+      "day": 1,
+      "label": ""
     },
     {
       "date": "2026-02-28",
       "round": 9,
-      "day": 2
+      "day": 2,
+      "label": ""
     },
     {
       "date": "2026-03-01",
       "round": 9,
-      "day": 3
+      "day": 3,
+      "label": ""
     },
     {
       "date": "2026-03-02",
       "round": 9,
-      "day": 4
+      "day": 4,
+      "label": ""
     },
     {
       "date": "2026-03-06",
       "round": 10,
-      "day": 1
+      "day": 1,
+      "label": ""
     },
     {
       "date": "2026-03-07",
       "round": 10,
-      "day": 2
+      "day": 2,
+      "label": ""
     },
     {
       "date": "2026-03-08",
       "round": 10,
-      "day": 3
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-03-13",
+      "round": 11,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-03-14",
+      "round": 11,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-03-15",
+      "round": 11,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-03-20",
+      "round": 12,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-03-21",
+      "round": 12,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-03-22",
+      "round": 12,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-03-27",
+      "round": 13,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-03-28",
+      "round": 13,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-03-29",
+      "round": 13,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-04-03",
+      "round": 14,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-04-04",
+      "round": 14,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-04-05",
+      "round": 14,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-04-10",
+      "round": 15,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-04-11",
+      "round": 15,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-04-12",
+      "round": 15,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-04-17",
+      "round": 16,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-04-18",
+      "round": 16,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-04-19",
+      "round": 16,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-04-24",
+      "round": 17,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-04-25",
+      "round": 17,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-04-26",
+      "round": 17,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-05-01",
+      "round": 18,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-05-02",
+      "round": 18,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-05-03",
+      "round": 18,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-05-08",
+      "round": 19,
+      "day": 1,
+      "label": "KCYCLE 스타전"
+    },
+    {
+      "date": "2026-05-09",
+      "round": 19,
+      "day": 2,
+      "label": "KCYCLE 스타전"
+    },
+    {
+      "date": "2026-05-10",
+      "round": 19,
+      "day": 3,
+      "label": "KCYCLE 스타전"
+    },
+    {
+      "date": "2026-05-15",
+      "round": 20,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-05-16",
+      "round": 20,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-05-17",
+      "round": 20,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-05-22",
+      "round": 21,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-05-23",
+      "round": 21,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-05-24",
+      "round": 21,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-05-25",
+      "round": 21,
+      "day": 4,
+      "label": ""
+    },
+    {
+      "date": "2026-05-29",
+      "round": 22,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-05-30",
+      "round": 22,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-05-31",
+      "round": 22,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-06-05",
+      "round": 23,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-06-06",
+      "round": 23,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-06-07",
+      "round": 23,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-06-12",
+      "round": 24,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-06-13",
+      "round": 24,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-06-14",
+      "round": 24,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-06-19",
+      "round": 25,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-06-20",
+      "round": 25,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-06-21",
+      "round": 25,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-06-26",
+      "round": 26,
+      "day": 1,
+      "label": "KCYCLE 경륜 왕중왕전"
+    },
+    {
+      "date": "2026-06-27",
+      "round": 26,
+      "day": 2,
+      "label": "KCYCLE 경륜 왕중왕전"
+    },
+    {
+      "date": "2026-06-28",
+      "round": 26,
+      "day": 3,
+      "label": "KCYCLE 경륜 왕중왕전"
+    },
+    {
+      "date": "2026-07-03",
+      "round": 27,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-07-04",
+      "round": 27,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-07-05",
+      "round": 27,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-07-10",
+      "round": 28,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-07-11",
+      "round": 28,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-07-12",
+      "round": 28,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-07-17",
+      "round": 29,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-07-18",
+      "round": 29,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-07-19",
+      "round": 29,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-07-24",
+      "round": 30,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-07-25",
+      "round": 30,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-07-26",
+      "round": 30,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-07-31",
+      "round": 31,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-08-01",
+      "round": 31,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-08-02",
+      "round": 31,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-08-07",
+      "round": 32,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-08-08",
+      "round": 32,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-08-09",
+      "round": 32,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-08-14",
+      "round": 33,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-08-15",
+      "round": 33,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-08-16",
+      "round": 33,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-08-17",
+      "round": 33,
+      "day": 4,
+      "label": ""
+    },
+    {
+      "date": "2026-08-21",
+      "round": 34,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-08-22",
+      "round": 34,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-08-23",
+      "round": 34,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-08-28",
+      "round": 35,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-08-29",
+      "round": 35,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-08-30",
+      "round": 35,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-09-04",
+      "round": 36,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-09-05",
+      "round": 36,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-09-06",
+      "round": 36,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-09-11",
+      "round": 37,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-09-12",
+      "round": 37,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-09-13",
+      "round": 37,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-09-18",
+      "round": 38,
+      "day": 1,
+      "label": "서울올림픽기념 38주년"
+    },
+    {
+      "date": "2026-09-19",
+      "round": 38,
+      "day": 2,
+      "label": "서울올림픽기념 38주년"
+    },
+    {
+      "date": "2026-09-20",
+      "round": 38,
+      "day": 3,
+      "label": "서울올림픽기념 38주년"
+    },
+    {
+      "date": "2026-10-02",
+      "round": 39,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-10-03",
+      "round": 39,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-10-04",
+      "round": 39,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-10-05",
+      "round": 39,
+      "day": 4,
+      "label": ""
+    },
+    {
+      "date": "2026-10-09",
+      "round": 40,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-10-10",
+      "round": 40,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-10-11",
+      "round": 40,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-10-16",
+      "round": 41,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-10-17",
+      "round": 41,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-10-18",
+      "round": 41,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-10-23",
+      "round": 42,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-10-24",
+      "round": 42,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-10-25",
+      "round": 42,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-10-30",
+      "round": 43,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-10-31",
+      "round": 43,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-11-01",
+      "round": 43,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-11-06",
+      "round": 44,
+      "day": 1,
+      "label": "경륜 32주년 기념"
+    },
+    {
+      "date": "2026-11-07",
+      "round": 44,
+      "day": 2,
+      "label": "경륜 32주년 기념"
+    },
+    {
+      "date": "2026-11-08",
+      "round": 44,
+      "day": 3,
+      "label": "경륜 32주년 기념"
+    },
+    {
+      "date": "2026-11-13",
+      "round": 45,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-11-14",
+      "round": 45,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-11-15",
+      "round": 45,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-11-20",
+      "round": 46,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-11-21",
+      "round": 46,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-11-22",
+      "round": 46,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-11-27",
+      "round": 47,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-11-28",
+      "round": 47,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-11-29",
+      "round": 47,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-12-04",
+      "round": 48,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-12-05",
+      "round": 48,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-12-06",
+      "round": 48,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-12-11",
+      "round": 49,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-12-12",
+      "round": 49,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-12-13",
+      "round": 49,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-12-18",
+      "round": 50,
+      "day": 1,
+      "label": ""
+    },
+    {
+      "date": "2026-12-19",
+      "round": 50,
+      "day": 2,
+      "label": ""
+    },
+    {
+      "date": "2026-12-20",
+      "round": 50,
+      "day": 3,
+      "label": ""
+    },
+    {
+      "date": "2026-12-25",
+      "round": 51,
+      "day": 1,
+      "label": "그랑프리 경륜"
+    },
+    {
+      "date": "2026-12-26",
+      "round": 51,
+      "day": 2,
+      "label": "그랑프리 경륜"
+    },
+    {
+      "date": "2026-12-27",
+      "round": 51,
+      "day": 3,
+      "label": "그랑프리 경륜"
     }
   ]
 }
