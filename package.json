@@ -15,6 +15,7 @@
     "fetch-racer-profile": "tsx scripts/fetch-racer-profile.ts",
     "enrich-results": "tsx scripts/enrich-race-results.ts",
     "fetch-decision-card": "tsx scripts/fetch-decision-card.ts",
+    "fetch-decision-card-latest": "tsx scripts/fetch-decision-card-latest.ts",
     "fetch-fall-injury": "tsx scripts/fetch-fall-injury.ts",
     "fetch-special-promotion": "tsx scripts/fetch-special-promotion.ts",
     "fetch-training-change": "tsx scripts/fetch-training-change.ts",

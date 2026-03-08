@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/fetch-decision-card",
+      "schedule": "0 10 * * 4"
+    },
+    {
+      "path": "/api/cron/fetch-decision-card",
+      "schedule": "0 12 * * 5"
+    },
+    {
+      "path": "/api/cron/fetch-decision-card",
+      "schedule": "0 12 * * 6"
+    }
+  ]
+}
