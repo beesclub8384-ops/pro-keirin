@@ -8,32 +8,24 @@ export async function GET(request: NextRequest) {
     const year = sp.get("year");
 
     if (!year) {
-      const years = await getDistinctYears("races");
+      const years = await getDistinctYears("race_schedule");
       return NextResponse.json({ years });
     }
 
     const yearNum = parseInt(year, 10);
 
-    // Get all dates for the year (can exceed 1000)
+    // race_schedule 테이블에서 일정 조회
     const data = await fetchAllRows(
       supabase
-        .from("races")
+        .from("race_schedule")
         .select("date, round, day")
         .eq("year", yearNum)
         .order("date", { ascending: true })
     );
 
-    // Deduplicate by date
-    const dateMap = new Map<string, { round: number; day: number }>();
-    for (const r of data as Array<{ date: string; round: number; day: number }>) {
-      if (!dateMap.has(r.date)) {
-        dateMap.set(r.date, { round: r.round, day: r.day });
-      }
-    }
-
-    const dates = Array.from(dateMap.entries())
-      .map(([date, meta]) => ({ date, round: meta.round, day: meta.day }))
-      .sort((a, b) => a.date.localeCompare(b.date));
+    const dates = (data as Array<{ date: string; round: number; day: number }>).map(
+      (r) => ({ date: r.date, round: r.round, day: r.day })
+    );
 
     return NextResponse.json({ year: yearNum, dates });
   } catch (e) {
