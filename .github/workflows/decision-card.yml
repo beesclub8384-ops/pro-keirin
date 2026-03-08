@@ -1,0 +1,44 @@
+name: Decision Card (출주표 자동 수집)
+
+# 출주표 발표 시간대:
+# 목요일 KST 19:00~23:00 = UTC 10:00~14:00
+# 금요일 KST 21:00~23:00 = UTC 12:00~14:00
+# 토요일 KST 21:00~23:00 = UTC 12:00~14:00
+on:
+  schedule:
+    # 목요일 30분 간격 (UTC 10:00~14:00)
+    - cron: '0,30 10-13 * * 4'
+    - cron: '0 14 * * 4'
+    # 금요일 30분 간격 (UTC 12:00~14:00)
+    - cron: '0,30 12-13 * * 5'
+    - cron: '0 14 * * 5'
+    # 토요일 30분 간격 (UTC 12:00~14:00)
+    - cron: '0,30 12-13 * * 6'
+    - cron: '0 14 * * 6'
+  workflow_dispatch:
+
+jobs:
+  fetch-and-seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch and seed decision card
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/fetch-decision-card-latest.ts
