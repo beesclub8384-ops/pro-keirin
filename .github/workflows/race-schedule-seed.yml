@@ -1,0 +1,36 @@
+name: Race Schedule Seed
+
+# 경주 일정 시딩 (race_schedule 테이블)
+# 사전 조건: Supabase SQL Editor에서 scripts/migrations/create-race-schedule.sql 실행 필요
+
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: '시딩할 연도 (비워두면 전체)'
+        required: false
+        default: '2026'
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Seed race_schedule to Supabase
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/seed/seed-race-schedule.ts ${{ github.event.inputs.year }}

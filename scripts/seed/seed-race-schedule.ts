@@ -1,6 +1,7 @@
 // ============================================================
 // 경주 일정 시딩 스크립트
-// race-schedule-{year}.json → Supabase race_schedule 테이블
+// 1) race_schedule 테이블 생성 (없으면)
+// 2) race-schedule-{year}.json → Supabase race_schedule 테이블
 // 사용법: npx tsx scripts/seed/seed-race-schedule.ts [year]
 // ============================================================
 
@@ -10,14 +11,48 @@ import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
 import path from "path";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const DATA_DIR = path.join(process.cwd(), "src", "data");
 
+async function ensureTable() {
+  // 테이블 존재 여부 확인: 간단한 select 시도
+  const { error } = await supabase
+    .from("race_schedule")
+    .select("id")
+    .limit(1);
+
+  if (error && error.message.includes("does not exist")) {
+    console.log("race_schedule 테이블이 없습니다. 생성 중...");
+
+    // Supabase SQL endpoint (service role key로 직접 호출)
+    const sqlUrl = `${supabaseUrl}/rest/v1/rpc/`;
+    // PostgREST로는 DDL 실행 불가 → 대안: Supabase Management API 또는 수동 실행 필요
+    console.error(
+      "\n[ERROR] race_schedule 테이블을 자동 생성할 수 없습니다.\n" +
+        "Supabase SQL Editor에서 다음 SQL을 먼저 실행해주세요:\n\n" +
+        fs.readFileSync(
+          path.join(process.cwd(), "scripts/migrations/create-race-schedule.sql"),
+          "utf-8"
+        )
+    );
+    process.exit(1);
+  }
+
+  if (error) {
+    // 다른 종류의 에러는 무시 (테이블은 존재하지만 빈 경우 등)
+    console.log("테이블 확인:", error.message);
+  } else {
+    console.log("race_schedule 테이블 확인 완료.");
+  }
+}
+
 async function seedRaceSchedule() {
+  await ensureTable();
+
   // 특정 연도 또는 모든 race-schedule-*.json
   const targetYear = process.argv[2];
   const files = targetYear
@@ -47,7 +82,7 @@ async function seedRaceSchedule() {
     }>;
     const year = data.year as number;
 
-    console.log(`${year}년: ${schedule.length}일 시딩...`);
+    console.log(`\n${year}년: ${schedule.length}일 시딩...`);
 
     const rows = schedule.map((s) => ({
       year,
@@ -65,9 +100,16 @@ async function seedRaceSchedule() {
     } else {
       console.log(`  ${rows.length}건 완료`);
     }
+
+    // 검증: 시딩된 건수 확인
+    const { count } = await supabase
+      .from("race_schedule")
+      .select("*", { count: "exact", head: true })
+      .eq("year", year);
+    console.log(`  DB 확인: ${year}년 ${count}건`);
   }
 
-  console.log("Done.");
+  console.log("\nDone.");
 }
 
 seedRaceSchedule().catch(console.error);
