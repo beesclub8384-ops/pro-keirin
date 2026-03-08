@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Select,
@@ -72,6 +72,14 @@ interface RoundMeta {
 }
 
 export default function DecisionCardPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-muted-foreground">로딩 중...</div>}>
+      <DecisionCardContent />
+    </Suspense>
+  );
+}
+
+function DecisionCardContent() {
   const searchParams = useSearchParams();
   const paramYear = searchParams.get("year");
   const paramRound = searchParams.get("round");
