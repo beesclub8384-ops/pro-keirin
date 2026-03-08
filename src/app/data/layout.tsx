@@ -12,6 +12,7 @@ interface RaceDate {
   date: string;
   round: number;
   day: number;
+  label: string;
 }
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -137,16 +138,21 @@ export default function DataLayout({
                     return <div key={`empty-${i}`} className="py-1" />;
                   const dateStr = getDateStr(day);
                   const hasRace = raceDateSet.has(dateStr);
+                  const raceInfo = raceDateMap.get(dateStr);
+                  const isSpecial = raceInfo?.label ? true : false;
                   const today = isToday(day);
                   return (
                     <button
                       key={day}
                       onClick={() => hasRace && handleDateClick(day)}
                       disabled={!hasRace}
+                      title={isSpecial ? raceInfo!.label : undefined}
                       className={cn(
                         "mx-auto flex h-6 w-6 items-center justify-center rounded-md transition-colors",
-                        hasRace &&
+                        hasRace && !isSpecial &&
                           "bg-green-100 text-green-800 font-semibold hover:bg-green-200 cursor-pointer",
+                        hasRace && isSpecial &&
+                          "bg-blue-100 text-blue-800 font-semibold hover:bg-blue-200 cursor-pointer",
                         !hasRace && "text-muted-foreground/50",
                         today && "ring-1 ring-brand"
                       )}
@@ -156,10 +162,16 @@ export default function DataLayout({
                   );
                 })}
               </div>
-              <p className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground">
-                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-green-100" />
-                경주일
-              </p>
+              <div className="mt-1.5 space-y-0.5">
+                <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-green-100" />
+                  경주일
+                </p>
+                <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-blue-100" />
+                  특별경주
+                </p>
+              </div>
             </div>
           </div>
         </aside>

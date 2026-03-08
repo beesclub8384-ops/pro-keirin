@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
     const data = await fetchAllRows(
       supabase
         .from("race_schedule")
-        .select("date, round, day")
+        .select("date, round, day, label")
         .eq("year", yearNum)
         .order("date", { ascending: true })
     );
 
-    const dates = (data as Array<{ date: string; round: number; day: number }>).map(
-      (r) => ({ date: r.date, round: r.round, day: r.day })
+    const dates = (data as Array<{ date: string; round: number; day: number; label: string | null }>).map(
+      (r) => ({ date: r.date, round: r.round, day: r.day, label: r.label || "" })
     );
 
     return NextResponse.json({ year: yearNum, dates });

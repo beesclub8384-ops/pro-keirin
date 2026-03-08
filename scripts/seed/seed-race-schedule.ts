@@ -79,6 +79,7 @@ async function seedRaceSchedule() {
       date: string;
       round: number;
       day: number;
+      label?: string;
     }>;
     const year = data.year as number;
 
@@ -98,11 +99,12 @@ async function seedRaceSchedule() {
       date: s.date,
       round: s.round,
       day: s.day,
+      label: s.label || null,
     }));
 
     const { error } = await supabase
       .from("race_schedule")
-      .upsert(rows, { onConflict: "year,round,day", ignoreDuplicates: true });
+      .upsert(rows, { onConflict: "year,round,day" });
 
     if (error) {
       console.error(`  오류: ${error.message}`);
