@@ -9,6 +9,7 @@ dotenv.config({ path: ".env.local" });
 
 import * as fs from "fs";
 import * as path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 // --- 타입 ---
 interface ApiEntryItem {
@@ -309,6 +310,72 @@ function mergeAll(): void {
   console.log(`\n총 ${all.length}건 저장: ${outPath}`);
 }
 
+// --- Supabase 등급 갱신 ---
+async function updateRacerGrades(records: EntryRecord[]): Promise<void> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    console.log("Supabase 환경변수 미설정, 등급 갱신 스킵");
+    return;
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // 선수별 최신 등급 추출 (가장 최근 날짜 기준)
+  const gradeMap = new Map<string, string>();
+  const sorted = [...records].sort((a, b) => b.date.localeCompare(a.date));
+  for (const r of sorted) {
+    if (r.racerName && r.grade && !gradeMap.has(r.racerName)) {
+      gradeMap.set(r.racerName, r.grade);
+    }
+  }
+
+  if (gradeMap.size === 0) {
+    console.log("  등급 갱신 대상 없음");
+    return;
+  }
+
+  // 기존 racer_profiles에서 현재 grade 조회
+  const names = [...gradeMap.keys()];
+  const { data: profiles, error } = await supabase
+    .from("racer_profiles")
+    .select("name, grade")
+    .in("name", names);
+
+  if (error) {
+    console.error("  racer_profiles 조회 실패:", error.message);
+    return;
+  }
+
+  const existingGrades = new Map<string, string | null>();
+  for (const p of profiles || []) {
+    existingGrades.set(p.name, p.grade);
+  }
+
+  // 변경된 등급만 업데이트
+  let updated = 0;
+  for (const [name, newGrade] of gradeMap) {
+    if (!existingGrades.has(name)) continue; // racer_profiles에 없는 선수 스킵
+
+    const oldGrade = existingGrades.get(name);
+    if (oldGrade === newGrade) continue;
+
+    const { error: updateErr } = await supabase
+      .from("racer_profiles")
+      .update({ grade: newGrade })
+      .eq("name", name);
+
+    if (updateErr) {
+      console.error(`  등급 갱신 실패 (${name}):`, updateErr.message);
+    } else {
+      console.log(`  등급 갱신: ${name} ${oldGrade || "(없음)"} → ${newGrade}`);
+      updated++;
+    }
+  }
+
+  console.log(`  등급 갱신 완료: ${updated}명 변경 (전체 매칭 ${existingGrades.size}명)`);
+}
+
 // --- 메인 ---
 async function main() {
   if (!fs.existsSync(YEARLY_DIR)) {
@@ -334,6 +401,15 @@ async function main() {
   }
 
   mergeAll();
+
+  // 최신 연도 데이터로 racer_profiles.grade 갱신
+  const currentYear = String(new Date().getFullYear());
+  const latestRecords = loadCheckpoint(currentYear);
+  if (latestRecords.length > 0) {
+    console.log(`\n=== ${currentYear}년 데이터로 등급 갱신 ===`);
+    await updateRacerGrades(latestRecords);
+  }
+
   console.log("\n=== 출주표 수집 완료 ===");
 }
 
