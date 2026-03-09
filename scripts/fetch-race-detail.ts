@@ -394,6 +394,105 @@ async function fetchYear(year: number, filterDate?: string | null, preloadedTarg
   return { year, totalRaces: races.length, races };
 }
 
+// --- Supabase 직접 upsert (--date 모드용) ---
+const BATCH_SIZE = 500;
+
+async function seedToSupabase(races: RaceDetail[]): Promise<void> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("ERROR: Supabase 환경변수 없음");
+    process.exit(1);
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // 1) races 테이블 upsert
+  const raceRows = races.map((r) => ({
+    year: r.year,
+    round: r.round,
+    day: r.day,
+    race_no: r.raceNo,
+    date: r.date,
+    env_time: r.environment?.time || null,
+    env_weather: r.environment?.weather || null,
+    env_wind_dir: r.environment?.windDir || null,
+    env_wind_speed: r.environment?.windSpeed || null,
+    env_temp: r.environment?.temp || null,
+    env_humidity: r.environment?.humidity || null,
+    env_rainfall: r.environment?.rainfall || null,
+    env_record_200m: r.environment?.record200m || null,
+    env_last_lap: r.environment?.lastLap || null,
+  }));
+
+  for (let i = 0; i < raceRows.length; i += BATCH_SIZE) {
+    const batch = raceRows.slice(i, i + BATCH_SIZE);
+    const { error } = await supabase
+      .from("races")
+      .upsert(batch, { onConflict: "year,round,day,race_no" });
+    if (error) {
+      console.error(`  races upsert 에러 (batch ${i}):`, error.message);
+    }
+  }
+  console.log(`  races upsert: ${raceRows.length}건`);
+
+  // 2) race_id 조회
+  const year = races[0].year;
+  const round = races[0].round;
+  const day = races[0].day;
+  const { data: insertedRaces, error: fetchErr } = await supabase
+    .from("races")
+    .select("id, year, round, day, race_no")
+    .eq("year", year)
+    .eq("round", round)
+    .eq("day", day);
+
+  if (fetchErr || !insertedRaces) {
+    console.error("  race ID 조회 에러:", fetchErr?.message);
+    return;
+  }
+
+  const raceIdMap = new Map<string, number>();
+  for (const r of insertedRaces) {
+    raceIdMap.set(`${r.year}|${r.round}|${r.day}|${r.race_no}`, r.id);
+  }
+
+  // 3) race_results 테이블 upsert
+  const resultRows: Array<Record<string, unknown>> = [];
+  for (const race of races) {
+    const raceId = raceIdMap.get(`${race.year}|${race.round}|${race.day}|${race.raceNo}`);
+    if (!raceId) continue;
+    for (const res of race.results || []) {
+      resultRows.push({
+        race_id: raceId,
+        back_no: res.backNo,
+        name: res.name,
+        rank: res.rank || null,
+        gap: res.gap || null,
+        race_time: res.raceTime || null,
+        tactic: res.tactic || null,
+        disqualified: res.disqualified || null,
+        warning: res.warning || null,
+        caution: res.caution || null,
+        withdrawal: res.withdrawal || null,
+        finish: res.finish || null,
+        record_200m: res.record200m || null,
+        speed_200m: res.speed200m || null,
+      });
+    }
+  }
+
+  for (let i = 0; i < resultRows.length; i += BATCH_SIZE) {
+    const batch = resultRows.slice(i, i + BATCH_SIZE);
+    const { error } = await supabase
+      .from("race_results")
+      .upsert(batch, { onConflict: "race_id,back_no" });
+    if (error) {
+      console.error(`  race_results upsert 에러 (batch ${i}):`, error.message);
+    }
+  }
+  console.log(`  race_results upsert: ${resultRows.length}건`);
+}
+
 // --- 병합 ---
 function mergeAll(): void {
   console.log("\n=== 전체 병합 ===");
@@ -473,18 +572,15 @@ async function main() {
     }
     console.log(`  ${targets.length}개 경주 대상\n`);
 
-    // 기존 연도 데이터 로드 후 해당 날짜 데이터 교체
-    const existing = loadCheckpoint(year);
-    const prevRaces = existing ? existing.races.filter(r => r.date !== TARGET_DATE) : [];
-
     const newData = await fetchYear(year, TARGET_DATE, targets);
-    const merged = [...prevRaces, ...newData.races];
-    merged.sort((a, b) => a.date.localeCompare(b.date) || a.raceNo - b.raceNo);
+    console.log(`\n  ${TARGET_DATE}: ${newData.totalRaces}건 수집`);
 
-    saveCheckpoint(year, { year, totalRaces: merged.length, races: merged });
-    console.log(`\n  ${TARGET_DATE}: ${newData.totalRaces}건 수집, 연도 합계: ${merged.length}건`);
+    // Supabase에 직접 upsert (로컬 JSON 저장 없음)
+    if (newData.races.length > 0) {
+      console.log("\n  Supabase 직접 저장...");
+      await seedToSupabase(newData.races);
+    }
 
-    mergeAll();
     console.log("\n=== 단일 날짜 수집 완료 ===");
     return;
   }

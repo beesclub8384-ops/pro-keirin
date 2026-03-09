@@ -35,14 +35,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Fetch race details for today
+      - name: Fetch race details and seed to Supabase
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/fetch-race-detail.ts --date today
-
-      - name: Seed to Supabase
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npx tsx scripts/seed/seed-races.ts
