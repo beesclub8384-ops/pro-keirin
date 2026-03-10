@@ -38,6 +38,50 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    if (type === "avg-entries") {
+      // 연도별 선수 1인당 평균 출주횟수 (racer_profiles.race_count 기반)
+      const { data: rows, error } = await supabase.rpc("get_avg_entries_per_racer");
+
+      if (error) {
+        // RPC 없으면 직접 집계 (racer_profiles에서 연도별 AVG)
+        const allRows: { year: number; race_count: number }[] = [];
+        let offset = 0;
+        while (true) {
+          const { data: batch } = await supabase
+            .from("racer_profiles")
+            .select("year, race_count")
+            .gte("year", 2003)
+            .lte("year", 2025)
+            .gt("race_count", 0)
+            .range(offset, offset + 999);
+          if (!batch || batch.length === 0) break;
+          allRows.push(...batch);
+          if (batch.length < 1000) break;
+          offset += 1000;
+        }
+
+        const yearStats = new Map<number, { count: number; sum: number }>();
+        for (const r of allRows) {
+          if (!yearStats.has(r.year)) yearStats.set(r.year, { count: 0, sum: 0 });
+          const s = yearStats.get(r.year)!;
+          s.count++;
+          s.sum += r.race_count;
+        }
+
+        const result = Array.from(yearStats.entries())
+          .map(([year, s]) => ({
+            year,
+            racer_count: s.count,
+            avg_race_count: Math.round((s.sum / s.count) * 10) / 10,
+          }))
+          .sort((a, b) => a.year - b.year);
+
+        return NextResponse.json({ data: result });
+      }
+
+      return NextResponse.json({ data: rows });
+    }
+
     if (type === "no-hit") {
       const { data, error } = await supabase
         .from("statistics_data")
