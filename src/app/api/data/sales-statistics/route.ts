@@ -5,7 +5,7 @@ import { fetchAllRows } from "@/lib/supabase";
 interface RaceSalesRow {
   year: number;
   grade: string;
-  s_합계: number;
+  total: number;
 }
 
 export async function GET() {
@@ -15,7 +15,7 @@ export async function GET() {
     const rows = await fetchAllRows<RaceSalesRow>(
       supabase
         .from("race_sales")
-        .select("year, grade, s_합계")
+        .select("year, grade, total:s_합계")
         .order("year", { ascending: true })
     );
 
@@ -46,7 +46,7 @@ export async function GET() {
         });
       }
       const s = yearMap.get(r.year)!;
-      const amt = r.s_합계 || 0;
+      const amt = r.total || 0;
       s.총매출 += amt;
 
       if (r.grade === "선발") {
