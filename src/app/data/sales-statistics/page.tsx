@@ -128,7 +128,7 @@ export default function SalesStatisticsPage() {
                     border: "1px solid #E5E7EB",
                     fontSize: "13px",
                   }}
-                  formatter={(value: number) => [`${value.toLocaleString()}억`, "총매출"]}
+                  formatter={(value) => [`${(value ?? 0).toLocaleString()}억`, "총매출"]}
                   labelFormatter={(label) => `${label}년`}
                 />
                 <ReferenceArea
@@ -187,8 +187,8 @@ export default function SalesStatisticsPage() {
                     border: "1px solid #E5E7EB",
                     fontSize: "13px",
                   }}
-                  formatter={(value: number, name: string) => [
-                    `${value.toLocaleString()}억`,
+                  formatter={(value, name) => [
+                    `${(value ?? 0).toLocaleString()}억`,
                     name,
                   ]}
                   labelFormatter={(label) => `${label}년`}
