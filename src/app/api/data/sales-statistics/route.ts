@@ -1,23 +1,36 @@
 import { NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
-import { fetchAllRows } from "@/lib/supabase";
 
-interface RaceSalesRow {
-  year: number;
-  grade: string;
-  total: number;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const PAGE_SIZE = 1000;
+
+async function fetchAllRows(): Promise<any[]> {
+  const all: any[] = [];
+  let offset = 0;
+
+  while (true) {
+    const url = `${SUPABASE_URL}/rest/v1/race_sales?select=year,grade,s_합계&order=year&offset=${offset}&limit=${PAGE_SIZE}`;
+    const res = await fetch(url, {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+      },
+    });
+
+    if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+
+    const rows = await res.json();
+    all.push(...rows);
+    if (rows.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+
+  return all;
 }
 
 export async function GET() {
   try {
-    const supabase = getSupabase();
-
-    const rows = await fetchAllRows<RaceSalesRow>(
-      supabase
-        .from("race_sales")
-        .select("year, grade, total:s_합계")
-        .order("year", { ascending: true })
-    );
+    const rows = await fetchAllRows();
 
     // 연도별 집계
     const yearMap = new Map<
@@ -46,7 +59,7 @@ export async function GET() {
         });
       }
       const s = yearMap.get(r.year)!;
-      const amt = r.total || 0;
+      const amt = r["s_합계"] || 0;
       s.총매출 += amt;
 
       if (r.grade === "선발") {
