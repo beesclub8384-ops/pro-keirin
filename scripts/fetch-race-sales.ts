@@ -20,6 +20,7 @@ interface RaceSales {
   round: number;
   day: number;
   raceNo: number;
+  grade: string | null;
   sales: {
     단승: number;
     연승: number;
@@ -77,6 +78,30 @@ function loadRaceList(year: number): { round: number; day: number; raceNo: numbe
       (a: { round: number; day: number; raceNo: number }, b: { round: number; day: number; raceNo: number }) =>
         a.round - b.round || a.day - b.day || a.raceNo - b.raceNo
     );
+}
+
+// --- grade 파싱 ---
+// 경주 제목에서 등급을 추출: "(선발 09:50)", "(준결 17:30)", "(그랑프리결승 18:18)" 등
+function parseGrade(html: string): string | null {
+  const decoded = decodeHtml(html);
+  // 패턴: "N경주 (등급명 HH : MM)" 또는 "N경주 (등급명HH : MM)"
+  const m = decoded.match(/경주\s*\(\s*([^\d]+?)\s*\d{1,2}\s*:/);
+  if (!m) return null;
+  const raw = m[1].trim();
+
+  // 선발/우수/특선 (결승 접미사 포함)
+  if (raw.startsWith("선발")) return "선발";
+  if (raw.startsWith("우수")) return "우수";
+  if (raw.startsWith("특선")) return "특선";
+  // 특별경주 → 특선으로 매핑
+  if (raw.includes("준결")) return "특선";
+  if (raw.includes("특우")) return "특선";
+  if (raw.includes("그랑프리")) return "특선";
+  if (raw.includes("B Final")) return "특선";
+  if (raw.includes("특별")) return "특선";
+  if (raw.includes("한일")) return "특선";
+
+  return null;
 }
 
 // --- HTML 파싱 ---
@@ -147,7 +172,8 @@ async function fetchOne(
       const html = await res.text();
       const sales = parseSales(html);
       if (!sales) return null;
-      return { year, round, day, raceNo, sales };
+      const grade = parseGrade(html);
+      return { year, round, day, raceNo, grade, sales };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (attempt < MAX_RETRIES - 1) {
