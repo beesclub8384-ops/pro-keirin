@@ -380,7 +380,7 @@ export async function determineNextTarget(supabase: SupabaseClient): Promise<Tar
   return null;
 }
 
-/** kcycle.or.kr에서 확정출주표 HTML 가져오기 */
+/** kcycle.or.kr에서 확정출주표 HTML 가져오기 (SPA — 선수 데이터용) */
 export async function fetchDecisionCardHtml(year: number, round: number, day: number): Promise<string> {
   const url = `https://www.kcycle.or.kr/race/card/decision/${year}/${round}/${day}`;
   const res = await fetch(url);
@@ -388,12 +388,22 @@ export async function fetchDecisionCardHtml(year: number, round: number, day: nu
   return res.text();
 }
 
-/** HTML에서 실제 회차/일차 추출 ("XX회 X일차 확정본" 패턴) */
-export function extractRoundDayFromHtml(html: string): { round: number; day: number } | null {
-  // 패턴: "12회 3일차 확정본" 또는 "12회 3일차"
-  const match = html.match(/(\d+)\s*회\s+(\d+)\s*일차\s*확정/);
-  if (!match) return null;
-  return { round: parseInt(match[1], 10), day: parseInt(match[2], 10) };
+/** kcycle popup/txt 페이지에서 실제 회차/일차를 검증 */
+export async function verifyRoundDay(year: number, round: number, day: number): Promise<boolean> {
+  const url = `https://www.kcycle.or.kr/race/card/decision/popup/txt/${year}/${round}/${day}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return false;
+    const html = await res.text();
+    // 패턴: "10회 1일차 확정본"
+    const match = html.match(/(\d+)\s*회\s+(\d+)\s*일차\s*확정/);
+    if (!match) return false;
+    const actualRound = parseInt(match[1], 10);
+    const actualDay = parseInt(match[2], 10);
+    return actualRound === round && actualDay === day;
+  } catch {
+    return false;
+  }
 }
 
 /** 파싱된 페이지를 Supabase에 시딩 */
@@ -535,22 +545,23 @@ export async function fetchAndSeedLatest(
 
   console.log(`타겟: ${target.year}년 ${target.round}회차 ${target.day}일차 (${target.date})`);
 
-  // HTML 수집
-  const html = await fetchDecisionCardHtml(target.year, target.round, target.day);
-
-  // 회차/일차 검증: kcycle이 존재하지 않는 회차 요청 시 최근 데이터를 반환하는 문제 방지
-  const actual = extractRoundDayFromHtml(html);
-  if (actual && (actual.round !== target.round || actual.day !== target.day)) {
-    console.log(`회차 불일치 - 스킵: 요청 ${target.round}회 ${target.day}일차, 실제 응답 ${actual.round}회 ${actual.day}일차 (아직 미게시)`);
+  // 회차/일차 검증: popup/txt 페이지에서 실제 게시된 회차 확인
+  // kcycle은 미게시 회차 요청 시 가장 최근 데이터를 반환하므로 반드시 검증 필요
+  const verified = await verifyRoundDay(target.year, target.round, target.day);
+  if (!verified) {
+    console.log(`회차 불일치 - 스킵: ${target.round}회 ${target.day}일차 출주표가 아직 게시되지 않음`);
     return {
       success: false,
       year: target.year,
       round: target.round,
       day: target.day,
       date: target.date,
-      message: `회차 불일치: 요청 ${target.round}회 ${target.day}일차 → 실제 ${actual.round}회 ${actual.day}일차 (아직 미게시)`,
+      message: `${target.round}회 ${target.day}일차 출주표가 아직 게시되지 않음 (kcycle 미게시)`,
     };
   }
+
+  // HTML 수집 (SPA URL — 선수 데이터 포함)
+  const html = await fetchDecisionCardHtml(target.year, target.round, target.day);
 
   // 파싱
   const page = parsePage(html, target.year, target.round, target.day, target.date);
