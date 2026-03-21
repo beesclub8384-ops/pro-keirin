@@ -581,6 +581,9 @@ async function main() {
       await seedToSupabase(newData.races);
     }
 
+    // --date 모드에서도 progress 파일 정리 (다음 실행 시 잘못된 resume 방지)
+    clearProgress(year);
+
     console.log("\n=== 단일 날짜 수집 완료 ===");
     return;
   }
