@@ -388,6 +388,14 @@ export async function fetchDecisionCardHtml(year: number, round: number, day: nu
   return res.text();
 }
 
+/** HTML에서 실제 회차/일차 추출 ("XX회 X일차 확정본" 패턴) */
+export function extractRoundDayFromHtml(html: string): { round: number; day: number } | null {
+  // 패턴: "12회 3일차 확정본" 또는 "12회 3일차"
+  const match = html.match(/(\d+)\s*회\s+(\d+)\s*일차\s*확정/);
+  if (!match) return null;
+  return { round: parseInt(match[1], 10), day: parseInt(match[2], 10) };
+}
+
 /** 파싱된 페이지를 Supabase에 시딩 */
 export async function seedPageToSupabase(
   supabase: SupabaseClient,
@@ -529,6 +537,20 @@ export async function fetchAndSeedLatest(
 
   // HTML 수집
   const html = await fetchDecisionCardHtml(target.year, target.round, target.day);
+
+  // 회차/일차 검증: kcycle이 존재하지 않는 회차 요청 시 최근 데이터를 반환하는 문제 방지
+  const actual = extractRoundDayFromHtml(html);
+  if (actual && (actual.round !== target.round || actual.day !== target.day)) {
+    console.log(`회차 불일치 - 스킵: 요청 ${target.round}회 ${target.day}일차, 실제 응답 ${actual.round}회 ${actual.day}일차 (아직 미게시)`);
+    return {
+      success: false,
+      year: target.year,
+      round: target.round,
+      day: target.day,
+      date: target.date,
+      message: `회차 불일치: 요청 ${target.round}회 ${target.day}일차 → 실제 ${actual.round}회 ${actual.day}일차 (아직 미게시)`,
+    };
+  }
 
   // 파싱
   const page = parsePage(html, target.year, target.round, target.day, target.date);
