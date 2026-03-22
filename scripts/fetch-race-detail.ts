@@ -525,6 +525,9 @@ async function main() {
     const year = parseInt(TARGET_DATE.slice(0, 4), 10);
     console.log(`경주결과 상세 수집 (단일 날짜): ${TARGET_DATE}`);
 
+    // 이전 실행의 progress 파일 정리 (잘못된 resume 방지)
+    clearProgress(year);
+
     // 1. 로컬 entry 파일에서 round/day 조회 시도
     let targets = loadRaceTargets(year, TARGET_DATE);
 
