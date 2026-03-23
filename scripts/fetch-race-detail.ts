@@ -491,6 +491,40 @@ async function seedToSupabase(races: RaceDetail[]): Promise<void> {
     }
   }
   console.log(`  race_results upsert: ${resultRows.length}건`);
+
+  // 4) violations 테이블 upsert (실격/경고만)
+  const violationRows: Array<Record<string, unknown>> = [];
+  for (const race of races) {
+    const raceId = raceIdMap.get(`${race.year}|${race.round}|${race.day}|${race.raceNo}`);
+    if (!raceId) continue;
+    for (const v of race.violations || []) {
+      if (v.judgment !== "실격" && v.judgment !== "경고" && v.judgment !== "주의") continue;
+      violationRows.push({
+        race_id: raceId,
+        back_no: v.backNo,
+        name: v.name,
+        violation_time: v.timing || null,
+        violation_place: v.location || null,
+        article: v.article || null,
+        paragraph: v.paragraph || null,
+        clause: v.clause || null,
+        judgment: v.judgment || null,
+      });
+    }
+  }
+
+  if (violationRows.length > 0) {
+    for (let i = 0; i < violationRows.length; i += BATCH_SIZE) {
+      const batch = violationRows.slice(i, i + BATCH_SIZE);
+      const { error } = await supabase
+        .from("violations")
+        .upsert(batch, { onConflict: "race_id,back_no,judgment" });
+      if (error) {
+        console.error(`  violations upsert 에러 (batch ${i}):`, error.message);
+      }
+    }
+  }
+  console.log(`  violations upsert: ${violationRows.length}건`);
 }
 
 // --- 병합 ---
