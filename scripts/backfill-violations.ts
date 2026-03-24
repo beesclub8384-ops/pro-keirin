@@ -62,33 +62,37 @@ interface RaceInfo {
 // --- kcycle HTML 파싱 (violations만) ---
 function parseViolations(html: string): Violation[] {
   const violations: Violation[] = [];
-  const violationIdx = html.indexOf("위반시기");
-  if (violationIdx === -1) return violations;
+  // 심판판정내용 섹션의 모든 <tbody>를 순회 (선수마다 별도 <table>)
+  const judgmentIdx = html.indexOf("심판판정내용");
+  const searchFrom = judgmentIdx > -1 ? judgmentIdx : html.indexOf("위반시기");
+  if (searchFrom === -1) return violations;
 
-  const afterViolation = html.substring(violationIdx);
-  const tbodyMatch = afterViolation.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/);
-  if (!tbodyMatch) return violations;
+  const afterJudgment = html.substring(searchFrom);
+  const endIdx = afterJudgment.indexOf("배당률");
+  const section = endIdx > -1 ? afterJudgment.substring(0, endIdx) : afterJudgment;
+  const allTbodies = [...section.matchAll(/<tbody[^>]*>([\s\S]*?)<\/tbody>/g)];
+  for (const tbodyMatch of allTbodies) {
+    const trs = [...tbodyMatch[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)];
+    for (const tr of trs) {
+      const cells = [...tr[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)]
+        .map(m => decodeHtmlEntities(m[1].replace(/<[^>]*>/g, "").trim()).replace(/\s+/g, " "));
 
-  const trs = [...tbodyMatch[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)];
-  for (const tr of trs) {
-    const cells = [...tr[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)]
-      .map(m => decodeHtmlEntities(m[1].replace(/<[^>]*>/g, "").trim()).replace(/\s+/g, " "));
+      if (cells.length < 7) continue;
 
-    if (cells.length < 7) continue;
+      const vNameMatch = cells[0].match(/^(\d+)\s+(.+)/);
+      if (!vNameMatch) continue;
 
-    const vNameMatch = cells[0].match(/^(\d+)\s+(.+)/);
-    if (!vNameMatch) continue;
-
-    violations.push({
-      backNo: parseInt(vNameMatch[1]),
-      name: vNameMatch[2].trim(),
-      timing: cells[1] || "",
-      location: cells[2] || "",
-      article: cells[3] || "",
-      paragraph: cells[4] || "",
-      clause: cells[5] || "",
-      judgment: cells[6] || "",
-    });
+      violations.push({
+        backNo: parseInt(vNameMatch[1]),
+        name: vNameMatch[2].trim(),
+        timing: cells[1] || "",
+        location: cells[2] || "",
+        article: cells[3] || "",
+        paragraph: cells[4] || "",
+        clause: cells[5] || "",
+        judgment: cells[6] || "",
+      });
+    }
   }
 
   return violations;
@@ -175,17 +179,17 @@ async function main() {
           race_id: race.id,
           back_no: v.backNo,
           name: v.name,
-          violation_time: v.timing || null,
-          violation_place: v.location || null,
-          article: v.article || null,
-          paragraph: v.paragraph || null,
-          clause: v.clause || null,
-          judgment: v.judgment || null,
+          violation_time: v.timing || "",
+          violation_place: v.location || "",
+          article: v.article || "",
+          paragraph: v.paragraph || "",
+          clause: v.clause || "",
+          judgment: v.judgment || "",
         }));
 
         const { error } = await supabase
           .from("violations")
-          .upsert(rows, { onConflict: "race_id,back_no,judgment" });
+          .upsert(rows, { onConflict: "race_id,back_no,judgment,article,paragraph,clause,violation_time,violation_place", ignoreDuplicates: true });
 
         if (error) {
           console.error(`  upsert 에러 (${race.date} ${race.race_no}R): ${error.message}`);

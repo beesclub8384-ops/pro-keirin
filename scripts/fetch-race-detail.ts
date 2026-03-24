@@ -220,13 +220,18 @@ function parseRaceDetail(html: string, year: number, round: number, dayNum: numb
     }
   }
 
-  // 위반 데이터 파싱
+  // 위반 데이터 파싱 — 심판판정내용 섹션의 모든 <tbody>를 순회
+  // kcycle은 선수마다 별도 <table>/<tbody>를 사용
   const violations: Violation[] = [];
-  const violationIdx = html.indexOf("위반시기");
-  if (violationIdx > -1) {
-    const afterViolation = html.substring(violationIdx);
-    const tbodyMatch = afterViolation.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/);
-    if (tbodyMatch) {
+  const judgmentIdx = html.indexOf("심판판정내용");
+  const searchFrom = judgmentIdx > -1 ? judgmentIdx : html.indexOf("위반시기");
+  if (searchFrom > -1) {
+    const afterJudgment = html.substring(searchFrom);
+    // 배당률 섹션 이전까지만 탐색 (심판판정 영역 한정)
+    const endIdx = afterJudgment.indexOf("배당률");
+    const section = endIdx > -1 ? afterJudgment.substring(0, endIdx) : afterJudgment;
+    const allTbodies = [...section.matchAll(/<tbody[^>]*>([\s\S]*?)<\/tbody>/g)];
+    for (const tbodyMatch of allTbodies) {
       const trs = [...tbodyMatch[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)];
       for (const tr of trs) {
         const cells = [...tr[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)]
@@ -234,7 +239,7 @@ function parseRaceDetail(html: string, year: number, round: number, dayNum: numb
 
         if (cells.length < 7) continue;
 
-        // Cell 0: "6 허남열"
+        // Cell 0: "6 허남열" 또는 "1 김희준"
         const vNameMatch = cells[0].match(/^(\d+)\s+(.+)/);
         if (!vNameMatch) continue;
 
@@ -503,12 +508,12 @@ async function seedToSupabase(races: RaceDetail[]): Promise<void> {
         race_id: raceId,
         back_no: v.backNo,
         name: v.name,
-        violation_time: v.timing || null,
-        violation_place: v.location || null,
-        article: v.article || null,
-        paragraph: v.paragraph || null,
-        clause: v.clause || null,
-        judgment: v.judgment || null,
+        violation_time: v.timing || "",
+        violation_place: v.location || "",
+        article: v.article || "",
+        paragraph: v.paragraph || "",
+        clause: v.clause || "",
+        judgment: v.judgment || "",
       });
     }
   }
@@ -518,7 +523,7 @@ async function seedToSupabase(races: RaceDetail[]): Promise<void> {
       const batch = violationRows.slice(i, i + BATCH_SIZE);
       const { error } = await supabase
         .from("violations")
-        .upsert(batch, { onConflict: "race_id,back_no,judgment" });
+        .upsert(batch, { onConflict: "race_id,back_no,judgment,article,paragraph,clause,violation_time,violation_place", ignoreDuplicates: true });
       if (error) {
         console.error(`  violations upsert 에러 (batch ${i}):`, error.message);
       }
