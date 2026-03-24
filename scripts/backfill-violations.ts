@@ -48,6 +48,7 @@ interface Violation {
   paragraph: string;
   clause: string;
   judgment: string;
+  description: string;
 }
 
 interface RaceInfo {
@@ -73,25 +74,44 @@ function parseViolations(html: string): Violation[] {
   const allTbodies = [...section.matchAll(/<tbody[^>]*>([\s\S]*?)<\/tbody>/g)];
   for (const tbodyMatch of allTbodies) {
     const trs = [...tbodyMatch[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)];
+    // 첫 번째 tr: 위반 데이터 (7셀), 두 번째 tr: 경주규칙/상황 설명
+    let pendingViolation: Violation | null = null;
     for (const tr of trs) {
       const cells = [...tr[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)]
         .map(m => decodeHtmlEntities(m[1].replace(/<[^>]*>/g, "").trim()).replace(/\s+/g, " "));
 
-      if (cells.length < 7) continue;
+      if (cells.length >= 7) {
+        const vNameMatch = cells[0].match(/^(\d+)\s+(.+)/);
+        if (!vNameMatch) continue;
 
-      const vNameMatch = cells[0].match(/^(\d+)\s+(.+)/);
-      if (!vNameMatch) continue;
+        // 이전 pending이 있으면 description 없이 push
+        if (pendingViolation) {
+          violations.push(pendingViolation);
+        }
 
-      violations.push({
-        backNo: parseInt(vNameMatch[1]),
-        name: vNameMatch[2].trim(),
-        timing: cells[1] || "",
-        location: cells[2] || "",
-        article: cells[3] || "",
-        paragraph: cells[4] || "",
-        clause: cells[5] || "",
-        judgment: cells[6] || "",
-      });
+        pendingViolation = {
+          backNo: parseInt(vNameMatch[1]),
+          name: vNameMatch[2].trim(),
+          timing: cells[1] || "",
+          location: cells[2] || "",
+          article: cells[3] || "",
+          paragraph: cells[4] || "",
+          clause: cells[5] || "",
+          judgment: cells[6] || "",
+          description: "",
+        };
+      } else if (pendingViolation && cells.length >= 2) {
+        // 경주규칙/상황 행: cells[0]="경주규칙" or "상황", cells[1]=설명
+        const desc = cells[1] || "";
+        pendingViolation.description = desc;
+        violations.push(pendingViolation);
+        pendingViolation = null;
+      }
+    }
+    // tbody 끝나면 남은 pending push
+    if (pendingViolation) {
+      violations.push(pendingViolation);
+      pendingViolation = null;
     }
   }
 
@@ -185,6 +205,7 @@ async function main() {
           paragraph: v.paragraph || "",
           clause: v.clause || "",
           judgment: v.judgment || "",
+          description: v.description || null,
         }));
 
         const { error } = await supabase
