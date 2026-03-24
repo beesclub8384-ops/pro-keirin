@@ -14,6 +14,7 @@ const navItems = [
   { label: "선수 검색", href: "/data/racer-search" },
   { label: "통계", href: "/data/statistics" },
   { label: "매출 통계", href: "/data/sales-statistics" },
+  { label: "판정기록", href: "/violations" },
   { label: "선수 인터뷰", href: "/interview" },
   { label: "경륜 가이드", href: "/guide" },
   { label: "커뮤니티", href: "/community" },
