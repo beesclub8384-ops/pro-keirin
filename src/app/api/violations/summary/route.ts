@@ -66,8 +66,9 @@ export async function GET() {
       if (!yearlyStats.has(year)) yearlyStats.set(year, { total: 0, 실격: 0, 경고: 0, 주의: 0 });
       const stat = yearlyStats.get(year)!;
       stat.total++;
-      if (row.judgment === "실격" || row.judgment === "경고" || row.judgment === "주의") {
-        stat[row.judgment]++;
+      const judgment = row.judgment as "실격" | "경고" | "주의";
+      if (judgment === "실격" || judgment === "경고" || judgment === "주의") {
+        stat[judgment]++;
       }
     }
     const yearlyData = Array.from(yearlyStats.entries())
