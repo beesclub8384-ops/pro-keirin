@@ -42,22 +42,32 @@ export const VIOLATION_ARTICLES: ArticleInfo[] = [
   { article: "103", paragraph: "1", clause: "4", label: "103조 1항 4호", description: "부정행위" },
 ];
 
-/** 조항 키 생성 (URL 등에 사용) */
+/** 조항 키 생성 (URL 등에 사용)
+ *  형식: article[_p항][_c호]
+ *  예: 72_c2 (72조 2호), 74_p2 (74조 2항), 103_p1_c4 (103조 1항 4호), 75 (75조)
+ */
 export function articleKey(article: string, paragraph: string, clause: string): string {
   let key = article;
-  if (paragraph && paragraph !== "-") key += `-${paragraph}`;
-  if (clause && clause !== "-") key += `-${clause}`;
+  if (paragraph && paragraph !== "-") key += `_p${paragraph}`;
+  if (clause && clause !== "-") key += `_c${clause}`;
   return key;
 }
 
 /** URL 키에서 article/paragraph/clause 파싱 */
 export function parseArticleKey(key: string): { article: string; paragraph: string; clause: string } {
-  const parts = key.split("-");
-  return {
-    article: parts[0] || "",
-    paragraph: parts[1] || "-",
-    clause: parts[2] || "-",
-  };
+  let article = key;
+  let paragraph = "-";
+  let clause = "-";
+
+  // _p와 _c 접두사로 분리
+  const pMatch = key.match(/^(\d+)(?:_p(\d+))?(?:_c(\d+))?$/);
+  if (pMatch) {
+    article = pMatch[1];
+    paragraph = pMatch[2] || "-";
+    clause = pMatch[3] || "-";
+  }
+
+  return { article, paragraph, clause };
 }
 
 /** article/paragraph/clause로 조항 정보 찾기 */
