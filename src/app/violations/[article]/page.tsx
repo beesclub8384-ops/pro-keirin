@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, useCallback, use } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { parseArticleKey, findArticleByKey } from "@/lib/violation-articles";
+import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
+import { parseArticleKey, findArticleByKey, formatArticleLabel } from "@/lib/violation-articles";
 
 interface PlayerStat {
   name: string;
@@ -52,6 +54,28 @@ interface ArticleData {
   totalFiltered: number;
 }
 
+interface ViolationRecord {
+  date: string;
+  year: number;
+  round: number;
+  day: number;
+  raceNo: number;
+  backNo: number;
+  violationTime: string;
+  violationPlace: string;
+  article: string;
+  paragraph: string;
+  clause: string;
+  judgment: string;
+  description: string;
+}
+
+interface PlayerHistory {
+  name: string;
+  summary: { 실격: number; 경고: number; 주의: number; total: number };
+  history: ViolationRecord[];
+}
+
 function JudgmentBadge({ judgment }: { judgment: string }) {
   const colors: Record<string, string> = {
     실격: "bg-red-100 text-red-700 border-red-200",
@@ -75,6 +99,9 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
   const [loading, setLoading] = useState(true);
   const [judgment, setJudgment] = useState<string>("all");
   const [year, setYear] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [playerHistory, setPlayerHistory] = useState<PlayerHistory | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -90,6 +117,36 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
       .then((d) => setData(d))
       .finally(() => setLoading(false));
   }, [parsed.article, parsed.clause, parsed.paragraph, judgment, year]);
+
+  // 검색 필터링
+  const filteredPlayers = data?.playerRanking.filter(
+    (p) => !search || p.name.includes(search)
+  ) || [];
+
+  // 검색 결과 1명이면 자동으로 이력 로드
+  const fetchPlayerHistory = useCallback(
+    (name: string) => {
+      setHistoryLoading(true);
+      const ps = new URLSearchParams();
+      ps.set("name", name);
+      ps.set("article", parsed.article);
+      ps.set("clause", parsed.clause);
+      ps.set("paragraph", parsed.paragraph);
+      fetch(`/api/violations/player?${ps}`)
+        .then((r) => r.json())
+        .then((d) => setPlayerHistory(d))
+        .finally(() => setHistoryLoading(false));
+    },
+    [parsed.article, parsed.clause, parsed.paragraph]
+  );
+
+  useEffect(() => {
+    if (filteredPlayers.length === 1) {
+      fetchPlayerHistory(filteredPlayers[0].name);
+    } else {
+      setPlayerHistory(null);
+    }
+  }, [search, filteredPlayers.length, filteredPlayers[0]?.name, fetchPlayerHistory]);
 
   const label = articleInfo?.label || `${parsed.article}조`;
   const description = articleInfo?.description || "";
@@ -155,7 +212,25 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
           {/* 선수별 순위 테이블 */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">선수별 판정 순위</CardTitle>
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle className="text-lg">선수별 판정 순위</CardTitle>
+                <div className="relative w-full max-w-xs">
+                  <Input
+                    placeholder="선수 이름 검색..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pr-8"
+                  />
+                  {search && (
+                    <button
+                      onClick={() => setSearch("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -172,31 +247,86 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.playerRanking.slice(0, 50).map((p, i) => (
-                      <TableRow key={p.name} className="cursor-pointer hover:bg-muted/50">
-                        <TableCell className="text-center text-muted-foreground">{i + 1}</TableCell>
-                        <TableCell className="font-medium">
-                          <Link
-                            href={`/violations/${articleParam}/player/${encodeURIComponent(p.name)}`}
-                            className="hover:text-brand transition-colors"
-                          >
-                            {p.name}
-                          </Link>
+                    {filteredPlayers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                          {search ? `"${search}" 검색 결과가 없습니다.` : "데이터가 없습니다."}
                         </TableCell>
-                        <TableCell className="text-center font-mono text-sm">{p.lastDate}</TableCell>
-                        <TableCell className="text-center">{p.실격 || "-"}</TableCell>
-                        <TableCell className="text-center">{p.경고 || "-"}</TableCell>
-                        <TableCell className="text-center">{p.주의 || "-"}</TableCell>
-                        <TableCell className="text-center font-bold">{p.total}</TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      filteredPlayers.slice(0, search ? 100 : 50).map((p, i) => (
+                        <TableRow key={p.name} className="cursor-pointer hover:bg-muted/50">
+                          <TableCell className="text-center text-muted-foreground">{i + 1}</TableCell>
+                          <TableCell className="font-medium">
+                            <Link
+                              href={`/violations/${articleParam}/player/${encodeURIComponent(p.name)}`}
+                              className="hover:text-brand transition-colors"
+                            >
+                              {p.name}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="text-center font-mono text-sm">{p.lastDate}</TableCell>
+                          <TableCell className="text-center">{p.실격 || "-"}</TableCell>
+                          <TableCell className="text-center">{p.경고 || "-"}</TableCell>
+                          <TableCell className="text-center">{p.주의 || "-"}</TableCell>
+                          <TableCell className="text-center font-bold">{p.total}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
-              {data.playerRanking.length > 50 && (
+              {!search && data.playerRanking.length > 50 && (
                 <p className="mt-3 text-sm text-muted-foreground text-center">
                   상위 50명 표시 (전체 {data.playerRanking.length}명)
                 </p>
+              )}
+
+              {/* 검색 결과 1명: 판정 이력 인라인 표시 */}
+              {filteredPlayers.length === 1 && (
+                <div className="mt-6 border-t pt-6">
+                  <h4 className="text-sm font-semibold mb-4">
+                    {filteredPlayers[0].name} 판정 이력 ({label})
+                  </h4>
+                  {historyLoading ? (
+                    <div className="text-center text-muted-foreground py-8">이력 로딩 중...</div>
+                  ) : !playerHistory ? (
+                    <div className="text-center text-muted-foreground py-8">이력을 불러올 수 없습니다.</div>
+                  ) : playerHistory.history.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">판정 이력이 없습니다.</div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>날짜</TableHead>
+                            <TableHead>회차/일차</TableHead>
+                            <TableHead className="text-center">경주</TableHead>
+                            <TableHead>위반시기</TableHead>
+                            <TableHead>위반장소</TableHead>
+                            <TableHead className="text-center">판정</TableHead>
+                            <TableHead className="hidden md:table-cell">판정내용</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {playerHistory.history.map((v, i) => (
+                            <TableRow key={i}>
+                              <TableCell className="font-mono text-sm whitespace-nowrap">{v.date}</TableCell>
+                              <TableCell className="whitespace-nowrap">{v.round}회 {v.day}일차</TableCell>
+                              <TableCell className="text-center">{v.raceNo}R</TableCell>
+                              <TableCell className="text-sm">{v.violationTime !== "-" ? v.violationTime : ""}</TableCell>
+                              <TableCell className="text-sm">{v.violationPlace !== "-" ? v.violationPlace : ""}</TableCell>
+                              <TableCell className="text-center"><JudgmentBadge judgment={v.judgment} /></TableCell>
+                              <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-sm">
+                                {v.description !== "-" ? v.description : ""}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
