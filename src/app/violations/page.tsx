@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -91,6 +93,8 @@ export default function ViolationsPage() {
   const [sanctions, setSanctions] = useState<SanctionsData | null>(null);
   const [sanctionsLoading, setSanctionsLoading] = useState(true);
   const [sanctionSearch, setSanctionSearch] = useState("");
+  const [sanctionSearchInput, setSanctionSearchInput] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sanctionYear, setSanctionYear] = useState<string>("all");
   const [sanctionType, setSanctionType] = useState<string>("all");
   const [sanctionRegulation, setSanctionRegulation] = useState<string>("all");
@@ -339,10 +343,28 @@ export default function ViolationsPage() {
         <div className="flex flex-wrap gap-2">
           <Input
             placeholder="선수명 검색..."
-            value={sanctionSearch}
-            onChange={(e) => { setSanctionSearch(e.target.value); setSanctionPage(1); }}
+            value={sanctionSearchInput}
+            onInput={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setSanctionSearchInput(v);
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              debounceRef.current = setTimeout(() => { setSanctionSearch(v); setSanctionPage(1); }, 500);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                if (debounceRef.current) clearTimeout(debounceRef.current);
+                setSanctionSearch(sanctionSearchInput); setSanctionPage(1);
+              }
+            }}
             className="w-40"
           />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => { if (debounceRef.current) clearTimeout(debounceRef.current); setSanctionSearch(sanctionSearchInput); setSanctionPage(1); }}
+          >
+            <Search className="h-4 w-4" />
+          </Button>
           <Select value={sanctionYear} onValueChange={(v) => { setSanctionYear(v); setSanctionPage(1); }}>
             <SelectTrigger className="w-28">
               <SelectValue placeholder="연도" />
@@ -367,7 +389,7 @@ export default function ViolationsPage() {
           </Select>
           {(sanctionSearch || sanctionYear !== "all" || sanctionType !== "all" || sanctionRegulation !== "all") && (
             <button
-              onClick={() => { setSanctionSearch(""); setSanctionYear("all"); setSanctionType("all"); setSanctionRegulation("all"); setSanctionPage(1); }}
+              onClick={() => { setSanctionSearchInput(""); setSanctionSearch(""); setSanctionYear("all"); setSanctionType("all"); setSanctionRegulation("all"); setSanctionPage(1); }}
               className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground border rounded-md hover:bg-muted transition-colors"
             >
               초기화
