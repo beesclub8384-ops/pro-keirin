@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -32,6 +40,36 @@ interface SummaryData {
   }[];
 }
 
+interface SanctionRecord {
+  id: number;
+  no: number;
+  racer_name: string;
+  generation: string | null;
+  racer_id: string | null;
+  race_info: string | null;
+  race_year: number | null;
+  venue: string | null;
+  round: number | null;
+  day: number | null;
+  race_no: number | null;
+  regulation: string | null;
+  reason: string | null;
+  sanction_type: string | null;
+  sanction_value: string | null;
+  sanction_days: number | null;
+  sanction_unit: string | null;
+}
+
+interface SanctionsData {
+  data: SanctionRecord[];
+  total: number;
+  page: number;
+  totalPages: number;
+  availableYears: number[];
+  availableTypes: string[];
+  typeCountMap: Record<string, number>;
+}
+
 function JudgmentBadge({ judgment }: { judgment: string }) {
   const colors: Record<string, string> = {
     실격: "bg-red-100 text-red-700 border-red-200",
@@ -49,12 +87,37 @@ export default function ViolationsPage() {
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [sanctions, setSanctions] = useState<SanctionsData | null>(null);
+  const [sanctionsLoading, setSanctionsLoading] = useState(true);
+  const [sanctionSearch, setSanctionSearch] = useState("");
+  const [sanctionYear, setSanctionYear] = useState<string>("all");
+  const [sanctionType, setSanctionType] = useState<string>("all");
+  const [sanctionPage, setSanctionPage] = useState(1);
+  const [expandedNo, setExpandedNo] = useState<number | null>(null);
+
   useEffect(() => {
     fetch("/api/violations/summary")
       .then((r) => r.json())
       .then((d) => setData(d))
       .finally(() => setLoading(false));
   }, []);
+
+  const fetchSanctions = useCallback((search: string, year: string, type: string, page: number) => {
+    setSanctionsLoading(true);
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (year !== "all") params.set("year", year);
+    if (type !== "all") params.set("sanctionType", type);
+    params.set("page", String(page));
+    fetch(`/api/violations/sanctions?${params}`)
+      .then((r) => r.json())
+      .then((d) => setSanctions(d))
+      .finally(() => setSanctionsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchSanctions(sanctionSearch, sanctionYear, sanctionType, sanctionPage);
+  }, [sanctionSearch, sanctionYear, sanctionType, sanctionPage, fetchSanctions]);
 
   if (loading) {
     return (
@@ -216,6 +279,186 @@ export default function ViolationsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ── 심판제재선수 섹션 ── */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">심판제재선수</h2>
+          {sanctions && (
+            <span className="text-sm text-muted-foreground">총 {sanctions.total.toLocaleString()}건</span>
+          )}
+        </div>
+
+        {/* 제재유형별 현황 버튼 */}
+        {sanctions && (
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(sanctions.typeCountMap)
+              .sort((a, b) => b[1] - a[1])
+              .map(([type, count]) => (
+                <button
+                  key={type}
+                  onClick={() => { setSanctionType(sanctionType === type ? "all" : type); setSanctionPage(1); }}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors
+                    ${sanctionType === type
+                      ? "bg-red-600 text-white border-red-600"
+                      : "bg-background hover:bg-muted"}`}
+                >
+                  {type}
+                  <span className={`text-xs ${sanctionType === type ? "text-red-100" : "text-muted-foreground"}`}>
+                    {count}
+                  </span>
+                </button>
+              ))}
+          </div>
+        )}
+
+        {/* 검색 + 필터 */}
+        <div className="flex flex-wrap gap-2">
+          <Input
+            placeholder="선수명 검색..."
+            value={sanctionSearch}
+            onChange={(e) => { setSanctionSearch(e.target.value); setSanctionPage(1); }}
+            className="w-40"
+          />
+          <Select value={sanctionYear} onValueChange={(v) => { setSanctionYear(v); setSanctionPage(1); }}>
+            <SelectTrigger className="w-28">
+              <SelectValue placeholder="연도" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체 연도</SelectItem>
+              {sanctions?.availableYears.map((y) => (
+                <SelectItem key={y} value={String(y)}>{y}년</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sanctionType} onValueChange={(v) => { setSanctionType(v); setSanctionPage(1); }}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="제재유형" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체 유형</SelectItem>
+              {sanctions?.availableTypes.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {(sanctionSearch || sanctionYear !== "all" || sanctionType !== "all") && (
+            <button
+              onClick={() => { setSanctionSearch(""); setSanctionYear("all"); setSanctionType("all"); setSanctionPage(1); }}
+              className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground border rounded-md hover:bg-muted transition-colors"
+            >
+              초기화
+            </button>
+          )}
+        </div>
+
+        {/* 테이블 */}
+        <Card>
+          <CardContent className="p-0">
+            {sanctionsLoading ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">로딩 중...</div>
+            ) : !sanctions || sanctions.data.length === 0 ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">검색 결과가 없습니다.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">No.</TableHead>
+                      <TableHead>선수</TableHead>
+                      <TableHead>해당경주</TableHead>
+                      <TableHead>제재유형</TableHead>
+                      <TableHead>제재기간</TableHead>
+                      <TableHead className="w-8"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sanctions.data.map((r) => (
+                      <>
+                        <TableRow
+                          key={r.no}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => setExpandedNo(expandedNo === r.no ? null : r.no)}
+                        >
+                          <TableCell className="text-xs text-muted-foreground">{r.no}</TableCell>
+                          <TableCell>
+                            <div className="font-medium">{r.racer_name}</div>
+                            <div className="text-xs text-muted-foreground">{r.generation}</div>
+                          </TableCell>
+                          <TableCell className="text-sm">{r.race_info}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold
+                              ${r.sanction_type === "출전정지" ? "bg-red-100 text-red-700 border-red-200" :
+                                r.sanction_type === "서면경고" ? "bg-orange-100 text-orange-700 border-orange-200" :
+                                "bg-gray-100 text-gray-700 border-gray-200"}`}>
+                              {r.sanction_type}
+                            </span>
+                          </TableCell>
+                          <TableCell className="font-medium">{r.sanction_value}</TableCell>
+                          <TableCell className="text-muted-foreground text-xs">
+                            {expandedNo === r.no ? "▲" : "▼"}
+                          </TableCell>
+                        </TableRow>
+                        {expandedNo === r.no && (
+                          <TableRow key={`${r.no}-detail`} className="bg-muted/30">
+                            <TableCell colSpan={6} className="py-3 px-4">
+                              <div className="space-y-1.5 text-sm">
+                                {r.regulation && (
+                                  <div>
+                                    <span className="font-medium text-muted-foreground">시행규정: </span>
+                                    {r.regulation}
+                                  </div>
+                                )}
+                                {r.reason && r.reason.length > 3 ? (
+                                  <div>
+                                    <span className="font-medium text-muted-foreground">제재사유: </span>
+                                    {r.reason}
+                                  </div>
+                                ) : (
+                                  <div className="text-muted-foreground text-xs">제재사유: 합산적용 (상세 사유 미기재)</div>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 페이지네이션 */}
+        {sanctions && sanctions.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => setSanctionPage(1)}
+              disabled={sanctionPage === 1}
+              className="px-2 py-1 text-sm border rounded disabled:opacity-30 hover:bg-muted"
+            >처음</button>
+            <button
+              onClick={() => setSanctionPage((p) => Math.max(1, p - 1))}
+              disabled={sanctionPage === 1}
+              className="px-3 py-1 text-sm border rounded disabled:opacity-30 hover:bg-muted"
+            >이전</button>
+            <span className="text-sm text-muted-foreground px-2">
+              {sanctionPage} / {sanctions.totalPages}
+            </span>
+            <button
+              onClick={() => setSanctionPage((p) => Math.min(sanctions.totalPages, p + 1))}
+              disabled={sanctionPage === sanctions.totalPages}
+              className="px-3 py-1 text-sm border rounded disabled:opacity-30 hover:bg-muted"
+            >다음</button>
+            <button
+              onClick={() => setSanctionPage(sanctions.totalPages)}
+              disabled={sanctionPage === sanctions.totalPages}
+              className="px-2 py-1 text-sm border rounded disabled:opacity-30 hover:bg-muted"
+            >마지막</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
