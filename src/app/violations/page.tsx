@@ -93,7 +93,6 @@ export default function ViolationsPage() {
   const [sanctionYear, setSanctionYear] = useState<string>("all");
   const [sanctionType, setSanctionType] = useState<string>("all");
   const [sanctionPage, setSanctionPage] = useState(1);
-  const [expandedNo, setExpandedNo] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/violations/summary")
@@ -369,59 +368,33 @@ export default function ViolationsPage() {
                       <TableHead>해당경주</TableHead>
                       <TableHead>제재유형</TableHead>
                       <TableHead>제재기간</TableHead>
-                      <TableHead className="w-8"></TableHead>
+                      <TableHead>시행규정</TableHead>
+                      <TableHead>제재사유</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {sanctions.data.map((r) => (
-                      <>
-                        <TableRow
-                          key={r.no}
-                          className="cursor-pointer hover:bg-muted/50"
-                          onClick={() => setExpandedNo(expandedNo === r.no ? null : r.no)}
-                        >
-                          <TableCell className="text-xs text-muted-foreground">{r.no}</TableCell>
-                          <TableCell>
-                            <div className="font-medium">{r.racer_name}</div>
-                            <div className="text-xs text-muted-foreground">{r.generation}</div>
-                          </TableCell>
-                          <TableCell className="text-sm">{r.race_info}</TableCell>
-                          <TableCell>
-                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold
-                              ${r.sanction_type === "출전정지" ? "bg-red-100 text-red-700 border-red-200" :
-                                r.sanction_type === "서면경고" ? "bg-orange-100 text-orange-700 border-orange-200" :
-                                "bg-gray-100 text-gray-700 border-gray-200"}`}>
-                              {r.sanction_type}
-                            </span>
-                          </TableCell>
-                          <TableCell className="font-medium">{r.sanction_value}</TableCell>
-                          <TableCell className="text-muted-foreground text-xs">
-                            {expandedNo === r.no ? "▲" : "▼"}
-                          </TableCell>
-                        </TableRow>
-                        {expandedNo === r.no && (
-                          <TableRow key={`${r.no}-detail`} className="bg-muted/30">
-                            <TableCell colSpan={6} className="py-3 px-4">
-                              <div className="space-y-1.5 text-sm">
-                                {r.regulation && (
-                                  <div>
-                                    <span className="font-medium text-muted-foreground">시행규정: </span>
-                                    {r.regulation}
-                                  </div>
-                                )}
-                                {r.reason && r.reason.length > 3 ? (
-                                  <div>
-                                    <span className="font-medium text-muted-foreground">제재사유: </span>
-                                    {r.reason}
-                                  </div>
-                                ) : (
-                                  <div className="text-muted-foreground text-xs">제재사유: 합산적용 (상세 사유 미기재)</div>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </>
+                      <TableRow key={r.no}>
+                        <TableCell className="text-xs text-muted-foreground">{r.no}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{r.racer_name}</div>
+                          <div className="text-xs text-muted-foreground">{r.generation}</div>
+                        </TableCell>
+                        <TableCell className="text-sm">{r.race_info}</TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold
+                            ${r.sanction_type === "출전정지" ? "bg-red-100 text-red-700 border-red-200" :
+                              r.sanction_type === "서면경고" ? "bg-orange-100 text-orange-700 border-orange-200" :
+                              "bg-gray-100 text-gray-700 border-gray-200"}`}>
+                            {r.sanction_type}
+                          </span>
+                        </TableCell>
+                        <TableCell className="font-medium">{r.sanction_value}</TableCell>
+                        <TableCell className="text-sm whitespace-normal">{r.regulation || "-"}</TableCell>
+                        <TableCell className="text-sm whitespace-normal">
+                          {r.reason && r.reason.length > 3 ? r.reason : "합산적용"}
+                        </TableCell>
+                      </TableRow>
                     ))}
                   </TableBody>
                 </Table>
