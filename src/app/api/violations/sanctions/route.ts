@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const sp = request.nextUrl.searchParams;
     const year = sp.get("year");
     const sanctionType = sp.get("sanctionType");
+    const regulation = sp.get("regulation");
     const search = sp.get("search");
     const page = parseInt(sp.get("page") || "1");
     const limit = 20;
@@ -19,6 +20,7 @@ export async function GET(request: NextRequest) {
 
     if (year) query = query.eq("race_year", parseInt(year));
     if (sanctionType) query = query.eq("sanction_type", sanctionType);
+    if (regulation) query = query.eq("regulation", regulation);
     if (search) query = query.ilike("racer_name", `%${search}%`);
 
     const { data, count, error } = await query.range(offset, offset + limit - 1);
@@ -47,6 +49,23 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // regulation별 집계
+    const { data: regCounts } = await supabase
+      .from("judge_sanctions")
+      .select("regulation")
+      .not("regulation", "is", null);
+    const regulationStats: { regulation: string; count: number }[] = [];
+    const regMap = new Map<string, number>();
+    for (const r of regCounts || []) {
+      if (r.regulation) {
+        regMap.set(r.regulation, (regMap.get(r.regulation) || 0) + 1);
+      }
+    }
+    for (const [reg, cnt] of regMap) {
+      regulationStats.push({ regulation: reg, count: cnt });
+    }
+    regulationStats.sort((a, b) => b.count - a.count);
+
     return NextResponse.json({
       data: data || [],
       total: count || 0,
@@ -55,6 +74,7 @@ export async function GET(request: NextRequest) {
       availableYears: uniqueYears,
       availableTypes: uniqueTypes,
       typeCountMap,
+      regulationStats,
     });
   } catch (error) {
     console.error("sanctions error:", error);

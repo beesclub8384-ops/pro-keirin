@@ -68,6 +68,7 @@ interface SanctionsData {
   availableYears: number[];
   availableTypes: string[];
   typeCountMap: Record<string, number>;
+  regulationStats: { regulation: string; count: number }[];
 }
 
 function JudgmentBadge({ judgment }: { judgment: string }) {
@@ -92,6 +93,7 @@ export default function ViolationsPage() {
   const [sanctionSearch, setSanctionSearch] = useState("");
   const [sanctionYear, setSanctionYear] = useState<string>("all");
   const [sanctionType, setSanctionType] = useState<string>("all");
+  const [sanctionRegulation, setSanctionRegulation] = useState<string>("all");
   const [sanctionPage, setSanctionPage] = useState(1);
 
   useEffect(() => {
@@ -101,12 +103,13 @@ export default function ViolationsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const fetchSanctions = useCallback((search: string, year: string, type: string, page: number) => {
+  const fetchSanctions = useCallback((search: string, year: string, type: string, regulation: string, page: number) => {
     setSanctionsLoading(true);
     const params = new URLSearchParams();
     if (search) params.set("search", search);
     if (year !== "all") params.set("year", year);
     if (type !== "all") params.set("sanctionType", type);
+    if (regulation !== "all") params.set("regulation", regulation);
     params.set("page", String(page));
     fetch(`/api/violations/sanctions?${params}`)
       .then((r) => r.json())
@@ -115,8 +118,8 @@ export default function ViolationsPage() {
   }, []);
 
   useEffect(() => {
-    fetchSanctions(sanctionSearch, sanctionYear, sanctionType, sanctionPage);
-  }, [sanctionSearch, sanctionYear, sanctionType, sanctionPage, fetchSanctions]);
+    fetchSanctions(sanctionSearch, sanctionYear, sanctionType, sanctionRegulation, sanctionPage);
+  }, [sanctionSearch, sanctionYear, sanctionType, sanctionRegulation, sanctionPage, fetchSanctions]);
 
   if (loading) {
     return (
@@ -311,6 +314,27 @@ export default function ViolationsPage() {
           </div>
         )}
 
+        {/* 시행규정별 현황 버튼 */}
+        {sanctions && sanctions.regulationStats.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {sanctions.regulationStats.map(({ regulation, count }) => (
+              <button
+                key={regulation}
+                onClick={() => { setSanctionRegulation(sanctionRegulation === regulation ? "all" : regulation); setSanctionPage(1); }}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors
+                  ${sanctionRegulation === regulation
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-background hover:bg-muted"}`}
+              >
+                {regulation.replace(/^경륜시행규정\s*/, "")}
+                <span className={`text-xs ${sanctionRegulation === regulation ? "text-blue-100" : "text-muted-foreground"}`}>
+                  {count}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* 검색 + 필터 */}
         <div className="flex flex-wrap gap-2">
           <Input
@@ -341,9 +365,9 @@ export default function ViolationsPage() {
               ))}
             </SelectContent>
           </Select>
-          {(sanctionSearch || sanctionYear !== "all" || sanctionType !== "all") && (
+          {(sanctionSearch || sanctionYear !== "all" || sanctionType !== "all" || sanctionRegulation !== "all") && (
             <button
-              onClick={() => { setSanctionSearch(""); setSanctionYear("all"); setSanctionType("all"); setSanctionPage(1); }}
+              onClick={() => { setSanctionSearch(""); setSanctionYear("all"); setSanctionType("all"); setSanctionRegulation("all"); setSanctionPage(1); }}
               className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground border rounded-md hover:bg-muted transition-colors"
             >
               초기화
