@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
     const paragraph = sp.get("paragraph") || "-";
     const judgment = sp.get("judgment"); // 실격/경고/주의 필터
     const year = sp.get("year");
-    const violationType = sp.get("violationType"); // A/B 유형 필터
 
     if (!article) {
       return NextResponse.json({ error: "article parameter required" }, { status: 400 });
@@ -29,7 +28,6 @@ export async function GET(request: NextRequest) {
     else query = query.eq("paragraph", "-");
 
     if (judgment) query = query.eq("judgment", judgment);
-    if (violationType) query = query.eq("violation_type", violationType);
 
     const allViolations = await fetchAllRows(query);
 

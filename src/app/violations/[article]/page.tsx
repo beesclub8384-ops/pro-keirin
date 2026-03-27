@@ -99,6 +99,8 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
   const [loading, setLoading] = useState(true);
   const [judgment, setJudgment] = useState<string>("all");
   const [year, setYear] = useState<string>("all");
+  const [violationType, setViolationType] = useState<string>("all");
+  const is72c2 = parsed.article === "72" && parsed.clause === "2";
   const [search, setSearch] = useState("");
   const [playerHistory, setPlayerHistory] = useState<PlayerHistory | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -111,12 +113,13 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
     params.set("paragraph", parsed.paragraph);
     if (judgment !== "all") params.set("judgment", judgment);
     if (year !== "all") params.set("year", year);
+    if (violationType !== "all") params.set("violationType", violationType);
 
     fetch(`/api/violations/article?${params}`)
       .then((r) => r.json())
       .then((d) => setData(d))
       .finally(() => setLoading(false));
-  }, [parsed.article, parsed.clause, parsed.paragraph, judgment, year]);
+  }, [parsed.article, parsed.clause, parsed.paragraph, judgment, year, violationType]);
 
   // 검색 필터링
   const filteredPlayers = data?.playerRanking.filter(
@@ -201,6 +204,19 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
             ))}
           </SelectContent>
         </Select>
+
+        {is72c2 && (
+          <Select value={violationType} onValueChange={setViolationType}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="유형" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체 유형</SelectItem>
+              <SelectItem value="A">A타입 (고의적 전력 미달)</SelectItem>
+              <SelectItem value="B">B타입 (능력 부족)</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {loading ? (

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("violations")
-      .select("id, race_id, back_no, name, violation_time, violation_place, article, paragraph, clause, judgment, description, violation_type")
+      .select("id, race_id, back_no, name, violation_time, violation_place, article, paragraph, clause, judgment, description")
       .eq("name", name);
 
     if (article) {
@@ -62,7 +62,6 @@ export async function GET(request: NextRequest) {
           clause: v.clause,
           judgment: v.judgment,
           description: v.description,
-          violationType: v.violation_type || null,
         };
       })
       .sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));

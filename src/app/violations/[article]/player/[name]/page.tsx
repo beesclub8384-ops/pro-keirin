@@ -20,6 +20,7 @@ interface ViolationRecord {
   clause: string;
   judgment: string;
   description: string;
+  violationType: string | null;
 }
 
 interface PlayerData {
@@ -137,6 +138,12 @@ export default function PlayerViolationsPage({
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <span className="font-mono text-sm font-medium">{v.date}</span>
                       <JudgmentBadge judgment={v.judgment} />
+                      {v.violationType === "A" && (
+                        <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">고의적 전력 미달</span>
+                      )}
+                      {v.violationType === "B" && (
+                        <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">능력 부족</span>
+                      )}
                       <span className="text-sm text-muted-foreground">
                         {v.round}회 {v.day}일차 {v.raceNo}R
                       </span>
