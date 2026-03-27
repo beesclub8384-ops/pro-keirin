@@ -223,7 +223,7 @@ async function saveAndVerify(year: number, records: SanctionRecord[]): Promise<v
     const batch = records.slice(i, i + BATCH)
     const { error } = await supabase
       .from('judge_sanctions')
-      .upsert(batch, { onConflict: 'no' })
+      .upsert(batch, { onConflict: 'no,race_year' })
     if (error) {
       console.error(`  ❌ 배치 저장 실패 (${i}~${i + BATCH}):`, error.message)
     } else {
@@ -320,7 +320,7 @@ async function main() {
   const targetYear = yearIdx !== -1 ? parseInt(args[yearIdx + 1]) : null
   const dryRun = args.includes('--dry-run')
 
-  const years = targetYear ? [targetYear] : [2022, 2023, 2024, 2025, 2026]
+  const years = targetYear ? [targetYear] : [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
 
   console.log(`🚀 심판제재선수 수집`)
   console.log(`대상: ${years.join(', ')}년`)
