@@ -211,6 +211,7 @@ export async function GET(request: NextRequest) {
         is_absent: boolean | null;
         name?: string;
         training?: string;
+        is_union?: boolean;
       }>
     );
 
