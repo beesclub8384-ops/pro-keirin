@@ -189,6 +189,7 @@ interface DCEntryRow {
   is_absent: boolean | null;
   name?: string; // joined from racer_ids
   training?: string; // joined from racer_profiles
+  is_union?: boolean; // joined from racer_profiles
 }
 
 export function transformDCEntry(row: DCEntryRow): DecisionCardEntry & { name: string; training: string } {
@@ -222,6 +223,7 @@ export function transformDCEntry(row: DCEntryRow): DecisionCardEntry & { name: s
     isAbsent: row.is_absent ?? false,
     name: row.name ?? "",
     training: row.training ?? "",
+    isUnion: row.is_union ?? false,
   };
 }
 
@@ -289,6 +291,7 @@ interface RacerProfileRow {
   tactics: Record<string, unknown> | null;
   violations: Record<string, unknown> | null;
   indices: Record<string, unknown> | null;
+  is_union: boolean | null;
 }
 
 export function transformRacerProfile(row: RacerProfileRow): RacerProfile {
@@ -333,6 +336,7 @@ export function transformRacerProfile(row: RacerProfileRow): RacerProfile {
       chase: 0,
       mark: 0,
     },
+    isUnion: row.is_union ?? false,
   };
 }
 

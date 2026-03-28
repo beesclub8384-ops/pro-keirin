@@ -96,6 +96,7 @@ export async function GET(request: NextRequest) {
     );
     const nameMap = new Map<string, string>();
     const trainingMap = new Map<string, string>();
+    const unionMap = new Map<string, boolean>();
 
     if (racerIdSet.size > 0) {
       const racerIds = Array.from(racerIdSet);
@@ -154,7 +155,7 @@ export async function GET(request: NextRequest) {
         const chunk = racerIds.slice(i, i + 200);
         const { data: profileRows } = await supabase
           .from("racer_profiles")
-          .select("racer_id, training")
+          .select("racer_id, training, is_union")
           .eq("year", profileYear)
           .in("racer_id", chunk);
         if (profileRows) {
@@ -162,6 +163,7 @@ export async function GET(request: NextRequest) {
             const raw = (r.training as string) || "";
             const location = raw.split("/")[0].trim();
             trainingMap.set(r.racer_id, location);
+            if (r.is_union) unionMap.set(r.racer_id, true);
           }
         }
       }
@@ -172,6 +174,7 @@ export async function GET(request: NextRequest) {
       ...e,
       name: nameMap.get(e.racer_id as string) || "",
       training: trainingMap.get(e.racer_id as string) || "",
+      is_union: unionMap.get(e.racer_id as string) ?? false,
     }));
 
     const pages = assembleDCPages(

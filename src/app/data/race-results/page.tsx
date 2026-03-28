@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { UnionBadge } from "@/components/ui/UnionBadge";
 import { BackNumber } from "@/components/ui/back-number";
 import { RaceTabNav } from "@/components/race-tab-nav";
 import Link from "next/link";
@@ -48,6 +49,7 @@ interface RaceResult {
   record200m: string;
   speed200m: number;
   training: string;
+  isUnion: boolean;
 }
 
 interface RaceEnvironment {
@@ -262,6 +264,7 @@ export default function RaceResultsPage() {
                               <TableCell className="font-medium">
                                 <span className="flex items-center gap-1">
                                   {r.name}
+                                  <UnionBadge isUnion={r.isUnion ?? false} />
                                   {r.training && (
                                     <Link href={`/training/${encodeURIComponent(r.training)}`} onClick={(e) => e.stopPropagation()}>
                                       <Badge variant="outline" className="text-xs cursor-pointer hover:bg-accent">{r.training}</Badge>

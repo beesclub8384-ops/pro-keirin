@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { UnionBadge } from "@/components/ui/UnionBadge";
 import { BackNumber } from "@/components/ui/back-number";
 import { RaceTabNav } from "@/components/race-tab-nav";
 import Link from "next/link";
@@ -262,6 +263,7 @@ function DecisionCardContent() {
                             <TableCell className="font-medium">
                               <span className="flex items-center gap-1">
                                 {entry.name}
+                                <UnionBadge isUnion={entry.isUnion ?? false} />
                                 {entry.training && (
                                   <Link href={`/training/${encodeURIComponent(entry.training)}`} onClick={(e) => e.stopPropagation()}>
                                     <Badge variant="outline" className="text-xs cursor-pointer hover:bg-accent">{entry.training}</Badge>

@@ -102,6 +102,7 @@ export interface DecisionCardEntry {
   performanceRank: string;
   isAbsent: boolean;
   training: string;
+  isUnion: boolean;
 }
 
 export interface DecisionCardRace {
@@ -216,6 +217,7 @@ export interface RacerProfile {
     chase: number;
     mark: number;
   };
+  isUnion: boolean;
 }
 
 // --- Ranking Types ---

@@ -20,6 +20,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
+import { UnionBadge } from "@/components/ui/UnionBadge";
 
 interface RacerTactics {
   preemptive: number[];
@@ -72,6 +73,7 @@ interface RacerResult {
   training: string;
   tactics: RacerTactics;
   violations: RacerViolations;
+  isUnion: boolean;
   ranking?: RankingEntry;
 }
 
@@ -214,7 +216,7 @@ export default function RacerSearchPage() {
                   onClick={() => toggle(uid)}
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <CardTitle className="text-base">{group.name}</CardTitle>
+                    <CardTitle className="text-base">{group.name}<UnionBadge isUnion={racer.isUnion ?? false} /></CardTitle>
                     <Badge variant="outline">{racer.gradeChange}</Badge>
                     {racer.ranking && (
                       <Badge variant="secondary">순위 {racer.ranking.rank}위</Badge>
