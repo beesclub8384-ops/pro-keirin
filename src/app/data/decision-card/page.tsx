@@ -49,6 +49,7 @@ interface Entry {
   performanceRank: string;
   isAbsent?: boolean;
   training: string;
+  isUnion?: boolean;
 }
 
 interface DecisionRace {
