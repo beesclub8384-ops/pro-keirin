@@ -121,7 +121,7 @@ export default function RaceResultsPage() {
     const found = rounds.find((r) => r.round === parseInt(selectedRound, 10));
     if (found) {
       setDays(found.days);
-      setSelectedDay(String(found.days[0]));
+      setSelectedDay(String(found.days[found.days.length - 1]));
     }
   }, [selectedRound, rounds]);
 
