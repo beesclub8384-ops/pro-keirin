@@ -14,6 +14,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "홈", href: "/" },
+  { label: "경륜 가이드", href: "/guide" },
   { label: "배당률 분석", href: "/analysis/odds" },
   {
     label: "경주결과",
@@ -38,7 +39,6 @@ const navItems: NavItem[] = [
   { label: "매출 통계", href: "/data/sales-statistics" },
   { label: "판정기록", href: "/violations" },
   { label: "선수 인터뷰", href: "/interview" },
-  { label: "경륜 가이드", href: "/guide" },
   { label: "커뮤니티", href: "/community" },
 ];
 
