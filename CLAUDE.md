@@ -13,6 +13,47 @@
 - 위치 전환 시: 반드시 git pull origin master 먼저 실행
 
 ---
+## 🔄 표준 작업 워크플로우
+
+1. node scripts/plan-agent.mjs — 계획서 작성 → CURRENT_TASK.md 생성
+2. 클로드 코드로 작업 수행
+3. npx tsc --noEmit — 타입 확인
+4. npm run lint — 린트 확인
+5. npm run build — 빌드 확인
+6. node scripts/review-agent.mjs — 코드 리뷰 → review-result.md 생성
+7. node scripts/eval-agent.mjs — 품질 평가 → eval-result.md 생성
+8. node scripts/monitor-agent.mjs — 누적 패턴 분석
+
+새 대화 창에서 시작할 때: CURRENT_TASK.md가 있으면 반드시 먼저 읽고 현재 상태 파악
+
+---
+## 🚫 절대 하지 말아야 할 것 (가드레일)
+
+1. scripts/ 파일 절대 삭제 금지 (복구 불가)
+2. git push --force 절대 금지
+3. git clean -fd 실행 전 반드시 사용자 확인
+4. Supabase 테이블 직접 삭제/truncate 전 반드시 사용자 확인
+5. 환경변수 값을 코드에 하드코딩 금지
+6. SUPABASE_SERVICE_ROLE_KEY를 클라이언트 사이드에서 사용 금지
+
+---
+## 📋 작업 시작 전 계획서 작성
+
+계획서에 포함할 내용:
+- 작업 목표
+- 구현 단계
+- 변경될 파일 목록
+- 완료 기준
+- 예상 위험 요소
+- 실수할 수 있는 부분
+
+규칙:
+- 관련 파일 전체 읽기 전 코드 작성 금지
+- 확실하지 않으면 추측 말고 질문
+- 빠른 완료보다 정확한 완료 우선
+- 사용자 OK 전 코드 작성 금지
+
+---
 ⚠️ 코딩 전 반드시 확인할 체크리스트
 
 코드를 작성하기 전에 아래를 순서대로 확인한다.
@@ -58,6 +99,12 @@ while (true) {
 kcycle은 없는 회차를 요청하면 404 대신 가장 최근 데이터를 반환한다.
 반드시 반환된 HTML에서 회차/일차를 파싱해 요청값과 일치하는지 확인 후 저장.
 불일치 시 저장하지 않고 스킵.
+
+5. 동적 라우트 params 처리 (Next.js 16 + React 19)
+
+서버 컴포넌트: async function + await params
+클라이언트 컴포넌트: use(params) — React 19 권장
+useParams(): 레거시, 새로 작성 시 사용 금지
 
 ---
 🔍 데이터 진단 순서 (문제 발생 시)
