@@ -58,7 +58,15 @@ export default function InterviewPage() {
       .then((res) => res.json())
       .then((data) => {
         if (!Array.isArray(data)) return setArticles([]);
-        setArticles(data.map((a: InterviewArticle) => ({ ...a, date: toKSTDate(a.date) })));
+        const parsed = data.map((a: InterviewArticle) => ({ ...a, date: toKSTDate(a.date) }));
+        setArticles(parsed);
+        // 가장 최근 기사가 있는 달로 자동 이동
+        if (parsed.length > 0) {
+          const latest = parsed.map((a: InterviewArticle) => a.date).sort().reverse()[0];
+          const [y, m] = latest.split("-").map(Number);
+          setYear(y);
+          setMonth(m - 1);
+        }
       })
       .catch(() => setArticles([]))
       .finally(() => setLoading(false));

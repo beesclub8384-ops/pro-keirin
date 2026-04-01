@@ -34,7 +34,7 @@ interface RaceSales {
 }
 
 // --- 설정 ---
-const DELAY_MS = 500;
+const DELAY_MS = 1500;
 const MAX_RETRIES = 3;
 const MEET_CD = "001"; // 광명
 const OUT_DIR = path.join(__dirname, "..", "src", "data", "yearly-race-sales");
@@ -80,27 +80,18 @@ function loadRaceList(year: number): { round: number; day: number; raceNo: numbe
     );
 }
 
-// --- grade 파싱 ---
-// 경주 제목에서 등급을 추출: "(선발 09:50)", "(준결 17:30)", "(그랑프리결승 18:18)" 등
+// --- 급별 파싱 ---
+// <h2>광명 01경주 (선발 12 : 55)</h2> → "선발"
+const GRADE_KEYWORDS = ["선발", "우수", "특선"];
+
 function parseGrade(html: string): string | null {
   const decoded = decodeHtml(html);
-  // 패턴: "N경주 (등급명 HH : MM)" 또는 "N경주 (등급명HH : MM)"
-  const m = decoded.match(/경주\s*\(\s*([^\d]+?)\s*\d{1,2}\s*:/);
-  if (!m) return null;
-  const raw = m[1].trim();
-
-  // 선발/우수/특선 (결승 접미사 포함)
-  if (raw.startsWith("선발")) return "선발";
-  if (raw.startsWith("우수")) return "우수";
-  if (raw.startsWith("특선")) return "특선";
-  // 특별경주 → 특선으로 매핑
-  if (raw.includes("준결")) return "특선";
-  if (raw.includes("특우")) return "특선";
-  if (raw.includes("그랑프리")) return "특선";
-  if (raw.includes("B Final")) return "특선";
-  if (raw.includes("특별")) return "특선";
-  if (raw.includes("한일")) return "특선";
-
+  const match = decoded.match(/<h2>[^<]*\d+경주\s*\(([^)]*)\)<\/h2>/);
+  if (!match) return null;
+  const inner = match[1]; // e.g. "선발 12 : 55"
+  for (const grade of GRADE_KEYWORDS) {
+    if (inner.includes(grade)) return grade;
+  }
   return null;
 }
 

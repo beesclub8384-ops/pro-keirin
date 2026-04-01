@@ -20,7 +20,10 @@ function toKSTDate(dateStr: string): string {
 }
 
 export async function fetchInterviews(): Promise<InterviewArticle[]> {
-  const res = await fetch(API_URL, { cache: "no-store" });
+  const res = await fetch(API_URL, {
+    cache: "no-store",
+    redirect: "follow",
+  });
   if (!res.ok) return [];
   const data = await res.json();
   if (!Array.isArray(data)) return [];

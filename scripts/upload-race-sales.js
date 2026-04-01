@@ -28,7 +28,7 @@ async function upsert(rows) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${SUPABASE_KEY}`,
       'apikey': SUPABASE_KEY,
-      'Prefer': 'resolution=merge-duplicates',
+      'Prefer': 'return=minimal',
     },
     body: JSON.stringify(rows),
   });
@@ -73,6 +73,7 @@ async function main() {
       race_no:  r.raceNo,
       meet_cd:  r.meetCd,
       meet_name: r.meetName,
+      grade:    r.grade || null,
       race_date: r.date || null,
       s_단승:   r.sales?.단승   || 0,
       s_연승:   r.sales?.연승   || 0,
