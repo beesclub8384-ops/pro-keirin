@@ -37,10 +37,15 @@ interface GradeGapRow {
 interface SpecialRoundRow {
   year: number; round: number; race_type: string; grade_scope: string;
 }
+interface ParticipationByGradeRow {
+  year: number; grade: string; player_count: number;
+  round_count: number; avg_rounds_per_player: string;
+}
 
 interface ApiData {
   yearly: YearlyRow[]; byGrade: ByGradeRow[];
-  participation: ParticipationRow[]; allowances: AllowanceRow[];
+  participation: ParticipationRow[]; byGradeParticipation: ParticipationByGradeRow[];
+  allowances: AllowanceRow[];
   gradeGap: GradeGapRow[]; specialRounds: SpecialRoundRow[];
 }
 
@@ -123,6 +128,8 @@ export default function PrizeStatsPage() {
 function Tab1Yearly({ data }: { data: ApiData }) {
   const y25 = data.yearly.find((r) => r.year === 2025);
   const p25 = data.participation.find((r) => r.out_year === 2025);
+  const gradeStats25 = data.byGradeParticipation.filter((r) => r.year === 2025);
+  const gs = (g: string) => gradeStats25.find((r) => r.grade === g);
 
   const chartData = data.yearly.map((r) => ({
     year: r.year,
@@ -131,15 +138,35 @@ function Tab1Yearly({ data }: { data: ApiData }) {
     _raw: r,
   }));
 
+  // 등급별 평균 출전 회차 추이
+  const gradePartLine = useMemo(() => {
+    const m = new Map<number, Record<string, string>>();
+    for (const r of data.byGradeParticipation) {
+      if (!m.has(r.year)) m.set(r.year, {});
+      m.get(r.year)![r.grade] = r.avg_rounds_per_player;
+    }
+    return YEARS.map((y) => {
+      const g = m.get(y);
+      return {
+        year: y,
+        선발: g?.["선발"] ? parseFloat(g["선발"]) : null,
+        우수: g?.["우수"] ? parseFloat(g["우수"]) : null,
+        특선: g?.["특선"] ? parseFloat(g["특선"]) : null,
+      };
+    }).filter((r) => r.선발 !== null);
+  }, [data.byGradeParticipation]);
+
   return (
     <div className="space-y-4">
       {/* KPI 카드 */}
       {y25 && p25 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <KpiCard label="연간 총 지급 상금" value={`${toEok(y25.total_prize)}억원`} sub="2025년" />
           <KpiCard label="출전 선수 수" value={`${p25.out_player_count}명`} sub="2025년" />
           <KpiCard label="총 경주 수" value={`${p25.out_race_count.toLocaleString()}경주`} sub="2025년" />
-          <KpiCard label="선수 1인당 평균 출전" value={`${p25.out_avg_entries}회`} sub="2025년" />
+          <KpiCard label="선발 평균 출전" value={`${gs("선발")?.avg_rounds_per_player || "-"}회차`} sub={`${gs("선발")?.player_count || 0}명 / 광명 기준 / 2025년`} />
+          <KpiCard label="우수 평균 출전" value={`${gs("우수")?.avg_rounds_per_player || "-"}회차`} sub={`${gs("우수")?.player_count || 0}명 / 광명 기준 / 2025년`} />
+          <KpiCard label="특선 평균 출전" value={`${gs("특선")?.avg_rounds_per_player || "-"}회차`} sub={`${gs("특선")?.player_count || 0}명 / 광명 기준 / 2025년`} />
         </div>
       )}
 
@@ -215,6 +242,30 @@ function Tab1Yearly({ data }: { data: ApiData }) {
           <p className="text-xs text-muted-foreground mt-2">* 2020~2021년은 코로나19로 경주 축소</p>
         </CardContent>
       </Card>
+
+      {/* 등급별 평균 출전 회차 추이 */}
+      {gradePartLine.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-lg">등급별 평균 출전 회차 추이</CardTitle></CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={gradePartLine} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} label={{ value: "회차", angle: -90, position: "insideLeft", fontSize: 12 }} />
+                  <Tooltip formatter={(v: number | undefined) => [`${v}회차`]} />
+                  <Legend />
+                  <Line type="monotone" dataKey="선발" stroke={GRADE_COLORS.선발} strokeWidth={2} connectNulls={false} />
+                  <Line type="monotone" dataKey="우수" stroke={GRADE_COLORS.우수} strokeWidth={2} connectNulls={false} />
+                  <Line type="monotone" dataKey="특선" stroke={GRADE_COLORS.특선} strokeWidth={2} connectNulls={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">광명 경기장 기준. 특선이 가장 많은 회차에 출전합니다.</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

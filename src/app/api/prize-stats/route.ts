@@ -5,11 +5,12 @@ export async function GET() {
   try {
     const supabase = getSupabase();
 
-    const [yearlyRes, byGradeRes, participationRes, allowancesData, gradeGapData, specialRoundsData] =
+    const [yearlyRes, byGradeRes, participationRes, byGradeParticipationRes, allowancesData, gradeGapData, specialRoundsData] =
       await Promise.all([
         supabase.rpc("fn_prize_stats_full"),
         supabase.rpc("fn_prize_by_grade"),
         supabase.rpc("fn_participation_stats"),
+        supabase.rpc("fn_participation_by_grade"),
         fetchAllRows(
           supabase
             .from("prize_allowances")
@@ -37,11 +38,13 @@ export async function GET() {
     if (yearlyRes.error) throw yearlyRes.error;
     if (byGradeRes.error) throw byGradeRes.error;
     if (participationRes.error) throw participationRes.error;
+    if (byGradeParticipationRes.error) throw byGradeParticipationRes.error;
 
     return NextResponse.json({
       yearly: yearlyRes.data,
       byGrade: byGradeRes.data,
       participation: participationRes.data,
+      byGradeParticipation: byGradeParticipationRes.data,
       allowances: allowancesData,
       gradeGap: gradeGapData,
       specialRounds: specialRoundsData,
