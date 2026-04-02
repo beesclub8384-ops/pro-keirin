@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+export const revalidate = 3600; // 1시간 캐싱
+
 export async function GET() {
   try {
     const supabase = createClient(
@@ -8,19 +10,30 @@ export async function GET() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    const [
-      yearlyRes,
-      byGradeRes,
-      participationRes,
-      byGradeParticipationRes,
-      allowancesRes,
-      gradeGapRes,
-      specialRoundsRes,
-    ] = await Promise.all([
-      supabase.rpc("fn_prize_stats_full"),
-      supabase.rpc("fn_prize_by_grade"),
-      supabase.rpc("fn_participation_stats"),
-      supabase.rpc("fn_participation_by_grade"),
+    // 1단계: 무거운 RPC 함수
+    const [yearlyRes, byGradeRes, participationRes, byGradeParticipationRes] =
+      await Promise.all([
+        supabase.rpc("fn_prize_stats_full"),
+        supabase.rpc("fn_prize_by_grade"),
+        supabase.rpc("fn_participation_stats"),
+        supabase.rpc("fn_participation_by_grade"),
+      ]);
+
+    const errors: { query: string; error: unknown }[] = [];
+    if (yearlyRes.error) errors.push({ query: "fn_prize_stats_full", error: yearlyRes.error });
+    if (byGradeRes.error) errors.push({ query: "fn_prize_by_grade", error: byGradeRes.error });
+    if (participationRes.error) errors.push({ query: "fn_participation_stats", error: participationRes.error });
+    if (byGradeParticipationRes.error) errors.push({ query: "fn_participation_by_grade", error: byGradeParticipationRes.error });
+
+    if (errors.length > 0) {
+      return NextResponse.json(
+        { error: "RPC 쿼리 실패", details: errors.map(e => ({ query: e.query, message: JSON.stringify(e.error) })) },
+        { status: 500 }
+      );
+    }
+
+    // 2단계: 가벼운 테이블 조회
+    const [allowancesRes, gradeGapRes, specialRoundsRes] = await Promise.all([
       supabase
         .from("prize_allowances")
         .select("year, grade, entry_fee_per_day, safety_fee_per_day, prep_fee")
@@ -39,19 +52,13 @@ export async function GET() {
         .order("year"),
     ]);
 
-    // 에러 체크
-    const errors: { query: string; error: unknown }[] = [];
-    if (yearlyRes.error) errors.push({ query: "fn_prize_stats_full", error: yearlyRes.error });
-    if (byGradeRes.error) errors.push({ query: "fn_prize_by_grade", error: byGradeRes.error });
-    if (participationRes.error) errors.push({ query: "fn_participation_stats", error: participationRes.error });
-    if (byGradeParticipationRes.error) errors.push({ query: "fn_participation_by_grade", error: byGradeParticipationRes.error });
     if (allowancesRes.error) errors.push({ query: "prize_allowances", error: allowancesRes.error });
     if (gradeGapRes.error) errors.push({ query: "prize_money_standards", error: gradeGapRes.error });
     if (specialRoundsRes.error) errors.push({ query: "special_rounds", error: specialRoundsRes.error });
 
     if (errors.length > 0) {
       return NextResponse.json(
-        { error: "쿼리 실패", details: errors.map(e => ({ query: e.query, message: JSON.stringify(e.error) })) },
+        { error: "테이블 쿼리 실패", details: errors.map(e => ({ query: e.query, message: JSON.stringify(e.error) })) },
         { status: 500 }
       );
     }
