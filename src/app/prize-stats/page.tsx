@@ -23,9 +23,9 @@ interface ByGradeRow {
   out_avg_per_race: number | null; out_race_count: number;
 }
 interface ParticipationRow {
-  out_year: number; out_player_count: number; out_race_count: number;
-  out_entry_count: number; out_avg_entries: string; out_fall_count: number;
-  out_fall_rate: string; out_total_sales: number;
+  year: number; player_count: number; race_count: number;
+  entry_count: number; avg_rounds_per_player: number; fall_count: number;
+  fall_rate: number; total_sales: number;
 }
 interface AllowanceRow {
   year: number; grade: string; entry_fee_per_day: number;
@@ -39,7 +39,7 @@ interface SpecialRoundRow {
 }
 interface ParticipationByGradeRow {
   year: number; grade: string; player_count: number;
-  round_count: number; avg_rounds_per_player: string;
+  round_count: number; avg_rounds_per_player: number;
 }
 
 interface ApiData {
@@ -127,7 +127,7 @@ export default function PrizeStatsPage() {
    ════════════════════════════════════════════════════ */
 function Tab1Yearly({ data }: { data: ApiData }) {
   const y25 = data.yearly.find((r) => r.year === 2025);
-  const p25 = data.participation.find((r) => r.out_year === 2025);
+  const p25 = data.participation.find((r) => r.year === 2025);
   const gradeStats25 = data.byGradeParticipation.filter((r) => r.year === 2025);
   const gs = (g: string) => gradeStats25.find((r) => r.grade === g);
 
@@ -140,7 +140,7 @@ function Tab1Yearly({ data }: { data: ApiData }) {
 
   // 등급별 평균 출전 회차 추이
   const gradePartLine = useMemo(() => {
-    const m = new Map<number, Record<string, string>>();
+    const m = new Map<number, Record<string, number>>();
     for (const r of data.byGradeParticipation) {
       if (!m.has(r.year)) m.set(r.year, {});
       m.get(r.year)![r.grade] = r.avg_rounds_per_player;
@@ -149,9 +149,9 @@ function Tab1Yearly({ data }: { data: ApiData }) {
       const g = m.get(y);
       return {
         year: y,
-        선발: g?.["선발"] ? parseFloat(g["선발"]) : null,
-        우수: g?.["우수"] ? parseFloat(g["우수"]) : null,
-        특선: g?.["특선"] ? parseFloat(g["특선"]) : null,
+        선발: g?.["선발"] ?? null,
+        우수: g?.["우수"] ?? null,
+        특선: g?.["특선"] ?? null,
       };
     }).filter((r) => r.선발 !== null);
   }, [data.byGradeParticipation]);
@@ -162,8 +162,8 @@ function Tab1Yearly({ data }: { data: ApiData }) {
       {y25 && p25 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <KpiCard label="연간 총 지급 상금" value={`${toEok(y25.total_prize)}억원`} sub="2025년" />
-          <KpiCard label="출전 선수 수" value={`${p25.out_player_count}명`} sub="2025년" />
-          <KpiCard label="총 경주 수" value={`${p25.out_race_count.toLocaleString()}경주`} sub="2025년" />
+          <KpiCard label="출전 선수 수" value={`${p25.player_count}명`} sub="2025년" />
+          <KpiCard label="총 경주 수" value={`${p25.race_count.toLocaleString()}경주`} sub="2025년" />
           <KpiCard label="선발 평균 출전" value={`${gs("선발")?.avg_rounds_per_player || "-"}회차`} sub={`${gs("선발")?.player_count || 0}명 / 광명 기준 / 2025년`} />
           <KpiCard label="우수 평균 출전" value={`${gs("우수")?.avg_rounds_per_player || "-"}회차`} sub={`${gs("우수")?.player_count || 0}명 / 광명 기준 / 2025년`} />
           <KpiCard label="특선 평균 출전" value={`${gs("특선")?.avg_rounds_per_player || "-"}회차`} sub={`${gs("특선")?.player_count || 0}명 / 광명 기준 / 2025년`} />
@@ -597,19 +597,19 @@ function Tab4Safety({ data }: { data: ApiData }) {
   }, [data.allowances]);
 
   const chartData = data.participation.map((r) => ({
-    year: r.out_year,
-    낙차건수: r.out_fall_count,
-    낙차율: parseFloat(r.out_fall_rate),
+    year: r.year,
+    낙차건수: r.fall_count,
+    낙차율: r.fall_rate,
   }));
 
   const safetyDetail = data.participation.map((r) => {
-    const fee = allowMap.get(r.out_year) || 0;
-    const paid = (r.out_entry_count - r.out_fall_count) * fee;
-    const unpaid = r.out_fall_count * fee;
+    const fee = allowMap.get(r.year) || 0;
+    const paid = (r.entry_count - r.fall_count) * fee;
+    const unpaid = r.fall_count * fee;
     return {
-      year: r.out_year, entries: r.out_entry_count, falls: r.out_fall_count,
-      rate: r.out_fall_rate, fee, paid, unpaid,
-      unpaidRate: r.out_entry_count > 0 ? ((r.out_fall_count / r.out_entry_count) * 100).toFixed(2) : "0",
+      year: r.year, entries: r.entry_count, falls: r.fall_count,
+      rate: r.fall_rate, fee, paid, unpaid,
+      unpaidRate: r.entry_count > 0 ? ((r.fall_count / r.entry_count) * 100).toFixed(2) : "0",
     };
   });
 
@@ -713,9 +713,9 @@ function Tab4Safety({ data }: { data: ApiData }) {
    ════════════════════════════════════════════════════ */
 function Tab5Sales({ data }: { data: ApiData }) {
   const salesData = data.participation.map((r) => ({
-    year: r.out_year,
-    매출: r.out_total_sales,
-    경주수: r.out_race_count,
+    year: r.year,
+    매출: r.total_sales,
+    경주수: r.race_count,
   }));
 
   const yearlyMap = useMemo(() => {
@@ -725,13 +725,13 @@ function Tab5Sales({ data }: { data: ApiData }) {
   }, [data.yearly]);
 
   const ratioData = data.participation.map((r) => {
-    const yr = yearlyMap.get(r.out_year);
+    const yr = yearlyMap.get(r.year);
     const nonPerf = yr ? yr.entry_prize + yr.safety_prize + yr.prep_prize : 0;
     const totalPrize = yr?.total_prize || 0;
     return {
-      year: r.out_year,
-      비성적비율: r.out_total_sales > 0 ? (nonPerf / r.out_total_sales) * 100 : 0,
-      전체비율: yr?.has_performance_data && r.out_total_sales > 0 ? (totalPrize / r.out_total_sales) * 100 : null,
+      year: r.year,
+      비성적비율: r.total_sales > 0 ? (nonPerf / r.total_sales) * 100 : 0,
+      전체비율: yr?.has_performance_data && r.total_sales > 0 ? (totalPrize / r.total_sales) * 100 : null,
     };
   });
 
@@ -797,15 +797,15 @@ function Tab5Sales({ data }: { data: ApiData }) {
               </TableHeader>
               <TableBody>
                 {data.participation.map((r) => {
-                  const yr = yearlyMap.get(r.out_year);
+                  const yr = yearlyMap.get(r.year);
                   const totalPrize = yr?.total_prize || 0;
-                  const ratio = r.out_total_sales > 0 ? (totalPrize / r.out_total_sales * 100).toFixed(2) : "-";
-                  const perRaceSales = r.out_race_count > 0 ? r.out_total_sales / r.out_race_count : 0;
-                  const perRacePrize = r.out_race_count > 0 ? totalPrize / r.out_race_count : 0;
+                  const ratio = r.total_sales > 0 ? (totalPrize / r.total_sales * 100).toFixed(2) : "-";
+                  const perRaceSales = r.race_count > 0 ? r.total_sales / r.race_count : 0;
+                  const perRacePrize = r.race_count > 0 ? totalPrize / r.race_count : 0;
                   return (
-                    <TableRow key={r.out_year} className={COVID.has(r.out_year) ? "bg-orange-50" : ""}>
-                      <TableCell className="font-medium">{r.out_year}</TableCell>
-                      <TableCell className="text-right">{(r.out_total_sales / 1_0000_0000).toFixed(0)}억</TableCell>
+                    <TableRow key={r.year} className={COVID.has(r.year) ? "bg-orange-50" : ""}>
+                      <TableCell className="font-medium">{r.year}</TableCell>
+                      <TableCell className="text-right">{(r.total_sales / 1_0000_0000).toFixed(0)}억</TableCell>
                       <TableCell className="text-right">
                         {toEok(totalPrize)}억
                         {yr && !yr.has_performance_data && <span className="text-[10px] text-muted-foreground block">(성적미포함)</span>}
