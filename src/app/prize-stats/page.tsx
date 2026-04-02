@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -8,8 +8,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 import {
   Card,
@@ -28,24 +28,20 @@ import {
 
 interface PrizeStat {
   year: number;
-  event_type: string;
-  grade_group: string;
-  total_prize: number | null;
-  race_count: number;
+  performance_prize: number;
+  entry_prize: number;
+  safety_prize: number;
+  prep_prize: number;
+  total_prize: number;
   unmatched_count: number;
+  has_performance_data: boolean;
 }
 
-/** 억원 단위 포맷 */
 function toEok(won: number): string {
   return (won / 1_0000_0000).toFixed(1);
 }
 
-/** 원 → 읽기 쉬운 표기 */
-function formatWon(won: number): string {
-  if (won >= 1_0000_0000) return `${toEok(won)}억`;
-  if (won >= 1_0000) return `${(won / 1_0000).toFixed(0)}만`;
-  return `${won.toLocaleString()}`;
-}
+const COVID_YEARS = new Set([2020, 2021]);
 
 export default function PrizeStatsPage() {
   const [data, setData] = useState<PrizeStat[]>([]);
@@ -63,45 +59,15 @@ export default function PrizeStatsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // 연도별 총 상금 (막대 그래프용)
-  const yearlyTotals = useMemo(() => {
-    const map = new Map<number, number>();
-    for (const row of data) {
-      if (row.total_prize) {
-        map.set(row.year, (map.get(row.year) || 0) + row.total_prize);
-      }
-    }
-    return Array.from({ length: 11 }, (_, i) => {
-      const year = 2015 + i;
-      const total = map.get(year) || 0;
-      return { year, total, hasData: total > 0 };
-    });
-  }, [data]);
-
-  // 연도별 등급별 합계 (테이블용)
-  const yearlyByGrade = useMemo(() => {
-    const map = new Map<number, { 선발: number; 우수: number; 특선: number }>();
-    for (const row of data) {
-      if (!row.total_prize || !row.grade_group) continue;
-      if (!map.has(row.year)) map.set(row.year, { 선발: 0, 우수: 0, 특선: 0 });
-      const entry = map.get(row.year)!;
-      if (row.grade_group === "선발") entry.선발 += row.total_prize;
-      if (row.grade_group === "우수") entry.우수 += row.total_prize;
-      if (row.grade_group === "특선") entry.특선 += row.total_prize;
-    }
-    return Array.from({ length: 11 }, (_, i) => {
-      const year = 2015 + i;
-      const g = map.get(year);
-      return {
-        year,
-        선발: g?.선발 || 0,
-        우수: g?.우수 || 0,
-        특선: g?.특선 || 0,
-        합계: g ? g.선발 + g.우수 + g.특선 : 0,
-        hasData: !!g,
-      };
-    });
-  }, [data]);
+  // 차트용 데이터 변환
+  const chartData = data.map((row) => ({
+    year: row.year,
+    성적상금: row.has_performance_data ? row.performance_prize : 0,
+    출전상금: row.entry_prize,
+    안전상금: row.safety_prize,
+    출전준비금: row.prep_prize,
+    _raw: row,
+  }));
 
   if (loading) {
     return (
@@ -121,30 +87,30 @@ export default function PrizeStatsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 space-y-6">
-      {/* 제목 */}
+      {/* 상단 제목 */}
       <div>
-        <h1 className="text-2xl font-bold">경륜 상금 지급 통계</h1>
+        <h1 className="text-2xl font-bold">경륜선수 상금 지급 통계</h1>
         <p className="text-muted-foreground mt-1">
-          노조 단체교섭 자료 (작성 중)
+          한국경륜선수노동조합 단체교섭 자료 (작성 중)
         </p>
       </div>
 
       {/* 경고 배너 */}
       <div className="rounded-lg border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-        <strong>안내:</strong> 2025년 데이터만 계산 완료. 2015~2024년은 상금
-        협약서 수집 후 순차 업데이트 예정
+        <strong>안내:</strong> 성적상금은 2025년만 계산 완료. 2015~2024년은
+        협약서 수집 후 업데이트 예정.
       </div>
 
-      {/* 연도별 총 상금 막대 그래프 */}
+      {/* 연도별 총 상금 스택 막대 그래프 */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">연도별 총 상금 지급액</CardTitle>
+          <CardTitle className="text-lg">연도별 상금 지급액 구성</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[350px]">
+          <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={yearlyTotals}
+                data={chartData}
                 margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -154,93 +120,166 @@ export default function PrizeStatsPage() {
                 />
                 <YAxis
                   tick={{ fontSize: 12, fill: "#6B7280" }}
-                  tickFormatter={(v) => (v === 0 ? "0" : `${toEok(v)}억`)}
+                  tickFormatter={(v) =>
+                    v === 0 ? "0" : `${toEok(v)}억`
+                  }
                 />
                 <Tooltip
-                  formatter={(value: number | undefined) => [
-                    value && value > 0
-                      ? `${formatWon(value)}원`
-                      : "협약서 미수집",
-                    "상금 합계",
-                  ]}
-                  labelFormatter={(label) => `${label}년`}
-                  contentStyle={{
-                    borderRadius: "8px",
-                    border: "1px solid #E5E7EB",
-                    fontSize: "13px",
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const raw = payload[0]?.payload?._raw as
+                      | PrizeStat
+                      | undefined;
+                    const isCovid = COVID_YEARS.has(label as number);
+                    return (
+                      <div className="rounded-lg border bg-white px-3 py-2 shadow text-sm">
+                        <p className="font-bold mb-1">
+                          {label}년
+                          {isCovid && (
+                            <span className="text-orange-500 font-normal ml-1">
+                              (코로나 영향)
+                            </span>
+                          )}
+                        </p>
+                        {payload.map((p) => (
+                          <p
+                            key={p.dataKey as string}
+                            style={{ color: p.color }}
+                          >
+                            {p.dataKey as string}:{" "}
+                            {p.dataKey === "성적상금" &&
+                            raw &&
+                            !raw.has_performance_data
+                              ? "미수집"
+                              : `${toEok(p.value as number)}억`}
+                          </p>
+                        ))}
+                        {raw && (
+                          <p className="font-bold mt-1 pt-1 border-t">
+                            합계: {toEok(raw.total_prize)}억
+                            {!raw.has_performance_data && (
+                              <span className="text-xs text-muted-foreground font-normal">
+                                {" "}
+                                (성적상금 미포함)
+                              </span>
+                            )}
+                          </p>
+                        )}
+                      </div>
+                    );
                   }}
                 />
-                <Bar dataKey="total" radius={[4, 4, 0, 0]}>
-                  {yearlyTotals.map((entry) => (
-                    <Cell
-                      key={entry.year}
-                      fill={entry.hasData ? "#3B82F6" : "#D1D5DB"}
-                    />
-                  ))}
-                </Bar>
+                <Legend
+                  wrapperStyle={{ fontSize: "13px" }}
+                  iconType="square"
+                />
+                <Bar
+                  dataKey="성적상금"
+                  stackId="a"
+                  fill="#3B82F6"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar
+                  dataKey="출전상금"
+                  stackId="a"
+                  fill="#22C55E"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar
+                  dataKey="안전상금"
+                  stackId="a"
+                  fill="#EAB308"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar
+                  dataKey="출전준비금"
+                  stackId="a"
+                  fill="#9CA3AF"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-xs text-muted-foreground text-center mt-2">
-            회색 막대 = 협약서 미수집 (상금 기준표 없음)
-          </p>
         </CardContent>
       </Card>
 
-      {/* 등급별 상금 비교 테이블 */}
+      {/* 연도별 상세 테이블 */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">등급별 상금 지급 합계</CardTitle>
+          <CardTitle className="text-lg">연도별 상금 지급 상세</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[80px]">연도</TableHead>
-                  <TableHead className="text-right">선발</TableHead>
-                  <TableHead className="text-right">우수</TableHead>
-                  <TableHead className="text-right">특선</TableHead>
-                  <TableHead className="text-right font-bold">
-                    전체 합계
-                  </TableHead>
+                  <TableHead className="w-[70px]">연도</TableHead>
+                  <TableHead className="text-right">성적상금</TableHead>
+                  <TableHead className="text-right">출전상금</TableHead>
+                  <TableHead className="text-right">안전상금</TableHead>
+                  <TableHead className="text-right">출전준비금</TableHead>
+                  <TableHead className="text-right font-bold">합계</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {yearlyByGrade.map((row) => (
-                  <TableRow
-                    key={row.year}
-                    className={row.hasData ? "" : "text-muted-foreground"}
-                  >
-                    <TableCell className="font-medium">{row.year}</TableCell>
-                    <TableCell className="text-right">
-                      {row.hasData ? `${toEok(row.선발)}억` : "-"}
+                {data.map((row) => (
+                  <TableRow key={row.year}>
+                    <TableCell className="font-medium">
+                      {row.year}
+                      {COVID_YEARS.has(row.year) && (
+                        <span className="text-[10px] text-orange-500 ml-0.5">
+                          *
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell
+                      className={`text-right ${!row.has_performance_data ? "text-muted-foreground" : ""}`}
+                    >
+                      {row.has_performance_data
+                        ? `${toEok(row.performance_prize)}억`
+                        : "-"}
                     </TableCell>
                     <TableCell className="text-right">
-                      {row.hasData ? `${toEok(row.우수)}억` : "-"}
+                      {toEok(row.entry_prize)}억
                     </TableCell>
                     <TableCell className="text-right">
-                      {row.hasData ? `${toEok(row.특선)}억` : "-"}
+                      {toEok(row.safety_prize)}억
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {toEok(row.prep_prize)}억
                     </TableCell>
                     <TableCell className="text-right font-bold">
-                      {row.hasData ? `${toEok(row.합계)}억` : "-"}
+                      {toEok(row.total_prize)}억
+                      {!row.has_performance_data && (
+                        <span className="text-[10px] text-muted-foreground font-normal block">
+                          (성적상금 미포함)
+                        </span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            * 2020~2021년은 코로나19로 경주 축소
+          </p>
         </CardContent>
       </Card>
 
-      {/* 데이터 출처 */}
+      {/* 하단 주석 */}
       <div className="rounded-lg border bg-muted/30 px-4 py-3 text-xs text-muted-foreground space-y-1">
+        <p>출전상금: 1일당 300,000원 × 출전일수 (2015~2025년 동결)</p>
         <p>
-          본 통계는 kcycle.or.kr 출주표 및 경주결과 데이터를 기반으로
-          계산되었습니다.
+          안전상금: 1일당 60,000원(~2020) / 80,000원(2021~) × 낙차없이 완주한
+          일수
         </p>
-        <p>
-          일부 미수집 데이터로 인해 실제 지급액과 차이가 있을 수 있습니다.
+        <p>출전준비금: 회차당 100,000원 × 출전 선수-회차 조합 수</p>
+        <p>성적상금: 등급·착순·일차별 기준 (2025년 협약서 기반)</p>
+        <p>후보상금·소급분 등 비정기 항목 미포함</p>
+        <p className="pt-1 border-t border-muted">
+          본 통계는 kcycle.or.kr 데이터 기반으로 실제 지급액과 차이가 있을 수
+          있음
         </p>
       </div>
     </div>

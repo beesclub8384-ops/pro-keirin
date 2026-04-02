@@ -4,7 +4,7 @@ import { getSupabase } from "@/lib/supabase";
 export async function GET() {
   try {
     const supabase = getSupabase();
-    const { data, error } = await supabase.rpc("fn_prize_stats");
+    const { data, error } = await supabase.rpc("fn_prize_stats_full");
 
     if (error) throw error;
 
