@@ -276,7 +276,7 @@ export default function PrizeStatsPage() {
         </p>
         <p>출전준비금: 회차당 100,000원 × 출전 선수-회차 조합 수</p>
         <p>성적상금: 등급·착순·일차별 기준 (2025년 협약서 기반)</p>
-        <p>후보상금·소급분 등 비정기 항목 미포함</p>
+        <p>유도상금·대기상금·기타상금·후보상금·소급분은 현재 0원 처리 (추후 조사 후 반영 예정)</p>
         <p className="pt-1 border-t border-muted">
           본 통계는 kcycle.or.kr 데이터 기반으로 실제 지급액과 차이가 있을 수
           있음
