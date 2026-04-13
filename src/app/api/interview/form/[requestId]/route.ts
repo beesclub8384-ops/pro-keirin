@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { generateInterviewArticle } from "@/lib/interview-generator";
 
 interface ResponseInput {
   questionCode: string;
@@ -166,5 +167,16 @@ export async function POST(
     return NextResponse.json({ error: updErr.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  // 기사 자동 생성 (실패해도 제출 자체는 성공 처리)
+  let articleId: number | null = null;
+  let articleError: string | null = null;
+  try {
+    const result = await generateInterviewArticle(id);
+    articleId = result.articleId;
+  } catch (err) {
+    articleError = err instanceof Error ? err.message : String(err);
+    console.error("[interview] generate-article failed:", articleError);
+  }
+
+  return NextResponse.json({ success: true, articleId, articleError });
 }
