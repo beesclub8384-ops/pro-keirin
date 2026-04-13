@@ -10,8 +10,10 @@ import type { InterviewArticle } from "@/lib/interview";
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-const API_URL =
-  "https://script.google.com/macros/s/AKfycbwbhJchNH0iB1GV2NnhOor0mSdkmt86nAcp1PClJcTg3SkSwUndPgY2NfQWnDzNGX9gUQ/exec";
+// 구버전: 구글 Apps Script 기반 인터뷰 API (참고용 보존)
+// const API_URL =
+//   "https://script.google.com/macros/s/AKfycbwbhJchNH0iB1GV2NnhOor0mSdkmt86nAcp1PClJcTg3SkSwUndPgY2NfQWnDzNGX9gUQ/exec";
+const API_URL = "/api/interview/published";
 
 function getCalendarDays(year: number, month: number) {
   const firstDay = new Date(year, month, 1).getDay();
