@@ -84,6 +84,7 @@ export default function NewInterviewRequestPage() {
   const [creating, setCreating] = useState(false);
   const [createdId, setCreatedId] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shareMsg, setShareMsg] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/interview/admin/questions", { cache: "no-store" })
@@ -195,6 +196,33 @@ export default function NewInterviewRequestPage() {
     }
   }
 
+  async function handleShare() {
+    if (!formUrl) return;
+    const message = `${playerName} 선수님, 7RANDOMS 인터뷰 요청입니다.\n\n아래 링크를 눌러 답변해주세요.\n${formUrl}`;
+    setShareMsg(null);
+
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        await navigator.share({
+          title: "7RANDOMS 인터뷰 요청",
+          text: `${playerName} 선수님, 7RANDOMS 인터뷰 요청입니다. 아래 링크를 눌러 답변해주세요.`,
+          url: formUrl,
+        });
+        return;
+      } catch {
+        // 사용자 취소 또는 실패 시 클립보드 폴백
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(message);
+      setShareMsg("메시지가 복사되었습니다. 카카오톡에 붙여넣기 하세요.");
+      setTimeout(() => setShareMsg(null), 3000);
+    } catch {
+      setShareMsg("복사에 실패했습니다");
+    }
+  }
+
   if (createdId) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-10">
@@ -221,6 +249,30 @@ export default function NewInterviewRequestPage() {
                   <Copy className="h-4 w-4" />
                 )}
               </Button>
+            </div>
+
+            <div className="mx-auto mt-4 max-w-lg">
+              <button
+                type="button"
+                onClick={handleShare}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold text-[#3C1E1E] shadow-sm transition-colors hover:brightness-95"
+                style={{ backgroundColor: "#FEE500" }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 3C6.48 3 2 6.58 2 11c0 2.87 1.9 5.39 4.78 6.83l-1.12 4.09c-.08.29.22.52.47.37l4.92-3.27c.31.03.63.05.95.05 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
+                </svg>
+                카카오톡으로 보내기
+              </button>
+              {shareMsg && (
+                <p className="mt-2 text-center text-xs text-muted-foreground">
+                  {shareMsg}
+                </p>
+              )}
             </div>
             <div className="mt-8 flex justify-center gap-2">
               <Button
