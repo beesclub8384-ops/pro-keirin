@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, FileText } from "lucide-react";
+import { Loader2, FileText, Plus } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -108,13 +110,21 @@ export default function InterviewAdminPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-          인터뷰 관리
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          생성된 인터뷰 기사를 검토하고 승인/공개합니다
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3 sm:mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+            인터뷰 관리
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            생성된 인터뷰 기사를 검토하고 승인/공개합니다
+          </p>
+        </div>
+        <Link href="/interview/admin/new">
+          <Button className="gap-1.5">
+            <Plus className="h-4 w-4" />
+            새 인터뷰 요청
+          </Button>
+        </Link>
       </div>
 
       {/* Filter tabs */}
