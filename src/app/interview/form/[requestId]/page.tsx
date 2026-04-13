@@ -37,11 +37,18 @@ type LoadState =
   | { kind: "ready"; data: FormData }
   | { kind: "submitted" };
 
+interface PhotoItem {
+  url: string;
+  uploading: boolean;
+  previewUrl: string;
+  error?: string;
+}
+
 interface AnswerState {
   answerText: string;
   answerChoice: string;
   followUp: string;
-  photos: { file: File; dataUrl: string }[];
+  photos: PhotoItem[];
 }
 
 function newAnswer(): AnswerState {
@@ -129,39 +136,98 @@ export default function InterviewFormPage({
   async function addPhoto(code: string, files: FileList | null) {
     if (!files) return;
     const arr = Array.from(files);
-    const results = await Promise.all(
-      arr.map(
-        (file) =>
-          new Promise<{ file: File; dataUrl: string }>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () =>
-              resolve({ file, dataUrl: reader.result as string });
-            reader.onerror = () => reject(reader.error);
-            reader.readAsDataURL(file);
-          }),
-      ),
-    );
+
+    // 로컬 미리보기 + uploading=true로 즉시 표시
+    const placeholders: PhotoItem[] = arr.map((file) => ({
+      url: "",
+      uploading: true,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    const startIdx = answers[code]?.photos.length ?? 0;
     setAnswers((prev) => ({
       ...prev,
       [code]: {
         ...prev[code],
-        photos: [...prev[code].photos, ...results],
+        photos: [...prev[code].photos, ...placeholders],
       },
     }));
+
+    // 각 파일 업로드
+    await Promise.all(
+      arr.map(async (file, i) => {
+        const slotIdx = startIdx + i;
+        try {
+          const fd = new FormData();
+          fd.append("file", file);
+          fd.append("requestId", String(requestId));
+          const res = await fetch("/api/interview/upload-photo", {
+            method: "POST",
+            body: fd,
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: "업로드 실패" }));
+            setAnswers((prev) => ({
+              ...prev,
+              [code]: {
+                ...prev[code],
+                photos: prev[code].photos.map((p, idx) =>
+                  idx === slotIdx
+                    ? { ...p, uploading: false, error: err.error ?? "업로드 실패" }
+                    : p,
+                ),
+              },
+            }));
+            return;
+          }
+          const json = (await res.json()) as { url: string };
+          setAnswers((prev) => ({
+            ...prev,
+            [code]: {
+              ...prev[code],
+              photos: prev[code].photos.map((p, idx) =>
+                idx === slotIdx
+                  ? { ...p, uploading: false, url: json.url }
+                  : p,
+              ),
+            },
+          }));
+        } catch {
+          setAnswers((prev) => ({
+            ...prev,
+            [code]: {
+              ...prev[code],
+              photos: prev[code].photos.map((p, idx) =>
+                idx === slotIdx
+                  ? { ...p, uploading: false, error: "네트워크 오류" }
+                  : p,
+              ),
+            },
+          }));
+        }
+      }),
+    );
   }
 
   function removePhoto(code: string, idx: number) {
-    setAnswers((prev) => ({
-      ...prev,
-      [code]: {
-        ...prev[code],
-        photos: prev[code].photos.filter((_, i) => i !== idx),
-      },
-    }));
+    setAnswers((prev) => {
+      const target = prev[code].photos[idx];
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      return {
+        ...prev,
+        [code]: {
+          ...prev[code],
+          photos: prev[code].photos.filter((_, i) => i !== idx),
+        },
+      };
+    });
   }
 
   const canSubmit = useMemo(() => {
     if (state.kind !== "ready") return false;
+    const anyUploading = Object.values(answers).some((a) =>
+      a.photos.some((p) => p.uploading),
+    );
+    if (anyUploading) return false;
     return state.data.questions.every((q) => {
       const a = answers[q.code];
       if (!a) return false;
@@ -186,7 +252,9 @@ export default function InterviewFormPage({
           questionText: q.questionText,
           answerText: textValue || null,
           answerChoice: q.format === "text" ? null : a.answerChoice || null,
-          photoUrls: a.photos.map((p) => p.dataUrl),
+          photoUrls: a.photos
+            .filter((p) => p.url && !p.uploading && !p.error)
+            .map((p) => p.url),
         };
       });
       const res = await fetch(`/api/interview/form/${requestId}`, {
@@ -417,10 +485,20 @@ export default function InterviewFormPage({
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={p.dataUrl}
+                          src={p.previewUrl || p.url}
                           alt=""
                           className="h-full w-full object-cover"
                         />
+                        {p.uploading && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                            <Loader2 className="h-5 w-5 animate-spin text-white" />
+                          </div>
+                        )}
+                        {p.error && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-red-500/70 px-1 text-[9px] leading-tight text-white">
+                            {p.error}
+                          </div>
+                        )}
                         <button
                           type="button"
                           onClick={() => removePhoto(q.code, i)}
