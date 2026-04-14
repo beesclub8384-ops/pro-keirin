@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Copy,
   Check,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,6 +43,7 @@ interface PlayerContext {
 interface RecommendResult {
   questions: RecommendedQuestion[];
   playerContext: PlayerContext;
+  racerId: string | null;
 }
 
 interface AllQuestion {
@@ -435,6 +437,23 @@ export default function NewInterviewRequestPage() {
               <p className="mt-1 text-sm text-foreground">
                 {recommendation.playerContext.situationLabel}
               </p>
+              <div className="mt-2">
+                {recommendation.racerId ? (
+                  <a
+                    href={`https://www.kcycle.or.kr/racer/info/${recommendation.racerId}/${new Date().getFullYear()}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    kcycle에서 선수 정보 확인
+                  </a>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    kcycle에서 직접 검색해주세요
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="space-y-3">

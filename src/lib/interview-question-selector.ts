@@ -37,6 +37,7 @@ export interface SelectedQuestion {
 export interface SelectResult {
   questions: SelectedQuestion[];
   playerContext: PlayerContext;
+  racerId: string | null;
 }
 
 interface QuestionRow {
@@ -88,31 +89,22 @@ function detectSituation(recent: RecentRace[], requestType: RequestType): Situat
   return "neutral";
 }
 
-function situationLabel(s: Situation, recent: RecentRace[]): string {
-  const ranksStr = recent
-    .slice(0, 5)
-    .map((r) => (r.rank === null || r.rank === 0 ? "-" : `${r.rank}착`))
-    .join("-");
-  const base = (() => {
-    switch (s) {
-      case "good_result":
-        return "최근 경주 1착";
-      case "win_streak":
-        return "연속 입상 중";
-      case "bad_result":
-        return "최근 성적 부진";
-      case "fall_accident":
-        return "최근 낙차 또는 실격 기록";
-      case "grade_change_up":
-        return "등급 변동 가능";
-      case "neutral":
-      default:
-        return "특이사항 없음";
-    }
-  })();
-  return recent.length > 0
-    ? `${base} (최근 ${recent.length > 5 ? 5 : recent.length}경주: ${ranksStr})`
-    : base;
+function situationLabel(s: Situation): string {
+  switch (s) {
+    case "good_result":
+      return "최근 경주 1착";
+    case "win_streak":
+      return "연속 입상 중";
+    case "bad_result":
+      return "최근 성적 부진";
+    case "fall_accident":
+      return "최근 낙차 또는 실격 기록";
+    case "grade_change_up":
+      return "등급 변동 가능";
+    case "neutral":
+    default:
+      return "특이사항 없음";
+  }
 }
 
 const SUB_MAP: Record<Situation, string[]> = {
@@ -123,6 +115,17 @@ const SUB_MAP: Record<Situation, string[]> = {
   grade_change_up: ["A-6", "A-6", "A-1"],
   neutral: ["A-1", "A-1", "A-5"],
 };
+
+async function fetchRacerId(playerName: string): Promise<string | null> {
+  const sb = createAdminClient();
+  const { data } = await sb
+    .from("racer_profiles")
+    .select("racer_id")
+    .eq("name", playerName)
+    .limit(1);
+  if (!data || data.length === 0) return null;
+  return String(data[0].racer_id);
+}
 
 async function fetchRecentRaces(playerName: string): Promise<RecentRace[]> {
   const sb = createAdminClient();
@@ -243,7 +246,10 @@ export async function selectQuestionsForPlayer(
   playerName: string,
   requestType: RequestType,
 ): Promise<SelectResult> {
-  const recent = await fetchRecentRaces(playerName);
+  const [recent, racerId] = await Promise.all([
+    fetchRecentRaces(playerName),
+    fetchRacerId(playerName),
+  ]);
   const situation = detectSituation(recent, requestType);
 
   const selected: SelectedQuestion[] = [];
@@ -293,7 +299,8 @@ export async function selectQuestionsForPlayer(
     playerContext: {
       recentResults: recent.slice(0, 5),
       situation,
-      situationLabel: situationLabel(situation, recent),
+      situationLabel: situationLabel(situation),
     },
+    racerId,
   };
 }
