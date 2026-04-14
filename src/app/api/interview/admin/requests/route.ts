@@ -6,12 +6,36 @@ export async function GET() {
   const { data, error } = await sb
     .from("interview_requests")
     .select(
-      "id, racer_id, player_name, grade, region, request_type, selected_questions, status, form_url, sent_at, completed_at, created_at",
+      "id, racer_id, player_name, grade, region, request_type, selected_questions, status, form_url, sent_at, completed_at, created_at, interview_articles(id, status)",
     )
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ requests: data ?? [] });
+
+  const requests = (data ?? []).map((r) => {
+    const articles = r.interview_articles as
+      | { id: number; status: string }[]
+      | null;
+    const article = articles && articles.length > 0 ? articles[0] : null;
+    return {
+      id: r.id,
+      racerId: r.racer_id,
+      playerName: r.player_name,
+      grade: r.grade,
+      region: r.region,
+      requestType: r.request_type,
+      selectedQuestions: r.selected_questions,
+      status: r.status,
+      formUrl: r.form_url,
+      sentAt: r.sent_at,
+      completedAt: r.completed_at,
+      createdAt: r.created_at,
+      articleId: article?.id ?? null,
+      articleStatus: article?.status ?? null,
+    };
+  });
+
+  return NextResponse.json({ requests });
 }
 
 export async function POST(req: Request) {
