@@ -80,6 +80,7 @@ export default function NewInterviewRequestPage() {
     null,
   );
   const [questions, setQuestions] = useState<RecommendedQuestion[]>([]);
+  const [originalTexts, setOriginalTexts] = useState<string[]>([]);
   const [allQuestions, setAllQuestions] = useState<AllQuestion[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,6 +129,7 @@ export default function NewInterviewRequestPage() {
       const json = (await res.json()) as RecommendResult;
       setRecommendation(json);
       setQuestions(json.questions);
+      setOriginalTexts(json.questions.map((q) => q.questionText));
     } catch {
       setError("네트워크 오류");
     } finally {
@@ -152,12 +154,49 @@ export default function NewInterviewRequestPage() {
           : q,
       ),
     );
+    setOriginalTexts((prev) =>
+      prev.map((t, i) => (i === idx ? target.questionText : t)),
+    );
+  }
+
+  function editQuestionText(idx: number, newText: string) {
+    setQuestions((prev) =>
+      prev.map((q, i) => (i === idx ? { ...q, questionText: newText } : q)),
+    );
   }
 
   async function handleCreate() {
     setCreating(true);
     setError(null);
     try {
+      const finalCodes: string[] = [];
+      for (let i = 0; i < questions.length; i++) {
+        const q = questions[i];
+        const original = originalTexts[i] ?? q.questionText;
+        if (q.questionText.trim() !== original.trim()) {
+          const saveRes = await fetch("/api/interview/admin/questions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              originalCode: q.code,
+              questionText: q.questionText.trim(),
+              category: q.category,
+              subcategory: q.subcategory,
+            }),
+          });
+          if (!saveRes.ok) {
+            const j = await saveRes.json().catch(() => ({ error: "질문 저장 실패" }));
+            setError(j.error ?? "질문 저장 실패");
+            setCreating(false);
+            return;
+          }
+          const sj = (await saveRes.json()) as { question: { code: string } };
+          finalCodes.push(sj.question.code);
+        } else {
+          finalCodes.push(q.code);
+        }
+      }
+
       const res = await fetch("/api/interview/admin/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -166,7 +205,7 @@ export default function NewInterviewRequestPage() {
           grade: grade || null,
           region: region || null,
           requestType,
-          selectedQuestions: questions.map((q) => q.code),
+          selectedQuestions: finalCodes,
         }),
       });
       if (!res.ok) {
@@ -461,6 +500,8 @@ export default function NewInterviewRequestPage() {
                 const sameCategory = (byCategory.get(q.category) ?? []).filter(
                   (x) => !questions.some((sel, i) => i !== idx && sel.code === x.code),
                 );
+                const original = originalTexts[idx] ?? q.questionText;
+                const edited = q.questionText.trim() !== original.trim();
                 return (
                   <div
                     key={`${q.code}-${idx}`}
@@ -476,6 +517,11 @@ export default function NewInterviewRequestPage() {
                       <span className="text-[10px] text-muted-foreground">
                         {q.subcategory}
                       </span>
+                      {edited && (
+                        <Badge className="bg-amber-100 text-[10px] text-amber-700 hover:bg-amber-100">
+                          수정됨
+                        </Badge>
+                      )}
                       <select
                         value={q.code}
                         onChange={(e) => replaceQuestion(idx, e.target.value)}
@@ -488,9 +534,12 @@ export default function NewInterviewRequestPage() {
                         ))}
                       </select>
                     </div>
-                    <p className="text-sm leading-relaxed text-foreground">
-                      {q.questionText}
-                    </p>
+                    <textarea
+                      value={q.questionText}
+                      onChange={(e) => editQuestionText(idx, e.target.value)}
+                      rows={3}
+                      className="w-full resize-y rounded-md border border-border bg-white px-3 py-2 text-sm leading-relaxed text-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
                   </div>
                 );
               })}

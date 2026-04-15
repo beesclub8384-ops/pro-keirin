@@ -48,6 +48,7 @@ interface QuestionRow {
   format: string;
   choices: unknown | null;
   requires_auto_generate: boolean | null;
+  is_custom?: boolean | null;
 }
 
 function pickRandom<T>(arr: T[], n: number): T[] {
@@ -56,6 +57,38 @@ function pickRandom<T>(arr: T[], n: number): T[] {
   while (out.length < n && copy.length > 0) {
     const i = Math.floor(Math.random() * copy.length);
     out.push(copy.splice(i, 1)[0]);
+  }
+  return out;
+}
+
+/**
+ * 커스텀 질문 우선 픽 (50% 확률).
+ * 커스텀 질문이 있으면 50% 확률로 커스텀 풀에서 먼저 뽑고,
+ * 부족분은 일반 풀에서 채운다.
+ */
+function pickWithCustomBias(pool: QuestionRow[], n: number): QuestionRow[] {
+  if (pool.length === 0 || n === 0) return [];
+  const customs = pool.filter((q) => q.is_custom === true);
+  const normals = pool.filter((q) => q.is_custom !== true);
+  if (customs.length === 0) return pickRandom(normals, n);
+
+  const out: QuestionRow[] = [];
+  const used = new Set<string>();
+  for (let i = 0; i < n; i++) {
+    const preferCustom = Math.random() < 0.5;
+    const primary = preferCustom ? customs : normals;
+    const fallback = preferCustom ? normals : customs;
+    const fromPrimary = primary.filter((q) => !used.has(q.code));
+    const pick =
+      fromPrimary.length > 0
+        ? pickRandom(fromPrimary, 1)[0]
+        : pickRandom(
+            fallback.filter((q) => !used.has(q.code)),
+            1,
+          )[0];
+    if (!pick) break;
+    out.push(pick);
+    used.add(pick.code);
   }
   return out;
 }
@@ -177,7 +210,7 @@ async function fetchQuestionsBySubcategory(
   const uniq = Array.from(new Set(subs));
   const { data } = await sb
     .from("interview_questions")
-    .select("code, category, subcategory, question_text, format, choices, requires_auto_generate")
+    .select("code, category, subcategory, question_text, format, choices, requires_auto_generate, is_custom")
     .eq("is_active", true)
     .in("subcategory", uniq);
 
@@ -197,7 +230,7 @@ async function fetchQuestionsByCategory(
   const uniq = Array.from(new Set(cats));
   const { data } = await sb
     .from("interview_questions")
-    .select("code, category, subcategory, question_text, format, choices, requires_auto_generate")
+    .select("code, category, subcategory, question_text, format, choices, requires_auto_generate, is_custom")
     .eq("is_active", true)
     .in("category", uniq);
 
@@ -256,15 +289,15 @@ export async function selectQuestionsForPlayer(
 
   if (requestType === "rookie") {
     const pool = await fetchQuestionsByCategory(["D", "B", "C"]);
-    const d = pickRandom(pool.get("D") ?? [], 3);
-    const b = pickRandom(pool.get("B") ?? [], 1);
-    const c = pickRandom(pool.get("C") ?? [], 1);
+    const d = pickWithCustomBias(pool.get("D") ?? [], 3);
+    const b = pickWithCustomBias(pool.get("B") ?? [], 1);
+    const c = pickWithCustomBias(pool.get("C") ?? [], 1);
     for (const q of [...d, ...b, ...c]) selected.push(toSelected(q, recent));
   } else if (requestType === "event") {
     const pool = await fetchQuestionsByCategory(["E", "A", "C"]);
-    const e = pickRandom(pool.get("E") ?? [], 2);
-    const a = pickRandom(pool.get("A") ?? [], 2);
-    const c = pickRandom(pool.get("C") ?? [], 1);
+    const e = pickWithCustomBias(pool.get("E") ?? [], 2);
+    const a = pickWithCustomBias(pool.get("A") ?? [], 2);
+    const c = pickWithCustomBias(pool.get("C") ?? [], 1);
     for (const q of [...e, ...a, ...c]) selected.push(toSelected(q, recent));
   } else {
     // regular / special — 상황기반 A 3개 + B 1 + C 1
@@ -280,15 +313,15 @@ export async function selectQuestionsForPlayer(
       const available = (aPool.get(sub) ?? []).filter(
         (q) => !usedCodes.has(q.code),
       );
-      for (const q of pickRandom(available, n)) {
+      for (const q of pickWithCustomBias(available, n)) {
         aPicked.push(q);
         usedCodes.add(q.code);
       }
     }
 
     const catPool = await fetchQuestionsByCategory(["B", "C"]);
-    const b = pickRandom(catPool.get("B") ?? [], 1);
-    const c = pickRandom(catPool.get("C") ?? [], 1);
+    const b = pickWithCustomBias(catPool.get("B") ?? [], 1);
+    const c = pickWithCustomBias(catPool.get("C") ?? [], 1);
 
     for (const q of [...aPicked, ...b, ...c])
       selected.push(toSelected(q, recent));
