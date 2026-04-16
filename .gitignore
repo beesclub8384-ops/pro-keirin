@@ -54,6 +54,9 @@ CIAUDE API.txt
 *.tsbuildinfo
 next-env.d.ts
 
+# apk releases
+apk-releases/
+
 # capacitor android build outputs
 android/app/build/
 android/.gradle/
