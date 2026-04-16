@@ -7,8 +7,6 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://pro-keirin.vercel.app/interview',
     cleartext: false,
-  },
-  android: {
     allowNavigation: ['pro-keirin.vercel.app'],
   },
 };
