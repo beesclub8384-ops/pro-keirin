@@ -35,7 +35,7 @@ const SYSTEM_PROMPT = `당신은 7RANDOMS의 전문 경륜 기자다. 선수 인
 **이번 인터뷰의 포인트:** (1~2문장)
 **지켜볼 점:** (1문장)
 
-8. 사진 플레이스홀더 [PHOTO_1], [PHOTO_2]를 본문 중간중간 2~3개 자연스럽게 배치한다.
+8. 사진이 제공된 경우, [PHOTO_1], [PHOTO_2], ... 플레이스홀더를 사진 수만큼 본문 중간중간 자연스럽게 배치한다. 사진이 없으면 플레이스홀더를 넣지 않는다.
 9. 과장된 미사여구, 확인되지 않은 추측, 도박/베팅 유도 표현 금지.`;
 
 function extractHeadline(md: string): string {
@@ -170,7 +170,7 @@ export async function generateInterviewArticle(
 
   const { data: responses, error: respErr } = await sb
     .from("interview_responses")
-    .select("question_code, question_text, answer_text, answer_choice")
+    .select("question_code, question_text, answer_text, answer_choice, photo_urls")
     .eq("request_id", requestId)
     .order("id", { ascending: true });
 
@@ -179,7 +179,22 @@ export async function generateInterviewArticle(
     throw new Error("답변이 없습니다");
   }
 
+  const allPhotos: string[] = [];
+  for (const r of responses) {
+    const urls = r.photo_urls as string[] | null;
+    if (urls) {
+      for (const u of urls) {
+        if (u) allPhotos.push(u);
+      }
+    }
+  }
+
   const recentRaces = await fetchRecentRaces(sb, request.player_name as string);
+
+  const photoInstruction =
+    allPhotos.length > 0
+      ? `\n[사진 정보]\n이 인터뷰에는 사진이 ${allPhotos.length}장 첨부되어 있습니다. 본문에 [PHOTO_1]~[PHOTO_${allPhotos.length}] 태그를 적절한 위치에 배치해주세요.\n`
+      : "\n[사진 정보]\n첨부된 사진이 없습니다. [PHOTO_N] 태그를 넣지 마세요.\n";
 
   const userPrompt = `아래 정보를 바탕으로 7RANDOMS 인터뷰 기사를 작성해주세요.
 
@@ -190,7 +205,7 @@ export async function generateInterviewArticle(
 
 [최근 5경주 결과]
 ${formatRecentRaces(recentRaces)}
-
+${photoInstruction}
 [인터뷰 질문-답변]
 ${formatResponses(responses as ResponseRow[])}
 
@@ -208,6 +223,7 @@ ${formatResponses(responses as ResponseRow[])}
       region: request.region,
       article_raw: articleRaw,
       headline,
+      photos: allPhotos.length > 0 ? allPhotos : null,
       status: "review",
     })
     .select("id")

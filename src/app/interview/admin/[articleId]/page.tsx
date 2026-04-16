@@ -31,6 +31,7 @@ interface Article {
   articleRaw: string | null;
   articleEdited: string | null;
   headline: string | null;
+  photos: string[] | null;
   status: "draft" | "review" | "approved" | "published" | "rejected";
   rejectReason: string | null;
   publishedAt: string | null;
@@ -42,11 +43,35 @@ interface ResponseRow {
   questionText: string;
   answerText: string | null;
   answerChoice: string | null;
+  photoUrls: string[] | null;
 }
 
 interface LoadData {
   article: Article;
   responses: ResponseRow[];
+}
+
+function replacePhotoTags(article: string, photos?: string[]): string {
+  return article.replace(/\[PHOTO_(\d+)\]/g, (match, num) => {
+    const idx = parseInt(num, 10) - 1;
+    if (photos && photos[idx]) {
+      return `![인터뷰 사진 ${num}](${photos[idx]})`;
+    }
+    return "";
+  });
+}
+
+function collectPhotos(article: Article, responses: ResponseRow[]): string[] {
+  if (article.photos && article.photos.length > 0) return article.photos;
+  const urls: string[] = [];
+  for (const r of responses) {
+    if (r.photoUrls) {
+      for (const u of r.photoUrls) {
+        if (u) urls.push(u);
+      }
+    }
+  }
+  return urls;
 }
 
 const STATUS_STYLE: Record<Article["status"], string> = {
@@ -353,7 +378,9 @@ export default function InterviewAdminDetailPage({
             {headline && (
               <h1 className="mb-6 text-2xl font-extrabold">{headline}</h1>
             )}
-            <Markdown remarkPlugins={[remarkGfm]}>{body}</Markdown>
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {replacePhotoTags(body, collectPhotos(article, responses))}
+            </Markdown>
           </CardContent>
         </Card>
       )}
