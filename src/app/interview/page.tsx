@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -112,6 +112,21 @@ export default function InterviewPage() {
     today.getMonth(),
     today.getDate(),
   );
+
+  const tapCount = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleHiddenTap = useCallback(() => {
+    tapCount.current += 1;
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    if (tapCount.current >= 5) {
+      tapCount.current = 0;
+      router.push("/interview/admin");
+      return;
+    }
+    tapTimer.current = setTimeout(() => {
+      tapCount.current = 0;
+    }, 2000);
+  }, [router]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
@@ -245,6 +260,14 @@ export default function InterviewPage() {
             ))
           )}
         </div>
+      </div>
+
+      {/* Hidden admin access */}
+      <div
+        className="mt-12 py-4 text-center text-xs text-muted-foreground/40 select-none"
+        onClick={handleHiddenTap}
+      >
+        7RANDOMS
       </div>
     </div>
   );
