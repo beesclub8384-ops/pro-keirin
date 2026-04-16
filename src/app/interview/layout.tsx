@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function InterviewLayout({
   children,
@@ -8,14 +9,17 @@ export default function InterviewLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b bg-white">
-        <div className="mx-auto flex h-14 max-w-7xl items-center px-4">
-          <Link
-            href="/interview"
-            className="text-lg font-bold tracking-tight text-foreground"
-          >
-            7RANDOMS
+        <div className="mx-auto flex h-24 sm:h-28 max-w-7xl items-center px-4">
+          <Link href="/interview" className="flex items-center">
+            <Image
+              src="/images/logo.png"
+              alt="7randoms"
+              width={288}
+              height={96}
+              priority
+              className="h-[72px] w-auto sm:h-[96px]"
+            />
           </Link>
-          <span className="ml-2 text-sm text-muted-foreground">인터뷰</span>
         </div>
       </header>
       <div className="flex-1">{children}</div>
