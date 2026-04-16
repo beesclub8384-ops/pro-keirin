@@ -54,4 +54,10 @@ CIAUDE API.txt
 *.tsbuildinfo
 next-env.d.ts
 
+# capacitor android build outputs
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+
 .vercel
