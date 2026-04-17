@@ -2,13 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { InterviewArticle } from "@/lib/interview";
 
 const API_URL = "/api/interview/published";
+const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
+const PAGE_SIZE = 10;
 
-type Tab = "all" | "monthly";
+type Tab = "calendar" | "all";
 
 function toKSTDate(dateStr: string): string {
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
@@ -23,8 +27,23 @@ function extractTitle(article: string): string {
   return match[1].replace(/^["「"']|["」"']$/g, "").trim();
 }
 
-const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-const PAGE_SIZE = 10;
+function getCalendarDays(year: number, month: number) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const days: (number | null)[] = [];
+  for (let i = 0; i < firstDay; i++) days.push(null);
+  for (let d = 1; d <= daysInMonth; d++) days.push(d);
+  return days;
+}
+
+function formatDate(year: number, month: number, day: number) {
+  const m = String(month + 1).padStart(2, "0");
+  const d = String(day).padStart(2, "0");
+  return `${year}-${m}-${d}`;
+}
+
+const textShadow = "0 2px 4px rgba(0,0,0,0.5)";
+const textShadowSm = "0 1px 3px rgba(0,0,0,0.5)";
 
 function ArticleCard({
   a,
@@ -63,11 +82,14 @@ function ArticleCard({
 
 export default function InterviewPage() {
   const router = useRouter();
+  const today = new Date();
+
   const [articles, setArticles] = useState<InterviewArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [tab, setTab] = useState<Tab>("all");
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [tab, setTab] = useState<Tab>("calendar");
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -99,6 +121,15 @@ export default function InterviewPage() {
           date: toKSTDate(a.date),
         }));
         setArticles(parsed);
+        if (parsed.length > 0) {
+          const latest = parsed
+            .map((a: InterviewArticle) => a.date)
+            .sort()
+            .reverse()[0];
+          const [y, m] = latest.split("-").map(Number);
+          setYear(y);
+          setMonth(m - 1);
+        }
       })
       .catch(() => setArticles([]))
       .finally(() => setLoading(false));
@@ -109,32 +140,32 @@ export default function InterviewPage() {
     [articles],
   );
 
-  const filtered = useMemo(() => {
-    if (searchOpen && searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      return sorted.filter((a) => a.playerName.toLowerCase().includes(q));
-    }
-    if (tab === "monthly") {
-      return sorted.filter((a) => {
-        const m = parseInt(a.date.split("-")[1], 10);
-        return m === selectedMonth;
-      });
-    }
-    return sorted;
-  }, [sorted, tab, selectedMonth, searchOpen, searchQuery]);
+  const articleDates = useMemo(
+    () => new Set(articles.map((a) => a.date)),
+    [articles],
+  );
 
-  const displayed = filtered.slice(0, visibleCount);
-  const hasMore = visibleCount < filtered.length;
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.trim().toLowerCase();
+    return sorted.filter((a) => a.playerName.toLowerCase().includes(q));
+  }, [sorted, searchQuery]);
 
-  useEffect(() => {
-    if (searchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [searchOpen]);
+  const monthArticles = useMemo(
+    () =>
+      articles.filter((a) => {
+        const d = new Date(a.date);
+        return d.getFullYear() === year && d.getMonth() === month;
+      }),
+    [articles, year, month],
+  );
+
+  const allDisplayed = sorted.slice(0, visibleCount);
+  const hasMore = visibleCount < sorted.length;
 
   const sentinelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!hasMore) return;
+    if (tab !== "all" || !hasMore) return;
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -147,7 +178,38 @@ export default function InterviewPage() {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, filtered.length]);
+  }, [tab, hasMore, sorted.length]);
+
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
+  const days = getCalendarDays(year, month);
+  const todayStr = formatDate(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+
+  function prevMonth() {
+    if (month === 0) {
+      setYear(year - 1);
+      setMonth(11);
+    } else {
+      setMonth(month - 1);
+    }
+  }
+
+  function nextMonth() {
+    if (month === 11) {
+      setYear(year + 1);
+      setMonth(0);
+    } else {
+      setMonth(month + 1);
+    }
+  }
 
   function goToArticle(a: InterviewArticle) {
     router.push(
@@ -157,25 +219,25 @@ export default function InterviewPage() {
 
   return (
     <div>
-      {/* Page Header */}
-      <div className="mb-6 sm:mb-8">
-        <h1
-          className="text-2xl sm:text-3xl font-bold text-white"
-          style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}
-        >
-          선수 인터뷰
-        </h1>
-        <p
-          className="mt-2 text-sm text-white/80"
-          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
-        >
-          경륜 선수들의 생생한 인터뷰를 확인하세요
-        </p>
-      </div>
-
       {/* Navigation bar */}
-      <div className="mb-6 rounded-xl bg-white/95 shadow-lg backdrop-blur-sm px-3 py-2 flex items-center gap-2">
-        <div className="flex gap-1 flex-1">
+      <nav className="mb-5 flex items-center gap-4">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              setTab("calendar");
+              setSearchOpen(false);
+              setSearchQuery("");
+            }}
+            className={`px-3 py-1.5 text-sm font-semibold transition-colors ${
+              tab === "calendar" && !searchOpen
+                ? "text-white border-b-2 border-white"
+                : "text-white/60 hover:text-white/90"
+            }`}
+            style={{ textShadow: textShadowSm }}
+          >
+            달력
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -184,43 +246,29 @@ export default function InterviewPage() {
               setSearchQuery("");
               setVisibleCount(PAGE_SIZE);
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 text-sm font-semibold transition-colors ${
               tab === "all" && !searchOpen
-                ? "bg-brand text-white"
-                : "text-foreground/70 hover:bg-muted"
+                ? "text-white border-b-2 border-white"
+                : "text-white/60 hover:text-white/90"
             }`}
+            style={{ textShadow: textShadowSm }}
           >
             전체
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setTab("monthly");
-              setSearchOpen(false);
-              setSearchQuery("");
-              setVisibleCount(PAGE_SIZE);
-            }}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              tab === "monthly" && !searchOpen
-                ? "bg-brand text-white"
-                : "text-foreground/70 hover:bg-muted"
-            }`}
-          >
-            월별
-          </button>
         </div>
+        <div className="flex-1" />
         <button
           type="button"
           onClick={() => {
             setSearchOpen(!searchOpen);
             if (searchOpen) setSearchQuery("");
-            setVisibleCount(PAGE_SIZE);
           }}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold transition-colors ${
             searchOpen
-              ? "bg-brand text-white"
-              : "text-foreground/70 hover:bg-muted"
+              ? "text-white border-b-2 border-white"
+              : "text-white/60 hover:text-white/90"
           }`}
+          style={{ textShadow: textShadowSm }}
         >
           {searchOpen ? (
             <X className="h-4 w-4" />
@@ -229,7 +277,7 @@ export default function InterviewPage() {
           )}
           검색
         </button>
-      </div>
+      </nav>
 
       {/* Search input */}
       {searchOpen && (
@@ -240,12 +288,9 @@ export default function InterviewPage() {
               ref={searchInputRef}
               type="text"
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setVisibleCount(PAGE_SIZE);
-              }}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="선수 이름으로 검색..."
-              className="w-full rounded-lg border border-border bg-white pl-10 pr-4 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              className="w-full rounded-lg border border-border bg-white pl-10 pr-10 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
             {searchQuery && (
               <button
@@ -259,63 +304,191 @@ export default function InterviewPage() {
           </div>
           {searchQuery.trim() && (
             <p className="mt-2 text-xs text-muted-foreground">
-              {filtered.length}건의 검색 결과
+              {searchResults.length}건의 검색 결과
             </p>
           )}
         </div>
       )}
 
-      {/* Monthly selector */}
-      {tab === "monthly" && !searchOpen && (
-        <div className="mb-6 overflow-x-auto rounded-xl bg-white/95 shadow-lg backdrop-blur-sm px-3 py-3">
-          <div className="flex gap-1.5 min-w-max">
-            {MONTHS.map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => {
-                  setSelectedMonth(m);
-                  setVisibleCount(PAGE_SIZE);
-                }}
-                className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                  selectedMonth === m
-                    ? "bg-brand text-white"
-                    : "text-foreground/70 hover:bg-muted"
-                }`}
-              >
-                {m}월
-              </button>
+      {/* Search results */}
+      {searchOpen && searchQuery.trim() ? (
+        searchResults.length === 0 ? (
+          <div className="rounded-xl bg-white/95 shadow-lg backdrop-blur-sm py-16 text-center">
+            <p className="text-sm text-muted-foreground">
+              &ldquo;{searchQuery}&rdquo; 검색 결과가 없습니다
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {searchResults.map((a, i) => (
+              <ArticleCard
+                key={`search-${a.date}-${a.playerName}-${i}`}
+                a={a}
+                onClick={() => goToArticle(a)}
+              />
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Article list */}
-      {loading ? (
-        <p className="text-sm text-white/70 py-10 text-center">
-          불러오는 중...
-        </p>
-      ) : filtered.length === 0 ? (
-        <div className="rounded-xl bg-white/95 shadow-lg backdrop-blur-sm py-16 text-center">
-          <p className="text-sm text-muted-foreground">
-            {searchOpen && searchQuery.trim()
-              ? `"${searchQuery}" 검색 결과가 없습니다`
-              : tab === "monthly"
-                ? "이 달에는 인터뷰가 없습니다"
-                : "아직 인터뷰가 없습니다"}
-          </p>
-        </div>
+        )
+      ) : searchOpen ? null : tab === "all" ? (
+        /* ═══ All tab ═══ */
+        <>
+          <div className="mb-6 sm:mb-8">
+            <h1
+              className="text-2xl sm:text-3xl font-bold text-white"
+              style={{ textShadow }}
+            >
+              선수 인터뷰
+            </h1>
+            <p
+              className="mt-2 text-sm text-white/80"
+              style={{ textShadow: textShadowSm }}
+            >
+              경륜 선수들의 생생한 인터뷰를 확인하세요
+            </p>
+          </div>
+          {loading ? (
+            <p className="text-sm text-white/70 py-10 text-center">
+              불러오는 중...
+            </p>
+          ) : sorted.length === 0 ? (
+            <div className="rounded-xl bg-white/95 shadow-lg backdrop-blur-sm py-16 text-center">
+              <p className="text-sm text-muted-foreground">
+                아직 인터뷰가 없습니다
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {allDisplayed.map((a, i) => (
+                <ArticleCard
+                  key={`all-${a.date}-${a.playerName}-${i}`}
+                  a={a}
+                  onClick={() => goToArticle(a)}
+                />
+              ))}
+              {hasMore && <div ref={sentinelRef} className="h-1" />}
+            </div>
+          )}
+        </>
       ) : (
-        <div className="space-y-4">
-          {displayed.map((a, i) => (
-            <ArticleCard
-              key={`${a.date}-${a.playerName}-${i}`}
-              a={a}
-              onClick={() => goToArticle(a)}
-            />
-          ))}
-          {hasMore && <div ref={sentinelRef} className="h-1" />}
-        </div>
+        /* ═══ Calendar tab (default) ═══ */
+        <>
+          <div className="mb-6 sm:mb-8">
+            <h1
+              className="text-2xl sm:text-3xl font-bold text-white"
+              style={{ textShadow }}
+            >
+              선수 인터뷰
+            </h1>
+            <p
+              className="mt-2 text-sm text-white/80"
+              style={{ textShadow: textShadowSm }}
+            >
+              경륜 선수들의 생생한 인터뷰를 확인하세요
+            </p>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+            {/* Calendar */}
+            <Card className="bg-white/95 shadow-lg backdrop-blur-sm">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <Button variant="ghost" size="icon" onClick={prevMonth}>
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <CardTitle className="text-lg font-bold">
+                  {year}년 {month + 1}월
+                </CardTitle>
+                <Button variant="ghost" size="icon" onClick={nextMonth}>
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-7 mb-1">
+                  {DAYS.map((d, i) => (
+                    <div
+                      key={d}
+                      className={`py-2 text-center text-xs font-medium ${
+                        i === 0
+                          ? "text-red-500"
+                          : i === 6
+                            ? "text-blue-500"
+                            : "text-muted-foreground"
+                      }`}
+                    >
+                      {d}
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7">
+                  {days.map((day, idx) => {
+                    if (day === null) {
+                      return (
+                        <div key={`empty-${idx}`} className="aspect-square" />
+                      );
+                    }
+                    const date = formatDate(year, month, day);
+                    const hasArticle = articleDates.has(date);
+                    const isToday = date === todayStr;
+                    const dayOfWeek = new Date(year, month, day).getDay();
+                    return (
+                      <button
+                        key={date}
+                        onClick={() => {
+                          if (hasArticle) router.push(`/interview/${date}`);
+                        }}
+                        disabled={!hasArticle}
+                        className={`relative aspect-square flex flex-col items-center justify-center rounded-lg text-sm transition-colors ${
+                          hasArticle
+                            ? "cursor-pointer hover:bg-brand/10 font-medium"
+                            : "cursor-default"
+                        } ${isToday ? "ring-2 ring-brand ring-offset-1" : ""} ${
+                          dayOfWeek === 0
+                            ? "text-red-500"
+                            : dayOfWeek === 6
+                              ? "text-blue-500"
+                              : ""
+                        }`}
+                      >
+                        <span>{day}</span>
+                        {hasArticle && (
+                          <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-red-500" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {loading && (
+                  <p className="mt-4 text-center text-sm text-muted-foreground">
+                    데이터 불러오는 중...
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Month article list */}
+            <div className="space-y-4">
+              <h2
+                className="text-base font-bold text-white"
+                style={{ textShadow: textShadowSm }}
+              >
+                {month + 1}월 인터뷰
+              </h2>
+              {loading ? (
+                <p className="text-sm text-white/70">불러오는 중...</p>
+              ) : monthArticles.length === 0 ? (
+                <p className="text-sm text-white/70">
+                  이번 달 인터뷰가 없습니다
+                </p>
+              ) : (
+                monthArticles.map((a, i) => (
+                  <ArticleCard
+                    key={`cal-${a.date}-${a.playerName}-${i}`}
+                    a={a}
+                    onClick={() => goToArticle(a)}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </>
       )}
 
       {/* Hidden admin access */}
