@@ -132,17 +132,23 @@ export default function InterviewPage() {
     <div>
       {/* Page Header */}
       <div className="mb-8 sm:mb-10">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+        <h1
+          className="text-2xl sm:text-3xl font-bold text-white"
+          style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}
+        >
           선수 인터뷰
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p
+          className="mt-2 text-sm text-white/80"
+          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+        >
           경륜 선수들의 생생한 인터뷰를 확인하세요
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         {/* Calendar */}
-        <Card>
+        <Card className="bg-white/95 shadow-lg backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <Button variant="ghost" size="icon" onClick={prevMonth}>
               <ChevronLeft className="h-5 w-5" />
@@ -217,20 +223,23 @@ export default function InterviewPage() {
 
         {/* Article list */}
         <div className="space-y-4">
-          <h2 className="text-base font-bold text-foreground">
+          <h2
+            className="text-base font-bold text-white"
+            style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+          >
             {month + 1}월 인터뷰
           </h2>
           {loading ? (
-            <p className="text-sm text-muted-foreground">불러오는 중...</p>
+            <p className="text-sm text-white/70">불러오는 중...</p>
           ) : monthArticles.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white/70">
               이번 달 인터뷰가 없습니다
             </p>
           ) : (
             monthArticles.map((a, i) => (
               <div
                 key={`${a.date}-${a.playerName}-${i}`}
-                className="group cursor-pointer rounded-xl border bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 hover:border-brand/30"
+                className="group cursor-pointer rounded-xl border bg-white/95 p-5 shadow-lg backdrop-blur-sm transition-all hover:shadow-xl hover:-translate-y-0.5 hover:border-brand/30"
                 onClick={() =>
                   router.push(
                     `/interview/${a.date}?player=${encodeURIComponent(a.playerName)}`,
@@ -264,7 +273,7 @@ export default function InterviewPage() {
 
       {/* Hidden admin access */}
       <div
-        className="mt-12 py-4 text-center text-xs text-muted-foreground/40 select-none"
+        className="mt-12 py-4 text-center text-xs text-white/20 select-none"
         onClick={handleHiddenTap}
       >
         7RANDOMS

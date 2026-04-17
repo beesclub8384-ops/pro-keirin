@@ -31,9 +31,7 @@ export default function InterviewLayout({
       </header>
 
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:py-10">
-        <div className="rounded-2xl bg-white/95 shadow-xl backdrop-blur-sm px-4 py-6 sm:px-8 sm:py-10">
-          {children}
-        </div>
+        {children}
       </div>
     </div>
   );
