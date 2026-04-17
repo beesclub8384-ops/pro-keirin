@@ -20,14 +20,25 @@ export default function InterviewLayout({
 
       <header className="border-b bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-20 sm:h-24 max-w-7xl items-center justify-between px-4">
-          <Link href="/interview" className="flex items-center">
+          <Link href="/interview" className="flex items-center gap-2 sm:gap-3">
             <Image
               src="/images/logo.png"
               alt="7randoms"
               width={288}
               height={96}
               priority
-              className="h-[58px] w-auto sm:h-[77px]"
+              className="h-[50px] w-auto sm:h-[66px]"
+            />
+            <span className="text-xs font-medium text-muted-foreground/60 select-none">
+              ×
+            </span>
+            <Image
+              src="/images/pkru-logo.png"
+              alt="프로경륜선수노동조합"
+              width={351}
+              height={248}
+              priority
+              className="h-[50px] w-auto sm:h-[66px]"
             />
           </Link>
           <InterviewHeaderMenu />
