@@ -85,6 +85,8 @@ export default function NewInterviewRequestPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareMsg, setShareMsg] = useState<string | null>(null);
@@ -165,36 +167,86 @@ export default function NewInterviewRequestPage() {
     );
   }
 
+  async function handleSaveDraft() {
+    if (!playerName.trim()) {
+      setError("선수 이름을 입력해주세요");
+      return;
+    }
+    if (questions.length === 0) {
+      setError("질문을 1개 이상 추가해주세요");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    setSavedMsg(null);
+    try {
+      const finalCodes = await saveFinalCodes();
+      if (!finalCodes) return;
+
+      const res = await fetch("/api/interview/admin/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerName: playerName.trim(),
+          grade: grade || null,
+          region: region || null,
+          requestType,
+          selectedQuestions: finalCodes,
+          status: "draft",
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({ error: "저장 실패" }));
+        setError(j.error ?? "저장 실패");
+        return;
+      }
+      setSavedMsg("임시저장되었습니다");
+      setTimeout(() => setSavedMsg(null), 3000);
+    } catch {
+      setError("네트워크 오류");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveFinalCodes(): Promise<string[] | null> {
+    const finalCodes: string[] = [];
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const original = originalTexts[i] ?? q.questionText;
+      if (q.questionText.trim() !== original.trim()) {
+        const saveRes = await fetch("/api/interview/admin/questions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            originalCode: q.code,
+            questionText: q.questionText.trim(),
+            category: q.category,
+            subcategory: q.subcategory,
+          }),
+        });
+        if (!saveRes.ok) {
+          const j = await saveRes.json().catch(() => ({ error: "질문 저장 실패" }));
+          setError(j.error ?? "질문 저장 실패");
+          return null;
+        }
+        const sj = (await saveRes.json()) as { question: { code: string } };
+        finalCodes.push(sj.question.code);
+      } else {
+        finalCodes.push(q.code);
+      }
+    }
+    return finalCodes;
+  }
+
   async function handleCreate() {
     setCreating(true);
     setError(null);
     try {
-      const finalCodes: string[] = [];
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i];
-        const original = originalTexts[i] ?? q.questionText;
-        if (q.questionText.trim() !== original.trim()) {
-          const saveRes = await fetch("/api/interview/admin/questions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              originalCode: q.code,
-              questionText: q.questionText.trim(),
-              category: q.category,
-              subcategory: q.subcategory,
-            }),
-          });
-          if (!saveRes.ok) {
-            const j = await saveRes.json().catch(() => ({ error: "질문 저장 실패" }));
-            setError(j.error ?? "질문 저장 실패");
-            setCreating(false);
-            return;
-          }
-          const sj = (await saveRes.json()) as { question: { code: string } };
-          finalCodes.push(sj.question.code);
-        } else {
-          finalCodes.push(q.code);
-        }
+      const finalCodes = await saveFinalCodes();
+      if (!finalCodes) {
+        setCreating(false);
+        return;
       }
 
       const res = await fetch("/api/interview/admin/requests", {
@@ -559,28 +611,42 @@ export default function NewInterviewRequestPage() {
       )}
 
       {/* Step 3 */}
-      {recommendation && questions.length > 0 && (
+      {questions.length > 0 && (
         <Card>
           <CardContent className="space-y-4 px-5 py-6 sm:px-7">
             <div className="mb-1 flex items-center gap-2">
               <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
-                STEP 3
+                {recommendation ? "STEP 3" : "STEP 2"}
               </span>
               <span className="text-sm font-semibold text-foreground">
-                확인 및 생성
+                확인 및 저장
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              {playerName} 선수에게 {questions.length}개 질문으로 인터뷰 요청을 생성합니다
+              {playerName} 선수 — {questions.length}개 질문
             </p>
-            <Button
-              onClick={handleCreate}
-              disabled={creating}
-              className="w-full gap-1.5"
-            >
-              {creating && <Loader2 className="h-4 w-4 animate-spin" />}
-              인터뷰 요청 생성
-            </Button>
+            {savedMsg && (
+              <p className="text-sm font-medium text-green-600">{savedMsg}</p>
+            )}
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSaveDraft}
+                disabled={saving || creating}
+                variant="outline"
+                className="flex-1 gap-1.5"
+              >
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                임시저장
+              </Button>
+              <Button
+                onClick={handleCreate}
+                disabled={creating || saving}
+                className="flex-1 gap-1.5"
+              >
+                {creating && <Loader2 className="h-4 w-4 animate-spin" />}
+                요청하기
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

@@ -40,7 +40,7 @@ interface AdminRequest {
   region: string | null;
   requestType: string;
   selectedQuestions: string[];
-  status: "pending" | "sent" | "in_progress" | "completed" | "expired";
+  status: "draft" | "pending" | "sent" | "in_progress" | "completed" | "expired";
   formUrl: string | null;
   sentAt: string | null;
   completedAt: string | null;
@@ -50,7 +50,7 @@ interface AdminRequest {
 }
 
 type ArticleFilter = "all" | "review" | "approved" | "published" | "rejected";
-type RequestFilter = "all" | "sent" | "completed" | "expired";
+type RequestFilter = "all" | "draft" | "sent" | "completed" | "expired";
 type Tab = "articles" | "requests";
 
 /* ─── Constants ─── */
@@ -65,6 +65,7 @@ const ARTICLE_FILTERS: { key: ArticleFilter; label: string }[] = [
 
 const REQUEST_FILTERS: { key: RequestFilter; label: string }[] = [
   { key: "all", label: "전체" },
+  { key: "draft", label: "초안" },
   { key: "sent", label: "발송됨" },
   { key: "completed", label: "완료" },
   { key: "expired", label: "만료" },
@@ -87,6 +88,7 @@ const ARTICLE_STATUS_LABEL: Record<AdminArticle["status"], string> = {
 };
 
 const REQUEST_STATUS_STYLE: Record<AdminRequest["status"], string> = {
+  draft: "bg-slate-100 text-slate-600 border-slate-200",
   pending: "bg-slate-100 text-slate-600 border-slate-200",
   sent: "bg-blue-100 text-blue-700 border-blue-200",
   in_progress: "bg-yellow-100 text-yellow-700 border-yellow-200",
@@ -95,6 +97,7 @@ const REQUEST_STATUS_STYLE: Record<AdminRequest["status"], string> = {
 };
 
 const REQUEST_STATUS_LABEL: Record<AdminRequest["status"], string> = {
+  draft: "초안",
   pending: "대기",
   sent: "발송됨",
   in_progress: "작성중",
@@ -234,6 +237,7 @@ export default function InterviewAdminPage() {
   const requestCounts = useMemo(() => {
     const c: Record<RequestFilter, number> = {
       all: requests.length,
+      draft: 0,
       sent: 0,
       completed: 0,
       expired: 0,
@@ -507,7 +511,10 @@ export default function InterviewAdminPage() {
               {filteredRequests.map((r) => (
                 <Card
                   key={r.id}
-                  className="overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  className={`overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md ${r.status === "draft" ? "cursor-pointer hover:border-brand/30" : ""}`}
+                  onClick={() => {
+                    if (r.status === "draft") router.push(`/interview/admin/draft/${r.id}`);
+                  }}
                 >
                   <CardContent className="px-5 py-5 sm:px-6 sm:py-6">
                     {/* Top row: name + badges + status */}

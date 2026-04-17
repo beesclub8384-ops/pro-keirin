@@ -46,6 +46,7 @@ export async function POST(req: Request) {
     racerId?: number;
     requestType?: string;
     selectedQuestions?: string[];
+    status?: string;
   };
   try {
     body = await req.json();
@@ -67,6 +68,7 @@ export async function POST(req: Request) {
     );
   }
 
+  const isDraft = body.status === "draft";
   const sb = createAdminClient();
   const { data, error } = await sb
     .from("interview_requests")
@@ -77,12 +79,59 @@ export async function POST(req: Request) {
       region: body.region ?? null,
       request_type: body.requestType ?? "regular",
       selected_questions: body.selectedQuestions,
-      status: "sent",
-      sent_at: new Date().toISOString(),
+      status: isDraft ? "draft" : "sent",
+      sent_at: isDraft ? null : new Date().toISOString(),
     })
     .select("id")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, id: data.id });
+}
+
+export async function PUT(req: Request) {
+  let body: {
+    id?: number;
+    playerName?: string;
+    grade?: string;
+    region?: string;
+    requestType?: string;
+    selectedQuestions?: string[];
+    status?: string;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "invalid json body" }, { status: 400 });
+  }
+
+  if (!body.id) {
+    return NextResponse.json({ error: "id가 필요합니다" }, { status: 400 });
+  }
+
+  const update: Record<string, unknown> = {};
+  if (body.playerName !== undefined) update.player_name = body.playerName.trim();
+  if (body.grade !== undefined) update.grade = body.grade || null;
+  if (body.region !== undefined) update.region = body.region || null;
+  if (body.requestType !== undefined) update.request_type = body.requestType;
+  if (body.selectedQuestions !== undefined) update.selected_questions = body.selectedQuestions;
+  if (body.status !== undefined) {
+    update.status = body.status;
+    if (body.status === "sent") {
+      update.sent_at = new Date().toISOString();
+    }
+  }
+
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: "업데이트할 필드가 없습니다" }, { status: 400 });
+  }
+
+  const sb = createAdminClient();
+  const { error } = await sb
+    .from("interview_requests")
+    .update(update)
+    .eq("id", body.id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
 }
