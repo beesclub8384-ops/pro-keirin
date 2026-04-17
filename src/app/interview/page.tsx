@@ -129,7 +129,7 @@ export default function InterviewPage() {
   }, [router]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
+    <div>
       {/* Page Header */}
       <div className="mb-8 sm:mb-10">
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">

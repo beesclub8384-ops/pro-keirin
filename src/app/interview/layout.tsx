@@ -7,8 +7,15 @@ export default function InterviewLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b bg-white">
+    <div className="relative flex min-h-screen flex-col">
+      {/* Background - fixed position div for iOS compatibility */}
+      <div
+        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/images/interview-bg.png')" }}
+      />
+      <div className="fixed inset-0 -z-10 bg-black/30" />
+
+      <header className="border-b bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-24 sm:h-28 max-w-7xl items-center px-4">
           <Link href="/interview" className="flex items-center">
             <Image
@@ -22,7 +29,12 @@ export default function InterviewLayout({
           </Link>
         </div>
       </header>
-      <div className="flex-1">{children}</div>
+
+      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:py-10">
+        <div className="rounded-2xl bg-white/95 shadow-xl backdrop-blur-sm px-4 py-6 sm:px-8 sm:py-10">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }
