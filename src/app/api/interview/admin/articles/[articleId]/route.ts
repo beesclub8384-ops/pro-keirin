@@ -138,3 +138,20 @@ export async function PATCH(req: Request, { params }: Params) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
+
+export async function DELETE(_req: Request, { params }: Params) {
+  const { articleId } = await params;
+  const id = parseId(articleId);
+  if (id === null) {
+    return NextResponse.json({ error: "invalid articleId" }, { status: 400 });
+  }
+
+  const sb = createAdminClient();
+  const { error } = await sb
+    .from("interview_articles")
+    .delete()
+    .eq("id", id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}

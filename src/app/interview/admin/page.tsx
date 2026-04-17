@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -149,6 +149,56 @@ export default function InterviewAdminPage() {
   /* UI state */
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [generatingId, setGeneratingId] = useState<number | null>(null);
+
+  /* Delete state */
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: "article" | "request";
+    id: number;
+    label: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggered = useRef(false);
+
+  function startLongPress(type: "article" | "request", id: number, label: string) {
+    longPressTriggered.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      setDeleteTarget({ type, id, label });
+    }, 800);
+  }
+
+  function cancelLongPress() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      if (deleteTarget.type === "article") {
+        await fetch(`/api/interview/admin/articles/${deleteTarget.id}`, {
+          method: "DELETE",
+        });
+        setArticles((prev) => prev.filter((a) => a.id !== deleteTarget.id));
+      } else {
+        await fetch("/api/interview/admin/requests", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: deleteTarget.id }),
+        });
+        setRequests((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+      }
+    } catch {
+      alert("삭제에 실패했습니다");
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
+    }
+  }
 
   /* Fetch articles */
   useEffect(() => {
@@ -408,8 +458,17 @@ export default function InterviewAdminPage() {
               {filteredArticles.map((a) => (
                 <Card
                   key={a.id}
-                  onClick={() => router.push(`/interview/admin/${a.id}`)}
-                  className="cursor-pointer overflow-hidden transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md"
+                  onClick={() => {
+                    if (longPressTriggered.current) return;
+                    router.push(`/interview/admin/${a.id}`);
+                  }}
+                  onMouseDown={() => startLongPress("article", a.id, `${a.playerName} — ${a.headline ?? "기사"}`)}
+                  onMouseUp={cancelLongPress}
+                  onMouseLeave={cancelLongPress}
+                  onTouchStart={() => startLongPress("article", a.id, `${a.playerName} — ${a.headline ?? "기사"}`)}
+                  onTouchEnd={cancelLongPress}
+                  onTouchMove={cancelLongPress}
+                  className="cursor-pointer overflow-hidden transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md select-none"
                 >
                   <CardContent className="px-5 py-5 sm:px-6 sm:py-6">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -511,10 +570,17 @@ export default function InterviewAdminPage() {
               {filteredRequests.map((r) => (
                 <Card
                   key={r.id}
-                  className={`overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md ${r.status === "draft" ? "cursor-pointer hover:border-brand/30" : ""}`}
+                  className={`overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md select-none ${r.status === "draft" ? "cursor-pointer hover:border-brand/30" : ""}`}
                   onClick={() => {
+                    if (longPressTriggered.current) return;
                     if (r.status === "draft") router.push(`/interview/admin/draft/${r.id}`);
                   }}
+                  onMouseDown={() => startLongPress("request", r.id, `${r.playerName} 요청`)}
+                  onMouseUp={cancelLongPress}
+                  onMouseLeave={cancelLongPress}
+                  onTouchStart={() => startLongPress("request", r.id, `${r.playerName} 요청`)}
+                  onTouchEnd={cancelLongPress}
+                  onTouchMove={cancelLongPress}
                 >
                   <CardContent className="px-5 py-5 sm:px-6 sm:py-6">
                     {/* Top row: name + badges + status */}
@@ -626,6 +692,48 @@ export default function InterviewAdminPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          onClick={() => setDeleteTarget(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="mb-2 text-lg font-bold text-foreground">
+              삭제 확인
+            </h3>
+            <p className="mb-1 text-sm text-foreground/80">
+              {deleteTarget.label}
+            </p>
+            <p className="mb-5 text-xs text-red-500">
+              {deleteTarget.type === "request"
+                ? "관련 답변과 기사도 함께 삭제됩니다."
+                : "이 기사를 삭제하시겠습니까?"}
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteTarget(null)}
+              >
+                취소
+              </Button>
+              <Button
+                size="sm"
+                className="bg-red-600 hover:bg-red-700"
+                disabled={deleting}
+                onClick={handleDelete}
+              >
+                {deleting ? "삭제 중..." : "삭제"}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

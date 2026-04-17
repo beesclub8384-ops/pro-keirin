@@ -135,3 +135,29 @@ export async function PUT(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
+
+export async function DELETE(req: Request) {
+  let body: { id?: number };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "invalid json body" }, { status: 400 });
+  }
+
+  if (!body.id) {
+    return NextResponse.json({ error: "id가 필요합니다" }, { status: 400 });
+  }
+
+  const sb = createAdminClient();
+
+  await sb.from("interview_articles").delete().eq("request_id", body.id);
+  await sb.from("interview_responses").delete().eq("request_id", body.id);
+
+  const { error } = await sb
+    .from("interview_requests")
+    .delete()
+    .eq("id", body.id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}
