@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import InterviewHeaderMenu from "@/components/InterviewHeaderMenu";
 
 export default function InterviewLayout({
   children,
@@ -16,7 +17,7 @@ export default function InterviewLayout({
       <div className="fixed inset-0 -z-10 bg-black/30" />
 
       <header className="border-b bg-white/90 backdrop-blur">
-        <div className="mx-auto flex h-20 sm:h-24 max-w-7xl items-center px-4">
+        <div className="mx-auto flex h-20 sm:h-24 max-w-7xl items-center justify-between px-4">
           <Link href="/interview" className="flex items-center">
             <Image
               src="/images/logo.png"
@@ -27,6 +28,7 @@ export default function InterviewLayout({
               className="h-[58px] w-auto sm:h-[77px]"
             />
           </Link>
+          <InterviewHeaderMenu />
         </div>
       </header>
 
