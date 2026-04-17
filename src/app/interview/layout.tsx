@@ -33,6 +33,15 @@ export default function InterviewLayout({
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:py-10">
         {children}
       </div>
+
+      <footer className="py-6 text-center">
+        <p
+          className="text-xs text-white/70"
+          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+        >
+          7RANDOMS는 프로경륜선수노동조합의 지원을 받아 운영되고 있습니다.
+        </p>
+      </footer>
     </div>
   );
 }
