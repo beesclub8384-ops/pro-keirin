@@ -34,7 +34,7 @@ export default function InterviewLayout({
         {children}
       </div>
 
-      <footer className="py-6 text-center">
+      <footer className="py-6 text-center bg-black/40 backdrop-blur-sm">
         <p
           className="text-xs text-white/70"
           style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
