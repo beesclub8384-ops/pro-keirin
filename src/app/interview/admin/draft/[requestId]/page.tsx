@@ -73,6 +73,32 @@ export default function DraftEditPage({
   const [shareMsg, setShareMsg] = useState<string | null>(null);
 
   const [addCategory, setAddCategory] = useState<string | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
+  const [lookupMsg, setLookupMsg] = useState<string | null>(null);
+
+  async function handleLookup() {
+    if (!playerName.trim()) return;
+    setLookingUp(true);
+    setLookupMsg(null);
+    try {
+      const res = await fetch(
+        `/api/interview/admin/lookup-player?name=${encodeURIComponent(playerName.trim())}`,
+      );
+      if (!res.ok) {
+        setLookupMsg("선수를 찾을 수 없습니다 (수동 입력 가능)");
+        return;
+      }
+      const json = await res.json();
+      if (json.grade) setGrade(json.grade);
+      if (json.region) setRegion(json.region);
+      setLookupMsg(`${playerName} 선수 정보를 불러왔습니다`);
+      setTimeout(() => setLookupMsg(null), 3000);
+    } catch {
+      setLookupMsg("네트워크 오류");
+    } finally {
+      setLookingUp(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -347,12 +373,33 @@ export default function DraftEditPage({
             <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
               선수 이름 *
             </label>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                className="flex-1 rounded-lg border border-border bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={lookingUp || !playerName.trim()}
+                onClick={handleLookup}
+                className="shrink-0 gap-1.5 px-4"
+              >
+                {lookingUp ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "검색"
+                )}
+              </Button>
+            </div>
+            {lookupMsg && (
+              <p className={`mt-1.5 text-xs ${lookupMsg.includes("찾을 수 없") ? "text-amber-600" : "text-green-600"}`}>
+                {lookupMsg}
+              </p>
+            )}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
