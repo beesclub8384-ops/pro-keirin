@@ -1,27 +1,22 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   Loader2,
-  Trash2,
   Plus,
+  X,
   Copy,
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 interface AllQuestion {
   code: string;
-  category: string;
-  subcategory: string;
   questionText: string;
-  format: string;
-  choices: unknown | null;
 }
 
 interface DraftRequest {
@@ -61,8 +56,7 @@ export default function DraftEditPage({
   const [region, setRegion] = useState("");
   const [requestType, setRequestType] = useState<RequestType>("regular");
 
-  const [allQuestions, setAllQuestions] = useState<AllQuestion[]>([]);
-  const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
+  const [questions, setQuestions] = useState<string[]>([""]);
 
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
@@ -72,7 +66,6 @@ export default function DraftEditPage({
   const [copied, setCopied] = useState(false);
   const [shareMsg, setShareMsg] = useState<string | null>(null);
 
-  const [addCategory, setAddCategory] = useState<string | null>(null);
   const [lookingUp, setLookingUp] = useState(false);
   const [lookupMsg, setLookupMsg] = useState<string | null>(null);
 
@@ -103,7 +96,7 @@ export default function DraftEditPage({
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      fetch(`/api/interview/admin/requests`, { cache: "no-store" }).then((r) =>
+      fetch("/api/interview/admin/requests", { cache: "no-store" }).then((r) =>
         r.json(),
       ),
       fetch("/api/interview/admin/questions", { cache: "no-store" }).then((r) =>
@@ -112,7 +105,7 @@ export default function DraftEditPage({
     ])
       .then(([reqJson, qJson]) => {
         if (cancelled) return;
-        setAllQuestions(qJson.questions ?? []);
+        const allQ: AllQuestion[] = qJson.questions ?? [];
         const req = (reqJson.requests ?? []).find(
           (r: DraftRequest) => String(r.id) === requestId,
         );
@@ -125,7 +118,12 @@ export default function DraftEditPage({
         setGrade(req.grade ?? "");
         setRegion(req.region ?? "");
         setRequestType((req.requestType as RequestType) ?? "regular");
-        setSelectedCodes(req.selectedQuestions ?? []);
+        const codes: string[] = req.selectedQuestions ?? [];
+        const texts = codes.map((code: string) => {
+          const found = allQ.find((q) => q.code === code);
+          return found?.questionText ?? code;
+        });
+        setQuestions(texts.length > 0 ? texts : [""]);
         setLoading(false);
       })
       .catch(() => {
@@ -139,40 +137,54 @@ export default function DraftEditPage({
     };
   }, [requestId]);
 
-  const byCategory = useMemo(() => {
-    const m = new Map<string, AllQuestion[]>();
-    for (const q of allQuestions) {
-      const arr = m.get(q.category) ?? [];
-      arr.push(q);
-      m.set(q.category, arr);
-    }
-    return m;
-  }, [allQuestions]);
-
-  const selectedQuestions = useMemo(
-    () =>
-      selectedCodes
-        .map((code) => allQuestions.find((q) => q.code === code))
-        .filter((q): q is AllQuestion => !!q),
-    [selectedCodes, allQuestions],
-  );
-
-  function removeQuestion(idx: number) {
-    setSelectedCodes((prev) => prev.filter((_, i) => i !== idx));
+  function addQuestion() {
+    setQuestions((prev) => [...prev, ""]);
   }
 
-  function addQuestion(code: string) {
-    if (!selectedCodes.includes(code)) {
-      setSelectedCodes((prev) => [...prev, code]);
+  function removeQuestion(idx: number) {
+    if (questions.length <= 1) return;
+    setQuestions((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function editQuestion(idx: number, text: string) {
+    setQuestions((prev) => prev.map((q, i) => (i === idx ? text : q)));
+  }
+
+  const validQuestions = questions.filter((q) => q.trim().length > 0);
+
+  async function saveQuestionsToDB(): Promise<string[] | null> {
+    const codes: string[] = [];
+    for (const text of validQuestions) {
+      const res = await fetch("/api/interview/admin/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionText: text.trim(),
+          category: "C",
+          subcategory: "C-custom",
+          isCustom: true,
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({ error: "질문 저장 실패" }));
+        setError(j.error ?? "질문 저장 실패");
+        return null;
+      }
+      const sj = (await res.json()) as { question: { code: string } };
+      codes.push(sj.question.code);
     }
-    setAddCategory(null);
+    return codes;
   }
 
   async function handleSave() {
+    if (!playerName.trim() || validQuestions.length === 0) return;
     setSaving(true);
     setError(null);
     setSavedMsg(null);
     try {
+      const codes = await saveQuestionsToDB();
+      if (!codes) return;
+
       const res = await fetch("/api/interview/admin/requests", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -182,7 +194,7 @@ export default function DraftEditPage({
           grade: grade || null,
           region: region || null,
           requestType,
-          selectedQuestions: selectedCodes,
+          selectedQuestions: codes,
         }),
       });
       if (!res.ok) {
@@ -200,17 +212,16 @@ export default function DraftEditPage({
   }
 
   async function handleSend() {
-    if (!playerName.trim()) {
-      setError("선수 이름을 입력해주세요");
-      return;
-    }
-    if (selectedCodes.length === 0) {
-      setError("질문을 1개 이상 추가해주세요");
-      return;
-    }
+    if (!playerName.trim() || validQuestions.length === 0) return;
     setSending(true);
     setError(null);
     try {
+      const codes = await saveQuestionsToDB();
+      if (!codes) {
+        setSending(false);
+        return;
+      }
+
       const res = await fetch("/api/interview/admin/requests", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -220,7 +231,7 @@ export default function DraftEditPage({
           grade: grade || null,
           region: region || null,
           requestType,
-          selectedQuestions: selectedCodes,
+          selectedQuestions: codes,
           status: "sent",
         }),
       });
@@ -359,9 +370,7 @@ export default function DraftEditPage({
 
       <h1 className="mb-6 text-2xl font-bold text-foreground">초안 편집</h1>
 
-      {error && (
-        <p className="mb-4 text-sm text-red-500">{error}</p>
-      )}
+      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
 
       {/* Player info */}
       <Card className="mb-6">
@@ -396,7 +405,9 @@ export default function DraftEditPage({
               </Button>
             </div>
             {lookupMsg && (
-              <p className={`mt-1.5 text-xs ${lookupMsg.includes("찾을 수 없") ? "text-amber-600" : "text-green-600"}`}>
+              <p
+                className={`mt-1.5 text-xs ${lookupMsg.includes("찾을 수 없") ? "text-amber-600" : "text-green-600"}`}
+              >
                 {lookupMsg}
               </p>
             )}
@@ -458,110 +469,55 @@ export default function DraftEditPage({
       {/* Questions */}
       <Card className="mb-6">
         <CardContent className="space-y-4 px-5 py-6 sm:px-7">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-foreground">
-              질문 목록 ({selectedQuestions.length}개)
+              질문 작성
+            </span>
+            <span className="text-xs text-muted-foreground">
+              ({validQuestions.length}개 작성됨)
             </span>
           </div>
 
-          {selectedQuestions.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              아직 질문이 없습니다
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {selectedQuestions.map((q, idx) => (
-                <div
-                  key={`${q.code}-${idx}`}
-                  className="flex items-start gap-3 rounded-lg border border-border bg-white p-3"
-                >
-                  <span className="mt-0.5 shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold">
-                    {idx + 1}
+          <div className="space-y-3">
+            {questions.map((q, idx) => (
+              <div
+                key={idx}
+                className="rounded-lg border border-border bg-white p-4"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="rounded bg-muted px-2 py-0.5 text-xs font-bold text-foreground/60">
+                    Q{idx + 1}
                   </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="secondary" className="text-[10px]">
-                        {q.code}
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">
-                        {q.subcategory}
-                      </span>
-                    </div>
-                    <p className="text-sm text-foreground leading-relaxed">
-                      {q.questionText}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeQuestion(idx)}
-                    className="shrink-0 rounded p-1 text-muted-foreground hover:bg-red-50 hover:text-red-500"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Add question */}
-          {addCategory === null ? (
-            <Button
-              variant="outline"
-              className="w-full gap-1.5"
-              onClick={() => setAddCategory([...byCategory.keys()][0] ?? null)}
-            >
-              <Plus className="h-4 w-4" />
-              질문 추가
-            </Button>
-          ) : (
-            <div className="rounded-lg border border-brand/20 bg-brand/5 p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-brand">
-                  카테고리 선택
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setAddCategory(null)}
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                >
-                  닫기
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {[...byCategory.keys()].map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setAddCategory(cat)}
-                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                      addCategory === cat
-                        ? "border-brand bg-brand text-white"
-                        : "border-border bg-white text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-              <div className="max-h-48 overflow-y-auto space-y-1">
-                {(byCategory.get(addCategory) ?? [])
-                  .filter((q) => !selectedCodes.includes(q.code))
-                  .map((q) => (
+                  {questions.length > 1 && (
                     <button
-                      key={q.code}
                       type="button"
-                      onClick={() => addQuestion(q.code)}
-                      className="w-full rounded-md border border-border bg-white px-3 py-2 text-left text-sm hover:bg-muted transition-colors"
+                      onClick={() => removeQuestion(idx)}
+                      className="rounded p-1 text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-colors"
                     >
-                      <span className="font-mono text-[10px] text-muted-foreground">
-                        {q.code}
-                      </span>{" "}
-                      {q.questionText}
+                      <X className="h-4 w-4" />
                     </button>
-                  ))}
+                  )}
+                </div>
+                <textarea
+                  value={q}
+                  onChange={(e) => editQuestion(idx, e.target.value)}
+                  rows={3}
+                  placeholder="질문을 입력하세요..."
+                  className="w-full resize-y rounded-md border border-border bg-white px-3 py-2 text-sm leading-relaxed text-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                />
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addQuestion}
+            className="w-full gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            질문 추가
+          </Button>
         </CardContent>
       </Card>
 
@@ -574,7 +530,9 @@ export default function DraftEditPage({
           <div className="flex gap-2">
             <Button
               onClick={handleSave}
-              disabled={saving || sending}
+              disabled={
+                saving || sending || !playerName.trim() || validQuestions.length === 0
+              }
               variant="outline"
               className="flex-1 gap-1.5"
             >
@@ -584,7 +542,7 @@ export default function DraftEditPage({
             <Button
               onClick={handleSend}
               disabled={
-                sending || saving || !playerName.trim() || selectedCodes.length === 0
+                sending || saving || !playerName.trim() || validQuestions.length === 0
               }
               className="flex-1 gap-1.5"
             >

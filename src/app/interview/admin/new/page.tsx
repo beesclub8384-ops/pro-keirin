@@ -1,60 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   Loader2,
-  Sparkles,
-  RefreshCw,
+  Plus,
+  X,
   Copy,
   Check,
-  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
-interface RecentRace {
-  year: number;
-  round: number;
-  day: number;
-  race_no: number;
-  rank: number | null;
-  tactic: string | null;
-}
-
-interface RecommendedQuestion {
-  code: string;
-  category: string;
-  subcategory: string;
-  questionText: string;
-  format: string;
-  choices: unknown | null;
-}
-
-interface PlayerContext {
-  recentResults: RecentRace[];
-  situation: string;
-  situationLabel: string;
-}
-
-interface RecommendResult {
-  questions: RecommendedQuestion[];
-  playerContext: PlayerContext;
-  racerId: string | null;
-}
-
-interface AllQuestion {
-  code: string;
-  category: string;
-  subcategory: string;
-  questionText: string;
-  format: string;
-  choices: unknown | null;
-  requiresAutoGenerate: boolean | null;
-}
 
 type RequestType = "regular" | "rookie" | "event" | "special";
 
@@ -77,13 +35,8 @@ export default function NewInterviewRequestPage() {
 
   const [lookingUp, setLookingUp] = useState(false);
   const [lookupMsg, setLookupMsg] = useState<string | null>(null);
-  const [recommending, setRecommending] = useState(false);
-  const [recommendation, setRecommendation] = useState<RecommendResult | null>(
-    null,
-  );
-  const [questions, setQuestions] = useState<RecommendedQuestion[]>([]);
-  const [originalTexts, setOriginalTexts] = useState<string[]>([]);
-  const [allQuestions, setAllQuestions] = useState<AllQuestion[]>([]);
+
+  const [questions, setQuestions] = useState<string[]>([""]);
   const [error, setError] = useState<string | null>(null);
 
   const [creating, setCreating] = useState(false);
@@ -117,80 +70,43 @@ export default function NewInterviewRequestPage() {
     }
   }
 
-  useEffect(() => {
-    fetch("/api/interview/admin/questions", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((j) => setAllQuestions(j.questions ?? []))
-      .catch(() => {});
-  }, []);
+  function addQuestion() {
+    setQuestions((prev) => [...prev, ""]);
+  }
 
-  const byCategory = useMemo(() => {
-    const m = new Map<string, AllQuestion[]>();
-    for (const q of allQuestions) {
-      const arr = m.get(q.category) ?? [];
-      arr.push(q);
-      m.set(q.category, arr);
-    }
-    return m;
-  }, [allQuestions]);
+  function removeQuestion(idx: number) {
+    if (questions.length <= 1) return;
+    setQuestions((prev) => prev.filter((_, i) => i !== idx));
+  }
 
-  async function handleRecommend() {
-    setError(null);
-    setRecommendation(null);
-    setQuestions([]);
-    if (!playerName.trim()) {
-      setError("선수 이름을 입력해주세요");
-      return;
-    }
-    setRecommending(true);
-    try {
-      const res = await fetch("/api/interview/admin/recommend-questions", {
+  function editQuestion(idx: number, text: string) {
+    setQuestions((prev) => prev.map((q, i) => (i === idx ? text : q)));
+  }
+
+  const validQuestions = questions.filter((q) => q.trim().length > 0);
+
+  async function saveQuestionsToDB(): Promise<string[] | null> {
+    const codes: string[] = [];
+    for (const text of validQuestions) {
+      const res = await fetch("/api/interview/admin/questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerName: playerName.trim(), requestType }),
+        body: JSON.stringify({
+          questionText: text.trim(),
+          category: "C",
+          subcategory: "C-custom",
+          isCustom: true,
+        }),
       });
       if (!res.ok) {
-        const j = await res.json().catch(() => ({ error: "추천 실패" }));
-        setError(j.error ?? "추천 실패");
-        return;
+        const j = await res.json().catch(() => ({ error: "질문 저장 실패" }));
+        setError(j.error ?? "질문 저장 실패");
+        return null;
       }
-      const json = (await res.json()) as RecommendResult;
-      setRecommendation(json);
-      setQuestions(json.questions);
-      setOriginalTexts(json.questions.map((q) => q.questionText));
-    } catch {
-      setError("네트워크 오류");
-    } finally {
-      setRecommending(false);
+      const sj = (await res.json()) as { question: { code: string } };
+      codes.push(sj.question.code);
     }
-  }
-
-  function replaceQuestion(idx: number, newCode: string) {
-    const target = allQuestions.find((q) => q.code === newCode);
-    if (!target) return;
-    setQuestions((prev) =>
-      prev.map((q, i) =>
-        i === idx
-          ? {
-              code: target.code,
-              category: target.category,
-              subcategory: target.subcategory,
-              questionText: target.questionText,
-              format: target.format,
-              choices: target.choices,
-            }
-          : q,
-      ),
-    );
-    setOriginalTexts((prev) =>
-      prev.map((t, i) => (i === idx ? target.questionText : t)),
-    );
-  }
-
-  function editQuestionText(idx: number, newText: string) {
-    setQuestions((prev) =>
-      prev.map((q, i) => (i === idx ? { ...q, questionText: newText } : q)),
-    );
+    return codes;
   }
 
   async function handleSaveDraft() {
@@ -198,16 +114,16 @@ export default function NewInterviewRequestPage() {
       setError("선수 이름을 입력해주세요");
       return;
     }
-    if (questions.length === 0) {
-      setError("질문을 1개 이상 추가해주세요");
+    if (validQuestions.length === 0) {
+      setError("질문을 1개 이상 작성해주세요");
       return;
     }
     setSaving(true);
     setError(null);
     setSavedMsg(null);
     try {
-      const finalCodes = await saveFinalCodes();
-      if (!finalCodes) return;
+      const codes = await saveQuestionsToDB();
+      if (!codes) return;
 
       const res = await fetch("/api/interview/admin/requests", {
         method: "POST",
@@ -217,7 +133,7 @@ export default function NewInterviewRequestPage() {
           grade: grade || null,
           region: region || null,
           requestType,
-          selectedQuestions: finalCodes,
+          selectedQuestions: codes,
           status: "draft",
         }),
       });
@@ -235,42 +151,20 @@ export default function NewInterviewRequestPage() {
     }
   }
 
-  async function saveFinalCodes(): Promise<string[] | null> {
-    const finalCodes: string[] = [];
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
-      const original = originalTexts[i] ?? q.questionText;
-      if (q.questionText.trim() !== original.trim()) {
-        const saveRes = await fetch("/api/interview/admin/questions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            originalCode: q.code,
-            questionText: q.questionText.trim(),
-            category: q.category,
-            subcategory: q.subcategory,
-          }),
-        });
-        if (!saveRes.ok) {
-          const j = await saveRes.json().catch(() => ({ error: "질문 저장 실패" }));
-          setError(j.error ?? "질문 저장 실패");
-          return null;
-        }
-        const sj = (await saveRes.json()) as { question: { code: string } };
-        finalCodes.push(sj.question.code);
-      } else {
-        finalCodes.push(q.code);
-      }
-    }
-    return finalCodes;
-  }
-
   async function handleCreate() {
+    if (!playerName.trim()) {
+      setError("선수 이름을 입력해주세요");
+      return;
+    }
+    if (validQuestions.length === 0) {
+      setError("질문을 1개 이상 작성해주세요");
+      return;
+    }
     setCreating(true);
     setError(null);
     try {
-      const finalCodes = await saveFinalCodes();
-      if (!finalCodes) {
+      const codes = await saveQuestionsToDB();
+      if (!codes) {
         setCreating(false);
         return;
       }
@@ -283,7 +177,7 @@ export default function NewInterviewRequestPage() {
           grade: grade || null,
           region: region || null,
           requestType,
-          selectedQuestions: finalCodes,
+          selectedQuestions: codes,
         }),
       });
       if (!res.ok) {
@@ -310,16 +204,13 @@ export default function NewInterviewRequestPage() {
       await navigator.clipboard.writeText(formUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch {
-      /* ignore */
-    }
+    } catch {}
   }
 
   async function handleShare() {
     if (!formUrl) return;
     const message = `${playerName} 선수님, 7RANDOMS 인터뷰 요청입니다.\n\n아래 링크를 눌러 답변해주세요.\n${formUrl}`;
     setShareMsg(null);
-
     if (typeof navigator !== "undefined" && "share" in navigator) {
       try {
         await navigator.share({
@@ -328,11 +219,8 @@ export default function NewInterviewRequestPage() {
           url: formUrl,
         });
         return;
-      } catch {
-        // 사용자 취소 또는 실패 시 클립보드 폴백
-      }
+      } catch {}
     }
-
     try {
       await navigator.clipboard.writeText(message);
       setShareMsg("메시지가 복사되었습니다. 카카오톡에 붙여넣기 하세요.");
@@ -369,7 +257,6 @@ export default function NewInterviewRequestPage() {
                 )}
               </Button>
             </div>
-
             <div className="mx-auto mt-4 max-w-lg">
               <button
                 type="button"
@@ -406,8 +293,7 @@ export default function NewInterviewRequestPage() {
                   setPlayerName("");
                   setGrade("");
                   setRegion("");
-                  setQuestions([]);
-                  setRecommendation(null);
+                  setQuestions([""]);
                 }}
               >
                 새 요청 또 만들기
@@ -435,7 +321,7 @@ export default function NewInterviewRequestPage() {
         새 인터뷰 요청
       </h1>
 
-      {/* Step 1 */}
+      {/* Step 1: 선수 정보 */}
       <Card className="mb-6">
         <CardContent className="space-y-4 px-5 py-6 sm:px-7">
           <div className="mb-1 flex items-center gap-2">
@@ -475,7 +361,9 @@ export default function NewInterviewRequestPage() {
               </Button>
             </div>
             {lookupMsg && (
-              <p className={`mt-1.5 text-xs ${lookupMsg.includes("찾을 수 없") ? "text-amber-600" : "text-green-600"}`}>
+              <p
+                className={`mt-1.5 text-xs ${lookupMsg.includes("찾을 수 없") ? "text-amber-600" : "text-green-600"}`}
+              >
                 {lookupMsg}
               </p>
             )}
@@ -518,185 +406,127 @@ export default function NewInterviewRequestPage() {
               인터뷰 유형
             </label>
             <div className="grid grid-cols-4 gap-2">
-              {REQUEST_TYPES.map((t) => {
-                const active = requestType === t.key;
-                return (
-                  <button
-                    key={t.key}
-                    type="button"
-                    onClick={() => setRequestType(t.key)}
-                    className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
-                      active
-                        ? "border-brand bg-brand text-white"
-                        : "border-border bg-white text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                );
-              })}
+              {REQUEST_TYPES.map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setRequestType(t.key)}
+                  className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
+                    requestType === t.key
+                      ? "border-brand bg-brand text-white"
+                      : "border-border bg-white text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
           </div>
-
-          <Button
-            onClick={handleRecommend}
-            disabled={recommending || !playerName.trim()}
-            className="w-full gap-1.5"
-          >
-            {recommending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Sparkles className="h-4 w-4" />
-            )}
-            질문 추천받기
-          </Button>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
         </CardContent>
       </Card>
 
-      {/* Step 2 */}
-      {recommendation && (
-        <Card className="mb-6">
-          <CardContent className="space-y-5 px-5 py-6 sm:px-7">
-            <div className="mb-1 flex items-center gap-2">
-              <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
-                STEP 2
-              </span>
-              <span className="text-sm font-semibold text-foreground">
-                추천 질문 검토
-              </span>
-            </div>
+      {/* Step 2: 질문 작성 */}
+      <Card className="mb-6">
+        <CardContent className="space-y-4 px-5 py-6 sm:px-7">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
+              STEP 2
+            </span>
+            <span className="text-sm font-semibold text-foreground">
+              질문 작성
+            </span>
+            <span className="text-xs text-muted-foreground">
+              ({validQuestions.length}개 작성됨)
+            </span>
+          </div>
 
-            <div className="rounded-lg border border-brand/20 bg-brand/5 px-4 py-3">
-              <p className="text-xs font-semibold text-brand">
-                {playerName} 선수 최근 상황
-              </p>
-              <p className="mt-1 text-sm text-foreground">
-                {recommendation.playerContext.situationLabel}
-              </p>
-              <div className="mt-2">
-                {recommendation.racerId ? (
-                  <a
-                    href={`https://www.kcycle.or.kr/racer/info/${recommendation.racerId}/${new Date().getFullYear()}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                    kcycle에서 선수 정보 확인
-                  </a>
-                ) : (
-                  <span className="text-xs text-muted-foreground">
-                    kcycle에서 직접 검색해주세요
+          <div className="space-y-3">
+            {questions.map((q, idx) => (
+              <div
+                key={idx}
+                className="rounded-lg border border-border bg-white p-4"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="rounded bg-muted px-2 py-0.5 text-xs font-bold text-foreground/60">
+                    Q{idx + 1}
                   </span>
-                )}
+                  {questions.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeQuestion(idx)}
+                      className="rounded p-1 text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <textarea
+                  value={q}
+                  onChange={(e) => editQuestion(idx, e.target.value)}
+                  rows={3}
+                  placeholder="질문을 입력하세요..."
+                  className="w-full resize-y rounded-md border border-border bg-white px-3 py-2 text-sm leading-relaxed text-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                />
               </div>
-            </div>
+            ))}
+          </div>
 
-            <div className="space-y-3">
-              {questions.map((q, idx) => {
-                const sameCategory = (byCategory.get(q.category) ?? []).filter(
-                  (x) => !questions.some((sel, i) => i !== idx && sel.code === x.code),
-                );
-                const original = originalTexts[idx] ?? q.questionText;
-                const edited = q.questionText.trim() !== original.trim();
-                return (
-                  <div
-                    key={`${q.code}-${idx}`}
-                    className="rounded-lg border border-border bg-white p-4"
-                  >
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold">
-                        {idx + 1}
-                      </span>
-                      <Badge variant="secondary" className="text-[10px]">
-                        {q.code}
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">
-                        {q.subcategory}
-                      </span>
-                      {edited && (
-                        <Badge className="bg-amber-100 text-[10px] text-amber-700 hover:bg-amber-100">
-                          수정됨
-                        </Badge>
-                      )}
-                      <select
-                        value={q.code}
-                        onChange={(e) => replaceQuestion(idx, e.target.value)}
-                        className="ml-auto rounded border border-border bg-white px-2 py-1 text-[11px] focus:border-brand focus:outline-none"
-                      >
-                        {sameCategory.map((opt) => (
-                          <option key={opt.code} value={opt.code}>
-                            {opt.code}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <textarea
-                      value={q.questionText}
-                      onChange={(e) => editQuestionText(idx, e.target.value)}
-                      rows={3}
-                      className="w-full resize-y rounded-md border border-border bg-white px-3 py-2 text-sm leading-relaxed text-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                    />
-                  </div>
-                );
-              })}
-            </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addQuestion}
+            className="w-full gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            질문 추가
+          </Button>
+        </CardContent>
+      </Card>
 
+      {/* Step 3: 저장 */}
+      <Card>
+        <CardContent className="space-y-4 px-5 py-6 sm:px-7">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
+              STEP 3
+            </span>
+            <span className="text-sm font-semibold text-foreground">
+              확인 및 저장
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {playerName.trim() || "선수"} — {validQuestions.length}개 질문
+          </p>
+          {savedMsg && (
+            <p className="text-sm font-medium text-green-600">{savedMsg}</p>
+          )}
+          <div className="flex gap-2">
             <Button
-              onClick={handleRecommend}
+              onClick={handleSaveDraft}
+              disabled={
+                saving || creating || !playerName.trim() || validQuestions.length === 0
+              }
               variant="outline"
-              disabled={recommending}
-              className="w-full gap-1.5"
+              className="flex-1 gap-1.5"
             >
-              <RefreshCw className="h-4 w-4" />
-              다시 추천받기
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              임시저장
             </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step 3 */}
-      {questions.length > 0 && (
-        <Card>
-          <CardContent className="space-y-4 px-5 py-6 sm:px-7">
-            <div className="mb-1 flex items-center gap-2">
-              <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">
-                {recommendation ? "STEP 3" : "STEP 2"}
-              </span>
-              <span className="text-sm font-semibold text-foreground">
-                확인 및 저장
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {playerName} 선수 — {questions.length}개 질문
-            </p>
-            {savedMsg && (
-              <p className="text-sm font-medium text-green-600">{savedMsg}</p>
-            )}
-            <div className="flex gap-2">
-              <Button
-                onClick={handleSaveDraft}
-                disabled={saving || creating}
-                variant="outline"
-                className="flex-1 gap-1.5"
-              >
-                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                임시저장
-              </Button>
-              <Button
-                onClick={handleCreate}
-                disabled={creating || saving}
-                className="flex-1 gap-1.5"
-              >
-                {creating && <Loader2 className="h-4 w-4 animate-spin" />}
-                요청하기
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            <Button
+              onClick={handleCreate}
+              disabled={
+                creating || saving || !playerName.trim() || validQuestions.length === 0
+              }
+              className="flex-1 gap-1.5"
+            >
+              {creating && <Loader2 className="h-4 w-4 animate-spin" />}
+              요청하기
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
