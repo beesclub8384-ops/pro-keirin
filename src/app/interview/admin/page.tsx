@@ -11,6 +11,7 @@ import {
   MessageSquare,
   RefreshCw,
   ExternalLink,
+  ChefHat,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -360,12 +361,20 @@ export default function InterviewAdminPage() {
             인터뷰 요청과 기사를 관리합니다
           </p>
         </div>
-        <Link href="/interview/admin/new">
-          <Button className="gap-1.5">
-            <Plus className="h-4 w-4" />
-            새 인터뷰 요청
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/gyeongshullin/admin">
+            <Button variant="outline" className="gap-1.5">
+              <ChefHat className="h-4 w-4" />
+              경슐랭 관리
+            </Button>
+          </Link>
+          <Link href="/interview/admin/new">
+            <Button className="gap-1.5">
+              <Plus className="h-4 w-4" />
+              새 인터뷰 요청
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Tab selector */}
