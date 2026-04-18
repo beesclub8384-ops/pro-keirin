@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase";
 import {
   extractRegion,
@@ -68,5 +69,6 @@ export async function POST(req: Request) {
     .single();
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePath("/interview/gyeongshullin");
   return NextResponse.json(rowToRestaurant(data as GyeongshullinRow));
 }

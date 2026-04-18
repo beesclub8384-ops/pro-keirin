@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -163,6 +163,33 @@ export default function GyeongshullinAdminForm({ initial }: Props) {
   );
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [lookingUp, setLookingUp] = useState(false);
+
+  useEffect(() => {
+    const name = form.recommenderName.trim();
+    if (isEdit || name.length < 2) return;
+    if (form.recommenderRegion.trim().length > 0) return;
+
+    const handle = setTimeout(async () => {
+      setLookingUp(true);
+      try {
+        const res = await fetch(
+          `/api/interview/admin/lookup-player?name=${encodeURIComponent(name)}`,
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.region && !form.recommenderRegion.trim()) {
+          setForm((prev) => ({ ...prev, recommenderRegion: data.region }));
+        }
+      } catch {
+        // silently fail
+      } finally {
+        setLookingUp(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(handle);
+  }, [form.recommenderName, form.recommenderRegion, isEdit]);
   const [generating, setGenerating] = useState(false);
   const [uploadingKind, setUploadingKind] = useState<"food" | "menu" | null>(
     null,
@@ -417,7 +444,7 @@ export default function GyeongshullinAdminForm({ initial }: Props) {
             type="text"
             value={form.recommenderRegion}
             onChange={(e) => update("recommenderRegion", e.target.value)}
-            placeholder="예: 청평"
+            placeholder={lookingUp ? "선수 정보 조회 중..." : "예: 청평 (이름 입력 시 자동)"}
             className={inputClass}
           />
         </Field>

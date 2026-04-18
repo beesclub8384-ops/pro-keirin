@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase";
 import {
   extractRegion,
@@ -91,6 +92,8 @@ export async function PATCH(req: Request, { params }: RouteParams) {
     .single();
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePath("/interview/gyeongshullin");
+  revalidatePath(`/interview/gyeongshullin/${numId}`);
   return NextResponse.json(rowToRestaurant(data as GyeongshullinRow));
 }
 
@@ -107,5 +110,6 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
     .eq("id", numId);
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePath("/interview/gyeongshullin");
   return NextResponse.json({ success: true });
 }

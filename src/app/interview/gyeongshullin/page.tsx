@@ -5,24 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Loader2, MapPin, ChefHat } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import type { GyeongshullinRestaurant } from "@/lib/gyeongshullin";
 
-type ViewMode = "by_recommender" | "by_region" | "all";
-
-const GRADE_COLORS: Record<string, string> = {
-  "특선": "bg-red-100 text-red-700 border-red-200",
-  "우수": "bg-blue-100 text-blue-700 border-blue-200",
-  "선발": "bg-emerald-100 text-emerald-700 border-emerald-200",
-};
-
-function gradeColor(grade: string): string {
-  return GRADE_COLORS[grade] ?? "bg-zinc-100 text-zinc-700 border-zinc-200";
-}
-
-function initial(name: string): string {
-  return name?.[0] ?? "?";
-}
+type ViewMode = "by_region" | "all";
 
 function MiniRestaurantCard({ r }: { r: GyeongshullinRestaurant }) {
   const photo = r.foodPhotos[0];
@@ -59,32 +44,6 @@ function MiniRestaurantCard({ r }: { r: GyeongshullinRestaurant }) {
   );
 }
 
-interface RecommenderGroup {
-  name: string;
-  grade: string;
-  region: string;
-  restaurants: GyeongshullinRestaurant[];
-}
-
-function groupByRecommender(
-  list: GyeongshullinRestaurant[],
-): RecommenderGroup[] {
-  const map = new Map<string, RecommenderGroup>();
-  for (const r of list) {
-    const key = r.recommenderName;
-    if (!map.has(key)) {
-      map.set(key, {
-        name: r.recommenderName,
-        grade: r.recommenderGrade,
-        region: r.recommenderRegion,
-        restaurants: [],
-      });
-    }
-    map.get(key)!.restaurants.push(r);
-  }
-  return Array.from(map.values());
-}
-
 interface RegionGroup {
   region: string;
   restaurants: GyeongshullinRestaurant[];
@@ -107,7 +66,7 @@ function groupByRegion(list: GyeongshullinRestaurant[]): RegionGroup[] {
 export default function GyeongshullinPage() {
   const [list, setList] = useState<GyeongshullinRestaurant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<ViewMode>("by_recommender");
+  const [view, setView] = useState<ViewMode>("by_region");
 
   useEffect(() => {
     fetch("/api/gyeongshullin/published")
@@ -119,7 +78,6 @@ export default function GyeongshullinPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const recommenderGroups = useMemo(() => groupByRecommender(list), [list]);
   const regionGroups = useMemo(() => groupByRegion(list), [list]);
 
   return (
@@ -148,7 +106,6 @@ export default function GyeongshullinPage() {
       <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
         {(
           [
-            { key: "by_recommender", label: "선수별" },
             { key: "by_region", label: "지역별" },
             { key: "all", label: "전체" },
           ] as const
@@ -186,56 +143,31 @@ export default function GyeongshullinPage() {
             </p>
           </CardContent>
         </Card>
-      ) : view === "by_recommender" ? (
-        <div className="space-y-7">
-          {recommenderGroups.map((g) => (
-            <section key={g.name}>
-              <div className="mb-3 flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">
-                  {initial(g.name)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-semibold text-foreground">
-                      {g.name}
-                    </span>
-                    {g.grade && (
-                      <Badge
-                        variant="outline"
-                        className={`px-1.5 py-0 text-[10px] ${gradeColor(g.grade)}`}
-                      >
-                        {g.grade}
-                      </Badge>
-                    )}
-                  </div>
-                  {g.region && (
-                    <div className="text-xs text-muted-foreground">
-                      {g.region}
-                    </div>
-                  )}
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {g.restaurants.length}곳
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5">
-                {g.restaurants.map((r) => (
-                  <MiniRestaurantCard key={r.id} r={r} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
       ) : view === "by_region" ? (
         <div className="space-y-7">
           {regionGroups.map((g) => (
             <section key={g.region}>
               <div className="mb-3 flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-brand" />
-                <span className="text-sm font-semibold text-foreground">
+                <MapPin
+                  className="h-4 w-4 text-white"
+                  style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))" }}
+                />
+                <span
+                  className="text-sm font-semibold text-white"
+                  style={{
+                    textShadow:
+                      "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
+                  }}
+                >
                   {g.region}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span
+                  className="text-xs font-medium text-white"
+                  style={{
+                    textShadow:
+                      "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
+                  }}
+                >
                   · {g.restaurants.length}곳
                 </span>
               </div>
