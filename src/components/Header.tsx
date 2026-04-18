@@ -40,6 +40,7 @@ const navItems: NavItem[] = [
   { label: "상금통계", href: "/prize-stats" },
   { label: "판정기록", href: "/violations" },
   { label: "선수 인터뷰", href: "/interview" },
+  { label: "경슐랭", href: "/gyeongshullin" },
   { label: "커뮤니티", href: "/community" },
 ];
 

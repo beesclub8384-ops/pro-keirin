@@ -1,0 +1,247 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Loader2, MapPin, ChefHat } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { GyeongshullinRestaurant } from "@/lib/gyeongshullin";
+
+type ViewMode = "by_recommender" | "by_region" | "all";
+
+const GRADE_COLORS: Record<string, string> = {
+  "특선": "bg-red-100 text-red-700 border-red-200",
+  "우수": "bg-blue-100 text-blue-700 border-blue-200",
+  "선발": "bg-emerald-100 text-emerald-700 border-emerald-200",
+};
+
+function gradeColor(grade: string): string {
+  return GRADE_COLORS[grade] ?? "bg-zinc-100 text-zinc-700 border-zinc-200";
+}
+
+function initial(name: string): string {
+  return name?.[0] ?? "?";
+}
+
+function MiniRestaurantCard({ r }: { r: GyeongshullinRestaurant }) {
+  const photo = r.foodPhotos[0];
+  return (
+    <Link
+      href={`/gyeongshullin/${r.id}`}
+      className="block overflow-hidden rounded-lg border border-border bg-white transition hover:shadow-md"
+    >
+      <div className="relative aspect-[4/3] w-full bg-muted">
+        {photo ? (
+          <Image
+            src={photo}
+            alt={r.name}
+            fill
+            sizes="(max-width: 640px) 50vw, 200px"
+            className="object-cover"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+            <ChefHat className="h-8 w-8" />
+          </div>
+        )}
+      </div>
+      <div className="p-2.5">
+        <div className="line-clamp-1 text-sm font-semibold text-foreground">
+          {r.name}
+        </div>
+        <div className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+          {r.address}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+interface RecommenderGroup {
+  name: string;
+  grade: string;
+  region: string;
+  restaurants: GyeongshullinRestaurant[];
+}
+
+function groupByRecommender(
+  list: GyeongshullinRestaurant[],
+): RecommenderGroup[] {
+  const map = new Map<string, RecommenderGroup>();
+  for (const r of list) {
+    const key = r.recommenderName;
+    if (!map.has(key)) {
+      map.set(key, {
+        name: r.recommenderName,
+        grade: r.recommenderGrade,
+        region: r.recommenderRegion,
+        restaurants: [],
+      });
+    }
+    map.get(key)!.restaurants.push(r);
+  }
+  return Array.from(map.values());
+}
+
+interface RegionGroup {
+  region: string;
+  restaurants: GyeongshullinRestaurant[];
+}
+
+function groupByRegion(list: GyeongshullinRestaurant[]): RegionGroup[] {
+  const map = new Map<string, RegionGroup>();
+  for (const r of list) {
+    const key = r.region || "기타";
+    if (!map.has(key)) {
+      map.set(key, { region: key, restaurants: [] });
+    }
+    map.get(key)!.restaurants.push(r);
+  }
+  return Array.from(map.values()).sort((a, b) =>
+    a.region.localeCompare(b.region),
+  );
+}
+
+export default function GyeongshullinPage() {
+  const [list, setList] = useState<GyeongshullinRestaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<ViewMode>("by_recommender");
+
+  useEffect(() => {
+    fetch("/api/gyeongshullin/published")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setList(data);
+      })
+      .catch(() => setList([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const recommenderGroups = useMemo(() => groupByRecommender(list), [list]);
+  const regionGroups = useMemo(() => groupByRegion(list), [list]);
+
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          경슐랭
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          선수들이 먹어본 맛집
+        </p>
+      </div>
+
+      <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
+        {(
+          [
+            { key: "by_recommender", label: "선수별" },
+            { key: "by_region", label: "지역별" },
+            { key: "all", label: "전체" },
+          ] as const
+        ).map((tab) => {
+          const active = view === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setView(tab.key)}
+              className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
+                active
+                  ? "border-brand bg-brand text-white"
+                  : "border-border bg-white text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {loading ? (
+        <div className="flex min-h-[40vh] items-center justify-center">
+          <Loader2 className="h-7 w-7 animate-spin text-brand" />
+        </div>
+      ) : list.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center py-14 text-center">
+            <ChefHat className="mb-3 h-10 w-10 text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground">
+              아직 등록된 가게가 없어요
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              선수들의 추천이 모이면 여기에 표시됩니다
+            </p>
+          </CardContent>
+        </Card>
+      ) : view === "by_recommender" ? (
+        <div className="space-y-7">
+          {recommenderGroups.map((g) => (
+            <section key={g.name}>
+              <div className="mb-3 flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">
+                  {initial(g.name)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold text-foreground">
+                      {g.name}
+                    </span>
+                    {g.grade && (
+                      <Badge
+                        variant="outline"
+                        className={`px-1.5 py-0 text-[10px] ${gradeColor(g.grade)}`}
+                      >
+                        {g.grade}
+                      </Badge>
+                    )}
+                  </div>
+                  {g.region && (
+                    <div className="text-xs text-muted-foreground">
+                      {g.region}
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {g.restaurants.length}곳
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {g.restaurants.map((r) => (
+                  <MiniRestaurantCard key={r.id} r={r} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : view === "by_region" ? (
+        <div className="space-y-7">
+          {regionGroups.map((g) => (
+            <section key={g.region}>
+              <div className="mb-3 flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-brand" />
+                <span className="text-sm font-semibold text-foreground">
+                  {g.region}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  · {g.restaurants.length}곳
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {g.restaurants.map((r) => (
+                  <MiniRestaurantCard key={r.id} r={r} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2.5">
+          {list.map((r) => (
+            <MiniRestaurantCard key={r.id} r={r} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
