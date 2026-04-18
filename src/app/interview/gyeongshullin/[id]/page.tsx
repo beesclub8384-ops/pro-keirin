@@ -88,9 +88,6 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
     );
   }
 
-  const mainPhoto = data.foodPhotos[0];
-  const otherPhotos = data.foodPhotos.slice(1);
-
   return (
     <div className="mx-auto max-w-3xl pb-12">
       <div className="px-4 pt-4">
@@ -103,32 +100,7 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
         </Link>
       </div>
 
-      <div className="relative mt-3 aspect-[4/3] w-full bg-muted sm:mx-4 sm:mt-4 sm:aspect-[16/9] sm:overflow-hidden sm:rounded-xl">
-        {mainPhoto ? (
-          <button
-            type="button"
-            onClick={() => openLightbox(data.foodPhotos, 0)}
-            className="h-full w-full cursor-zoom-in"
-            aria-label="사진 크게 보기"
-          >
-            <Image
-              src={mainPhoto}
-              alt={data.name}
-              fill
-              sizes="(max-width: 640px) 100vw, 720px"
-              className="object-cover"
-              priority
-              unoptimized
-            />
-          </button>
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <ChefHat className="h-12 w-12" />
-          </div>
-        )}
-      </div>
-
-      <div className="px-4 pt-5">
+      <div className="px-4 pt-6">
         <h1
           className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
           style={{
@@ -264,7 +236,7 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
       )}
 
       {/* Other food photos */}
-      {otherPhotos.length > 0 && (
+      {data.foodPhotos.length > 0 && (
         <div className="mt-5 px-4">
           <div
             className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white"
@@ -282,17 +254,17 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
             사진
           </div>
           <div className="grid grid-cols-2 gap-2">
-            {otherPhotos.map((url, i) => (
+            {data.foodPhotos.map((url, i) => (
               <button
                 type="button"
                 key={`photo-${i}`}
-                onClick={() => openLightbox(data.foodPhotos, i + 1)}
+                onClick={() => openLightbox(data.foodPhotos, i)}
                 className="relative aspect-square w-full overflow-hidden rounded-lg border border-border bg-muted cursor-zoom-in"
                 aria-label="사진 크게 보기"
               >
                 <Image
                   src={url}
-                  alt={`${data.name} ${i + 2}`}
+                  alt={`${data.name} ${i + 1}`}
                   fill
                   sizes="(max-width: 640px) 50vw, 360px"
                   className="object-cover"
