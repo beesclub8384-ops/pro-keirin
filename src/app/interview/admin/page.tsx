@@ -362,7 +362,7 @@ export default function InterviewAdminPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/gyeongshullin/admin">
+          <Link href="/interview/gyeongshullin/admin">
             <Button variant="outline" className="gap-1.5">
               <ChefHat className="h-4 w-4" />
               경슐랭 관리

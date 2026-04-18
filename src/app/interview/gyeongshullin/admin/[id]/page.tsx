@@ -48,7 +48,7 @@ export default function GyeongshullinAdminEditPage({ params }: PageProps) {
               해당 가게를 찾을 수 없어요
             </p>
             <Link
-              href="/gyeongshullin/admin"
+              href="/interview/gyeongshullin/admin"
               className="mt-4 text-xs font-medium text-brand hover:underline"
             >
               ← 관리자 목록으로

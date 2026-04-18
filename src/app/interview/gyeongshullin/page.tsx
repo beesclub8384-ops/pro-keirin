@@ -28,7 +28,7 @@ function MiniRestaurantCard({ r }: { r: GyeongshullinRestaurant }) {
   const photo = r.foodPhotos[0];
   return (
     <Link
-      href={`/gyeongshullin/${r.id}`}
+      href={`/interview/gyeongshullin/${r.id}`}
       className="block overflow-hidden rounded-lg border border-border bg-white transition hover:shadow-md"
     >
       <div className="relative aspect-[4/3] w-full bg-muted">

@@ -7,7 +7,7 @@ import { Menu, X } from "lucide-react";
 const menuItems = [
   { label: "경륜이란", href: "/interview/about" },
   { label: "팀", href: "/interview/team" },
-  { label: "경슐랭", href: "/gyeongshullin" },
+  { label: "경슐랭", href: "/interview/gyeongshullin" },
 ];
 
 export default function InterviewHeaderMenu() {

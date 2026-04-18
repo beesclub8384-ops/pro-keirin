@@ -77,7 +77,7 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
               해당 가게를 찾을 수 없어요
             </p>
             <Link
-              href="/gyeongshullin"
+              href="/interview/gyeongshullin"
               className="mt-4 text-xs font-medium text-brand hover:underline"
             >
               ← 경슐랭으로 돌아가기
@@ -95,7 +95,7 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
     <div className="mx-auto max-w-3xl pb-12">
       <div className="px-4 pt-4">
         <Link
-          href="/gyeongshullin"
+          href="/interview/gyeongshullin"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

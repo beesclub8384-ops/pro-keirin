@@ -327,7 +327,7 @@ export default function GyeongshullinAdminForm({ initial }: Props) {
         }
       }
 
-      router.push("/gyeongshullin/admin");
+      router.push("/interview/gyeongshullin/admin");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "저장 실패");
@@ -350,7 +350,7 @@ export default function GyeongshullinAdminForm({ initial }: Props) {
         const j = await res.json();
         throw new Error(j.error || "삭제 실패");
       }
-      router.push("/gyeongshullin/admin");
+      router.push("/interview/gyeongshullin/admin");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "삭제 실패");
@@ -362,7 +362,7 @@ export default function GyeongshullinAdminForm({ initial }: Props) {
     <div className="mx-auto max-w-2xl px-4 py-6 pb-32">
       <div className="mb-6">
         <Link
-          href="/gyeongshullin/admin"
+          href="/interview/gyeongshullin/admin"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

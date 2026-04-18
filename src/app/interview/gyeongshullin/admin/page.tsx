@@ -37,7 +37,7 @@ export default function GyeongshullinAdminPage() {
             공개됨 {publishedCount}건 · 임시저장 {draftCount}건
           </p>
         </div>
-        <Link href="/gyeongshullin/admin/new">
+        <Link href="/interview/gyeongshullin/admin/new">
           <Button size="sm" className="gap-1.5">
             <Plus className="h-4 w-4" />
             새 가게
@@ -57,7 +57,7 @@ export default function GyeongshullinAdminPage() {
               등록된 가게가 없어요
             </p>
             <Link
-              href="/gyeongshullin/admin/new"
+              href="/interview/gyeongshullin/admin/new"
               className="mt-4 text-xs font-medium text-brand hover:underline"
             >
               첫 가게 등록하기 →
@@ -69,7 +69,7 @@ export default function GyeongshullinAdminPage() {
           {list.map((r) => (
             <Link
               key={r.id}
-              href={`/gyeongshullin/admin/${r.id}`}
+              href={`/interview/gyeongshullin/admin/${r.id}`}
               className="block"
             >
               <Card className="transition hover:border-brand/40 hover:shadow-sm">
