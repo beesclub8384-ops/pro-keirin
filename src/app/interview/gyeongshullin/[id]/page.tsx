@@ -30,7 +30,7 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    fetch("/api/gyeongshullin/published")
+    fetch("/api/gyeongshullin/published", { cache: "no-store" })
       .then((res) => res.json())
       .then((all: GyeongshullinRestaurant[]) => {
         if (!Array.isArray(all)) {

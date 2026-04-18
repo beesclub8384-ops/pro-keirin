@@ -69,7 +69,7 @@ export default function GyeongshullinPage() {
   const [view, setView] = useState<ViewMode>("by_region");
 
   useEffect(() => {
-    fetch("/api/gyeongshullin/published")
+    fetch("/api/gyeongshullin/published", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setList(data);
