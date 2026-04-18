@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase";
 interface Player {
   racerId: string;
   name: string;
+  photoUrl: string | null;
 }
 
 interface RegionGroup {
@@ -26,7 +27,7 @@ export async function GET() {
 
   const { data, error } = await sb
     .from("racer_profiles")
-    .select("racer_id, name, training")
+    .select("racer_id, name, training, photo_url")
     .eq("is_union", true)
     .eq("year", maxYear)
     .order("name", { ascending: true });
@@ -43,6 +44,7 @@ export async function GET() {
     players.push({
       racerId: row.racer_id as string,
       name: row.name as string,
+      photoUrl: (row.photo_url as string | null) ?? null,
     });
     regionMap.set(region, players);
   }

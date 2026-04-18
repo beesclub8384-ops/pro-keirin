@@ -3,12 +3,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronDown, ExternalLink, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 const textShadow = "0 2px 4px rgba(0,0,0,0.5)";
 
 interface Player {
   racerId: string;
   name: string;
+  photoUrl: string | null;
+}
+
+function splitKoreanName(fullName: string): { surname: string; given: string } {
+  const trimmed = (fullName ?? "").trim();
+  if (trimmed.length <= 1) return { surname: trimmed, given: "" };
+  return { surname: trimmed.slice(0, 1), given: trimmed.slice(1) };
 }
 
 interface RegionGroup {
@@ -104,18 +112,37 @@ export default function InterviewTeamPage() {
                 {isOpen && (
                   <div className="border-t border-border bg-muted/30 px-5 py-3">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {rg.players.map((p) => (
-                        <a
-                          key={p.racerId}
-                          href={`https://www.kcycle.or.kr/racer/info/${p.racerId}/${currentYear}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between rounded-lg border border-border bg-white px-3 py-2.5 text-sm font-medium text-foreground hover:border-brand/30 hover:text-brand transition-colors"
-                        >
-                          {p.name}
-                          <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
-                        </a>
-                      ))}
+                      {rg.players.map((p) => {
+                        const { surname } = splitKoreanName(p.name);
+                        return (
+                          <a
+                            key={p.racerId}
+                            href={`https://www.kcycle.or.kr/racer/info/${p.racerId}/${currentYear}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2.5 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-foreground hover:border-brand/30 hover:text-brand transition-colors"
+                          >
+                            <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-border">
+                              {p.photoUrl ? (
+                                <Image
+                                  src={p.photoUrl}
+                                  alt={p.name}
+                                  fill
+                                  sizes="32px"
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center bg-muted text-sm font-bold text-muted-foreground">
+                                  {surname}
+                                </div>
+                              )}
+                            </div>
+                            <span className="flex-1 truncate">{p.name}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
