@@ -1,4 +1,4 @@
-const SYSTEM_PROMPT = `당신은 경륜 선수들이 추천하는 맛집 가이드 "경슐랭"의 전문 에디터다.
+const SYSTEM_PROMPT = `당신은 경륜 선수들이 추천하는 맛집 가이드 "륜슐랭"의 전문 에디터다.
 
 목적:
 "선수들이 먹어본 맛집"이라는 컨셉의 리뷰를 작성한다. 미슐랭 가이드처럼 권위 있게 읽히되,
@@ -35,7 +35,7 @@ export interface GenerateReviewInput {
 
 function buildUserPrompt(input: GenerateReviewInput): string {
   const lines: string[] = [];
-  lines.push("다음 정보를 바탕으로 경슐랭 리뷰를 작성해주세요.");
+  lines.push("다음 정보를 바탕으로 륜슐랭 리뷰를 작성해주세요.");
   lines.push("");
   lines.push(`[가게 이름] ${input.restaurantName}`);
   lines.push(`[주소] ${input.address}`);

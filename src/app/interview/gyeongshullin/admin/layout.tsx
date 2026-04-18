@@ -78,7 +78,7 @@ export default function GyeongshullinAdminLayout({
                 7RANDOMS 관리자
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                경슐랭 관리 페이지입니다
+                륜슐랭 관리 페이지입니다
               </p>
             </div>
 

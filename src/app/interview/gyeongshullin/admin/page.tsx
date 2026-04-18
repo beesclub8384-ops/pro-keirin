@@ -31,7 +31,7 @@ export default function GyeongshullinAdminPage() {
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">
-            경슐랭 관리
+            륜슐랭 관리
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
             공개됨 {publishedCount}건 · 임시저장 {draftCount}건

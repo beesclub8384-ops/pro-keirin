@@ -365,7 +365,7 @@ export default function InterviewAdminPage() {
           <Link href="/interview/gyeongshullin/admin">
             <Button variant="outline" className="gap-1.5">
               <ChefHat className="h-4 w-4" />
-              경슐랭 관리
+              륜슐랭 관리
             </Button>
           </Link>
           <Link href="/interview/admin/new">

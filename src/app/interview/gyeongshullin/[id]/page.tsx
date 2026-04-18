@@ -14,21 +14,10 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   naverMapUrl,
   type GyeongshullinRestaurant,
 } from "@/lib/gyeongshullin";
-
-const GRADE_COLORS: Record<string, string> = {
-  "특선": "bg-red-100 text-red-700 border-red-200",
-  "우수": "bg-blue-100 text-blue-700 border-blue-200",
-  "선발": "bg-emerald-100 text-emerald-700 border-emerald-200",
-};
-
-function gradeColor(grade: string): string {
-  return GRADE_COLORS[grade] ?? "bg-zinc-100 text-zinc-700 border-zinc-200";
-}
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -72,15 +61,24 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
       <div className="mx-auto max-w-3xl px-4 py-10">
         <Card>
           <CardContent className="flex flex-col items-center py-14 text-center">
-            <ChefHat className="mb-3 h-10 w-10 text-muted-foreground" />
-            <p className="text-sm font-medium text-foreground">
+            <ChefHat
+              className="mb-3 h-10 w-10 text-white"
+              style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))" }}
+            />
+            <p
+              className="text-sm font-medium text-white"
+              style={{
+                textShadow:
+                  "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
+              }}
+            >
               해당 가게를 찾을 수 없어요
             </p>
             <Link
               href="/interview/gyeongshullin"
               className="mt-4 text-xs font-medium text-brand hover:underline"
             >
-              ← 경슐랭으로 돌아가기
+              ← 륜슐랭으로 돌아가기
             </Link>
           </CardContent>
         </Card>
@@ -99,7 +97,7 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          경슐랭
+          륜슐랭
         </Link>
       </div>
 
@@ -122,11 +120,25 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
       </div>
 
       <div className="px-4 pt-5">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        <h1
+          className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
+          style={{
+            textShadow:
+              "0 2px 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.6), -1px -1px 0 rgba(0,0,0,0.6), 1px -1px 0 rgba(0,0,0,0.6), -1px 1px 0 rgba(0,0,0,0.6)",
+          }}
+        >
           {data.name}
         </h1>
         {data.menu && (
-          <p className="mt-1 text-sm text-muted-foreground">{data.menu}</p>
+          <p
+            className="mt-1 text-sm font-medium text-white"
+            style={{
+              textShadow:
+                "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
+            }}
+          >
+            {data.menu}
+          </p>
         )}
       </div>
 
@@ -138,23 +150,44 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
               {data.recommenderName?.[0] ?? "?"}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-brand">
+              <div
+                className="text-[11px] font-medium uppercase tracking-wider text-white"
+                style={{
+                  textShadow:
+                    "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
+                }}
+              >
                 추천 선수
               </div>
               <div className="mt-0.5 flex items-center gap-1.5">
-                <span className="text-sm font-bold text-foreground">
+                <span
+                  className="text-sm font-bold text-white"
+                  style={{
+                    textShadow:
+                      "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
+                  }}
+                >
                   {data.recommenderName}
                 </span>
                 {data.recommenderGrade && (
-                  <Badge
-                    variant="outline"
-                    className={`px-1.5 py-0 text-[10px] ${gradeColor(data.recommenderGrade)}`}
+                  <span
+                    className="text-xs font-medium text-white"
+                    style={{
+                      textShadow:
+                        "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
+                    }}
                   >
                     {data.recommenderGrade}
-                  </Badge>
+                  </span>
                 )}
                 {data.recommenderRegion && (
-                  <span className="text-xs text-muted-foreground">
+                  <span
+                    className="text-xs font-medium text-white"
+                    style={{
+                      textShadow:
+                        "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
+                    }}
+                  >
                     · {data.recommenderRegion}
                   </span>
                 )}
@@ -169,8 +202,19 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
         <div className="mt-5 px-4">
           <Card>
             <CardContent className="py-5">
-              <Quote className="mb-2 h-4 w-4 text-brand" />
-              <p className="text-sm leading-relaxed text-foreground">
+              <Quote
+                className="mb-2 h-4 w-4 text-white"
+                style={{
+                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))",
+                }}
+              />
+              <p
+                className="text-sm font-medium leading-relaxed text-white"
+                style={{
+                  textShadow:
+                    "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.4), -1px -1px 0 rgba(0,0,0,0.4)",
+                }}
+              >
                 {data.memo}
               </p>
             </CardContent>
@@ -182,8 +226,19 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
       <div className="mt-5 px-4">
         <Card>
           <CardContent className="py-4">
-            <div className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              <MapPin className="h-3 w-3" />
+            <div
+              className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white"
+              style={{
+                textShadow:
+                  "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
+              }}
+            >
+              <MapPin
+                className="h-3 w-3"
+                style={{
+                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))",
+                }}
+              />
               위치
             </div>
             <a
@@ -192,12 +247,29 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
               rel="noopener noreferrer"
               className="group flex items-start justify-between gap-2"
             >
-              <span className="text-sm text-foreground group-hover:text-brand">
+              <span
+                className="text-sm font-medium text-white"
+                style={{
+                  textShadow:
+                    "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
+                }}
+              >
                 {data.address}
               </span>
-              <ExternalLink className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground group-hover:text-brand" />
+              <ExternalLink
+                className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-white"
+                style={{
+                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))",
+                }}
+              />
             </a>
-            <p className="mt-1 text-[11px] text-muted-foreground">
+            <p
+              className="mt-1 text-[11px] font-medium text-white"
+              style={{
+                textShadow:
+                  "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
+              }}
+            >
               주소를 누르면 네이버 지도에서 열려요
             </p>
           </CardContent>
@@ -207,8 +279,19 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
       {/* Menu photos */}
       {data.menuPhotos.length > 0 && (
         <div className="mt-5 px-4">
-          <div className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            <UtensilsCrossed className="h-3 w-3" />
+          <div
+            className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white"
+            style={{
+              textShadow:
+                "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
+            }}
+          >
+            <UtensilsCrossed
+              className="h-3 w-3"
+              style={{
+                filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))",
+              }}
+            />
             메뉴판
           </div>
           <div className="grid grid-cols-1 gap-2">
@@ -234,8 +317,19 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
       {/* Other food photos */}
       {otherPhotos.length > 0 && (
         <div className="mt-5 px-4">
-          <div className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            <ImageIcon className="h-3 w-3" />
+          <div
+            className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white"
+            style={{
+              textShadow:
+                "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
+            }}
+          >
+            <ImageIcon
+              className="h-3 w-3"
+              style={{
+                filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))",
+              }}
+            />
             사진
           </div>
           <div className="grid grid-cols-2 gap-2">
