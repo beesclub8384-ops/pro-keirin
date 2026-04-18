@@ -61,17 +61,8 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
       <div className="mx-auto max-w-3xl px-4 py-10">
         <Card>
           <CardContent className="flex flex-col items-center py-14 text-center">
-            <ChefHat
-              className="mb-3 h-10 w-10 text-white"
-              style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))" }}
-            />
-            <p
-              className="text-sm font-medium text-white"
-              style={{
-                textShadow:
-                  "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
-              }}
-            >
+            <ChefHat className="mb-3 h-10 w-10 text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground">
               해당 가게를 찾을 수 없어요
             </p>
             <Link
@@ -150,44 +141,20 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
               {data.recommenderName?.[0] ?? "?"}
             </div>
             <div className="min-w-0 flex-1">
-              <div
-                className="text-[11px] font-medium uppercase tracking-wider text-white"
-                style={{
-                  textShadow:
-                    "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
-                }}
-              >
+              <div className="text-[11px] font-medium uppercase tracking-wider text-brand">
                 추천 선수
               </div>
               <div className="mt-0.5 flex items-center gap-1.5">
-                <span
-                  className="text-sm font-bold text-white"
-                  style={{
-                    textShadow:
-                      "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
-                  }}
-                >
+                <span className="text-sm font-bold text-foreground">
                   {data.recommenderName}
                 </span>
                 {data.recommenderGrade && (
-                  <span
-                    className="text-xs font-medium text-white"
-                    style={{
-                      textShadow:
-                        "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
-                    }}
-                  >
+                  <span className="text-xs text-muted-foreground">
                     {data.recommenderGrade}
                   </span>
                 )}
                 {data.recommenderRegion && (
-                  <span
-                    className="text-xs font-medium text-white"
-                    style={{
-                      textShadow:
-                        "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
-                    }}
-                  >
+                  <span className="text-xs text-muted-foreground">
                     · {data.recommenderRegion}
                   </span>
                 )}
@@ -202,19 +169,8 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
         <div className="mt-5 px-4">
           <Card>
             <CardContent className="py-5">
-              <Quote
-                className="mb-2 h-4 w-4 text-white"
-                style={{
-                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))",
-                }}
-              />
-              <p
-                className="text-sm font-medium leading-relaxed text-white"
-                style={{
-                  textShadow:
-                    "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.4), -1px -1px 0 rgba(0,0,0,0.4)",
-                }}
-              >
+              <Quote className="mb-2 h-4 w-4 text-brand" />
+              <p className="text-sm leading-relaxed text-foreground">
                 {data.memo}
               </p>
             </CardContent>
@@ -226,19 +182,8 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
       <div className="mt-5 px-4">
         <Card>
           <CardContent className="py-4">
-            <div
-              className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white"
-              style={{
-                textShadow:
-                  "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
-              }}
-            >
-              <MapPin
-                className="h-3 w-3"
-                style={{
-                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))",
-                }}
-              />
+            <div className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <MapPin className="h-3 w-3" />
               위치
             </div>
             <a
@@ -247,29 +192,12 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
               rel="noopener noreferrer"
               className="group flex items-start justify-between gap-2"
             >
-              <span
-                className="text-sm font-medium text-white"
-                style={{
-                  textShadow:
-                    "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
-                }}
-              >
+              <span className="text-sm text-foreground group-hover:text-brand">
                 {data.address}
               </span>
-              <ExternalLink
-                className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-white"
-                style={{
-                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))",
-                }}
-              />
+              <ExternalLink className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground group-hover:text-brand" />
             </a>
-            <p
-              className="mt-1 text-[11px] font-medium text-white"
-              style={{
-                textShadow:
-                  "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
-              }}
-            >
+            <p className="mt-1 text-[11px] text-muted-foreground">
               주소를 누르면 네이버 지도에서 열려요
             </p>
           </CardContent>

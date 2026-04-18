@@ -33,21 +33,10 @@ function MiniRestaurantCard({ r }: { r: GyeongshullinRestaurant }) {
         )}
       </div>
       <div className="p-2.5">
-        <div
-          className="line-clamp-1 text-sm font-semibold text-white"
-          style={{
-            textShadow:
-              "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
-          }}
-        >
+        <div className="line-clamp-1 text-sm font-semibold text-foreground">
           {r.name}
         </div>
-        <div
-          className="mt-0.5 line-clamp-1 text-xs font-medium text-white"
-          style={{
-            textShadow: "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
-          }}
-        >
+        <div className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
           {r.address}
         </div>
       </div>
@@ -145,26 +134,11 @@ export default function GyeongshullinPage() {
       ) : list.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center py-14 text-center">
-            <ChefHat
-              className="mb-3 h-10 w-10 text-white"
-              style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))" }}
-            />
-            <p
-              className="text-sm font-medium text-white"
-              style={{
-                textShadow:
-                  "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
-              }}
-            >
+            <ChefHat className="mb-3 h-10 w-10 text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground">
               아직 등록된 가게가 없어요
             </p>
-            <p
-              className="mt-1 text-xs font-medium text-white"
-              style={{
-                textShadow:
-                  "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1)",
-              }}
-            >
+            <p className="mt-1 text-xs text-muted-foreground">
               선수들의 추천이 모이면 여기에 표시됩니다
             </p>
           </CardContent>
