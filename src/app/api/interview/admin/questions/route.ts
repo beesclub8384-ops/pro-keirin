@@ -31,27 +31,33 @@ export async function POST(req: Request) {
     questionText?: string;
     category?: string;
     subcategory?: string;
+    isCustom?: boolean;
   } | null;
 
-  if (!body?.originalCode || !body.questionText || !body.category || !body.subcategory) {
+  if (!body?.questionText?.trim()) {
     return NextResponse.json(
-      { error: "originalCode, questionText, category, subcategory 필수" },
+      { error: "questionText 필수" },
       { status: 400 },
     );
   }
 
   const sb = createAdminClient();
-  const newCode = `${body.originalCode}-custom-${Math.floor(Date.now() / 1000)}`;
+  const ts = Math.floor(Date.now() / 1000);
+  const newCode = body.originalCode
+    ? `${body.originalCode}-custom-${ts}`
+    : `custom-${ts}-${Math.floor(Math.random() * 1000)}`;
+  const category = body.category || "C";
+  const subcategory = body.subcategory || "C-custom";
 
   const { data, error } = await sb
     .from("interview_questions")
     .insert({
       code: newCode,
-      category: body.category,
-      subcategory: body.subcategory,
-      question_text: body.questionText,
+      category,
+      subcategory,
+      question_text: body.questionText.trim(),
       format: "text",
-      parent_code: body.originalCode,
+      parent_code: body.originalCode || null,
       is_custom: true,
       is_active: true,
     })
