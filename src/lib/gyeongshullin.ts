@@ -86,6 +86,8 @@ export function extractRegion(address: string): string {
   return firstWord;
 }
 
-export function naverMapUrl(query: string): string {
+export function naverMapUrl(name: string, address: string): string {
+  const region = extractRegion(address);
+  const query = region ? `${name} ${region}` : name;
   return `https://map.naver.com/v5/search/${encodeURIComponent(query)}`;
 }

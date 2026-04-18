@@ -14,6 +14,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import PhotoLightbox from "@/components/PhotoLightbox";
 import {
   naverMapUrl,
   type GyeongshullinRestaurant,
@@ -28,6 +29,16 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
   const [data, setData] = useState<GyeongshullinRestaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  const [lightboxPhotos, setLightboxPhotos] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  function openLightbox(photos: string[], startIndex: number) {
+    setLightboxPhotos(photos);
+    setLightboxIndex(startIndex);
+    setLightboxOpen(true);
+  }
 
   useEffect(() => {
     fetch("/api/gyeongshullin/published", { cache: "no-store" })
@@ -94,15 +105,22 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
 
       <div className="relative mt-3 aspect-[4/3] w-full bg-muted sm:mx-4 sm:mt-4 sm:aspect-[16/9] sm:overflow-hidden sm:rounded-xl">
         {mainPhoto ? (
-          <Image
-            src={mainPhoto}
-            alt={data.name}
-            fill
-            sizes="(max-width: 640px) 100vw, 720px"
-            className="object-cover"
-            priority
-            unoptimized
-          />
+          <button
+            type="button"
+            onClick={() => openLightbox(data.foodPhotos, 0)}
+            className="h-full w-full cursor-zoom-in"
+            aria-label="사진 크게 보기"
+          >
+            <Image
+              src={mainPhoto}
+              alt={data.name}
+              fill
+              sizes="(max-width: 640px) 100vw, 720px"
+              className="object-cover"
+              priority
+              unoptimized
+            />
+          </button>
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground">
             <ChefHat className="h-12 w-12" />
@@ -187,7 +205,7 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
               위치
             </div>
             <a
-              href={naverMapUrl(`${data.name} ${data.address}`)}
+              href={naverMapUrl(data.name, data.address)}
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-start justify-between gap-2"
@@ -224,9 +242,12 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
           </div>
           <div className="grid grid-cols-1 gap-2">
             {data.menuPhotos.map((url, i) => (
-              <div
+              <button
+                type="button"
                 key={`menu-${i}`}
-                className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-border bg-muted"
+                onClick={() => openLightbox(data.menuPhotos, i)}
+                className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-border bg-muted cursor-zoom-in"
+                aria-label="메뉴판 크게 보기"
               >
                 <Image
                   src={url}
@@ -236,7 +257,7 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
                   className="object-cover"
                   unoptimized
                 />
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -262,9 +283,12 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
           </div>
           <div className="grid grid-cols-2 gap-2">
             {otherPhotos.map((url, i) => (
-              <div
+              <button
+                type="button"
                 key={`photo-${i}`}
-                className="relative aspect-square w-full overflow-hidden rounded-lg border border-border bg-muted"
+                onClick={() => openLightbox(data.foodPhotos, i + 1)}
+                className="relative aspect-square w-full overflow-hidden rounded-lg border border-border bg-muted cursor-zoom-in"
+                aria-label="사진 크게 보기"
               >
                 <Image
                   src={url}
@@ -274,10 +298,18 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
                   className="object-cover"
                   unoptimized
                 />
-              </div>
+              </button>
             ))}
           </div>
         </div>
+      )}
+
+      {lightboxOpen && (
+        <PhotoLightbox
+          photos={lightboxPhotos}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxOpen(false)}
+        />
       )}
     </div>
   );
