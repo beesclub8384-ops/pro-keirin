@@ -125,11 +125,23 @@ export default function GyeongshullinPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        <h1
+          className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
+          style={{
+            textShadow:
+              "0 2px 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.6), -1px -1px 0 rgba(0,0,0,0.6), 1px -1px 0 rgba(0,0,0,0.6), -1px 1px 0 rgba(0,0,0,0.6)",
+          }}
+        >
           경슐랭
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          선수들이 먹어본 맛집
+        <p
+          className="mt-1 text-sm font-medium text-white"
+          style={{
+            textShadow:
+              "0 1px 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5)",
+          }}
+        >
+          맛 없는 건 안 먹는 선수들의 추천 맛집
         </p>
       </div>
 
