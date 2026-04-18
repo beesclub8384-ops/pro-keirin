@@ -40,6 +40,7 @@ export async function PATCH(req: Request, { params }: RouteParams) {
     address?: string;
     menu?: string;
     memo?: string;
+    rawNote?: string;
     foodPhotos?: string[];
     menuPhotos?: string[];
     recommenderName?: string;
@@ -60,6 +61,7 @@ export async function PATCH(req: Request, { params }: RouteParams) {
   }
   if (body.menu !== undefined) update.menu = body.menu.trim() || null;
   if (body.memo !== undefined) update.memo = body.memo.trim() || null;
+  if (body.rawNote !== undefined) update.raw_note = body.rawNote.trim() || null;
   if (body.foodPhotos !== undefined) update.food_photos = body.foodPhotos;
   if (body.menuPhotos !== undefined) update.menu_photos = body.menuPhotos;
   if (body.recommenderName !== undefined)

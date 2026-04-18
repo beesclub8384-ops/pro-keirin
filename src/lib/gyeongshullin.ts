@@ -7,6 +7,7 @@ export interface GyeongshullinRow {
   region: string | null;
   menu: string | null;
   memo: string | null;
+  raw_note: string | null;
   food_photos: string[] | null;
   menu_photos: string[] | null;
   recommender_name: string;
@@ -24,6 +25,7 @@ export interface GyeongshullinRestaurant {
   region: string;
   menu: string;
   memo: string;
+  rawNote: string;
   foodPhotos: string[];
   menuPhotos: string[];
   recommenderName: string;
@@ -42,6 +44,7 @@ export function rowToRestaurant(row: GyeongshullinRow): GyeongshullinRestaurant 
     region: row.region ?? "",
     menu: row.menu ?? "",
     memo: row.memo ?? "",
+    rawNote: row.raw_note ?? "",
     foodPhotos: row.food_photos ?? [],
     menuPhotos: row.menu_photos ?? [],
     recommenderName: row.recommender_name,

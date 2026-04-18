@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     address?: string;
     menu?: string;
     memo?: string;
+    rawNote?: string;
     foodPhotos?: string[];
     menuPhotos?: string[];
     recommenderName?: string;
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
     region: extractRegion(body.address),
     menu: body.menu?.trim() ?? null,
     memo: body.memo?.trim() ?? null,
+    raw_note: body.rawNote?.trim() ?? null,
     food_photos: body.foodPhotos ?? [],
     menu_photos: body.menuPhotos ?? [],
     recommender_name: body.recommenderName.trim(),
