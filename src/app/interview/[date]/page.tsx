@@ -9,6 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { fetchInterviewsByDate } from "@/lib/interview";
 
+/** 본문 시작이 "# 헤드라인" 형식이면 제거 (헤드라인은 별도 필드에서 표시) */
+function stripLeadingHeadline(article: string): string {
+  return article.replace(/^#\s+.+\n+/, "");
+}
+
 /** [PHOTO_1]~[PHOTO_N]을 photos 배열의 실제 이미지 마크다운으로 치환 */
 function replacePhotoTags(article: string, photos?: string[]): string {
   return article.replace(/\[PHOTO_(\d+)\]/g, (match, num) => {
@@ -176,7 +181,7 @@ export default async function InterviewDatePage({
         <div className="space-y-10">
           {articles.map((article, i) => {
             const processed = replacePhotoTags(
-              article.article,
+              stripLeadingHeadline(article.article),
               article.photos,
             );
             const { main, analysis } = splitAnalysisNote(processed);

@@ -21,11 +21,6 @@ function toKSTDate(dateStr: string): string {
   return kst.toISOString().slice(0, 10);
 }
 
-function extractTitle(article: string): string {
-  const match = article.match(/^#\s+(.+)/m);
-  if (!match) return "";
-  return match[1].replace(/^["「"']|["」"']$/g, "").trim();
-}
 
 function getCalendarDays(year: number, month: number) {
   const firstDay = new Date(year, month, 1).getDay();
@@ -70,9 +65,9 @@ function ArticleCard({
           <span className="text-xs text-muted-foreground">{a.region}</span>
         )}
       </div>
-      {extractTitle(a.article) && (
+      {a.headline && (
         <p className="text-sm leading-snug text-foreground/70 line-clamp-2 mb-2.5">
-          &ldquo;{extractTitle(a.article)}&rdquo;
+          &ldquo;{a.headline}&rdquo;
         </p>
       )}
       <span className="text-xs text-muted-foreground">{a.date}</span>

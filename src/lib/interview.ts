@@ -5,6 +5,7 @@ export interface InterviewArticle {
   playerName: string;
   grade: string;
   region: string;
+  headline: string;
   article: string;
   docLink: string;
   photos?: string[];
@@ -37,7 +38,7 @@ export async function fetchInterviews(): Promise<InterviewArticle[]> {
   const { data: articles, error } = await sb
     .from("interview_articles")
     .select(
-      "request_id, player_name, grade, region, article_raw, article_edited, photos, published_at",
+      "request_id, player_name, grade, region, headline, article_raw, article_edited, photos, published_at",
     )
     .eq("status", "published")
     .order("published_at", { ascending: false });
@@ -67,17 +68,21 @@ export async function fetchInterviews(): Promise<InterviewArticle[]> {
   return articles.map((a) => {
     const articlePhotos = asStringArray(a.photos);
     const responsePhotos = photosByReq.get(a.request_id as number) ?? [];
+    const uniquePhotos = Array.from(
+      new Set([...articlePhotos, ...responsePhotos]),
+    );
     return {
       date: toKSTDate(a.published_at as string | null),
       playerName: (a.player_name as string) ?? "",
       grade: (a.grade as string) ?? "",
       region: (a.region as string) ?? "",
+      headline: (a.headline as string | null) ?? "",
       article:
         (a.article_edited as string | null) ??
         (a.article_raw as string | null) ??
         "",
       docLink: "",
-      photos: [...articlePhotos, ...responsePhotos],
+      photos: uniquePhotos,
     };
   });
 }

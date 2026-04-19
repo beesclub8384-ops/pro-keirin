@@ -19,7 +19,7 @@ export async function GET() {
   const { data: articles, error } = await sb
     .from("interview_articles")
     .select(
-      "request_id, player_name, grade, region, article_raw, article_edited, photos, published_at",
+      "request_id, player_name, grade, region, headline, article_raw, article_edited, photos, published_at",
     )
     .eq("status", "published")
     .order("published_at", { ascending: false });
@@ -52,12 +52,13 @@ export async function GET() {
   const result = (articles ?? []).map((a) => {
     const articlePhotos = asStringArray(a.photos);
     const responsePhotos = photosByReq.get(a.request_id as number) ?? [];
-    const photos = [...articlePhotos, ...responsePhotos];
+    const photos = Array.from(new Set([...articlePhotos, ...responsePhotos]));
     return {
       date: toKSTDate(a.published_at as string | null),
       playerName: a.player_name,
       grade: a.grade,
       region: a.region,
+      headline: (a.headline as string | null) ?? "",
       article: (a.article_edited as string | null) ?? (a.article_raw as string | null) ?? "",
       photos,
       docLink: null,
