@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ChevronLeft, MapPin, Award } from "lucide-react";
+import { ChevronLeft, MapPin, Award, Play } from "lucide-react";
+import { extractRaceVideo } from "@/lib/race-video";
 import Markdown from "react-markdown";
 import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -60,22 +61,60 @@ const mdComponents: Components = {
   p: (props) => {
     const children = props.children;
     let firstText = "";
+    function flattenText(node: unknown): string {
+      if (typeof node === "string") return node;
+      if (Array.isArray(node)) return node.map(flattenText).join("");
+      if (node && typeof node === "object" && "props" in node) {
+        const inner = (node as { props?: { children?: unknown } }).props
+          ?.children;
+        return flattenText(inner);
+      }
+      return "";
+    }
     if (typeof children === "string") {
       firstText = children;
     } else if (Array.isArray(children) && typeof children[0] === "string") {
       firstText = children[0];
     }
     const isAnswer = /^A\.\s/.test(firstText.trim());
+    const isQuestion = /^Q\.\s/.test(firstText.trim());
+    const fullText = flattenText(children);
+    const raceVideo = isQuestion ? extractRaceVideo(fullText) : null;
+
     return (
-      <p
-        className={
-          isAnswer
-            ? "text-[15px] sm:text-base leading-[1.85] text-blue-700 mb-5"
-            : "text-[15px] sm:text-base leading-[1.85] text-foreground/85 mb-5"
-        }
-      >
-        {props.children}
-      </p>
+      <>
+        <p
+          className={
+            isAnswer
+              ? "text-[15px] sm:text-base leading-[1.85] text-blue-700 mb-5"
+              : "text-[15px] sm:text-base leading-[1.85] text-foreground/85 mb-5"
+          }
+        >
+          {props.children}
+        </p>
+        {raceVideo && (
+          <a
+            href={raceVideo.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="not-prose mb-5 flex items-center gap-3 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 transition-colors hover:bg-brand/10"
+          >
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white">
+              <Play className="h-4 w-4 fill-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-medium text-muted-foreground">
+                해당 경주 영상
+              </div>
+              <div className="truncate text-sm font-semibold text-foreground">
+                {raceVideo.venue} {raceVideo.round}회 {raceVideo.day}일차{" "}
+                {raceVideo.raceNo}경주
+              </div>
+            </div>
+            <span className="text-xs text-brand">kcycle ↗</span>
+          </a>
+        )}
+      </>
     );
   },
   img: (props) => (
