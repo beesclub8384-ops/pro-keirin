@@ -1,149 +1,58 @@
 import { createAdminClient } from "@/lib/supabase";
 
-interface RecentRace {
-  year: number;
-  round: number;
-  day: number;
-  race_no: number;
-  rank: number | null;
-  tactic: string | null;
-}
-
 interface ResponseRow {
-  question_code: string;
   question_text: string;
   answer_text: string | null;
   answer_choice: string | null;
+  photo_urls: string[] | null;
 }
 
-const SYSTEM_PROMPT = `당신은 7RANDOMS의 전문 경륜 기자다. 선수 인터뷰 원본 Q&A를 받아, 읽기 좋은 Q&A 인터뷰 기사로 다듬는다.
-
-출력 형식:
-# "헤드라인 (선수의 가장 인상적인 발언을 따옴표 인용)"
-
-Q. (질문을 인터뷰 기자가 묻듯이 자연스럽게 다듬기)
-A. (선수 답변)
-
-Q. (질문)
-A. (답변)
-
-...
-
-규칙:
-1. 헤드라인(H1) 다음 바로 Q&A를 시작한다. 도입부, 부제, 소제목(H2) 없음.
-2. 질문은 원본 폼 질문을 그대로 쓰지 말고, 기자가 대화하듯 자연스럽게 다듬는다.
-3. 답변은 선수가 쓴 내용을 거의 그대로 살리되, 구어체로 다듬고 불필요한 반복만 제거한다.
-4. 답변이 길면 길게, 짧으면 짧게. 강제로 늘리거나 줄이지 않는다.
-5. 분석 노트, 요약, 마무리 멘트 등 부가 섹션을 절대 넣지 않는다. Q&A만 출력한다.
-6. 사진이 제공된 경우, [PHOTO_1], [PHOTO_2] 등을 Q&A 사이사이에 자연스럽게 배치한다. 사진이 없으면 [PHOTO_N] 태그를 넣지 않는다.
-7. 과장된 미사여구, 확인되지 않은 추측, 도박/베팅 유도 표현 금지.`;
-
-function extractHeadline(md: string): string {
-  const m = md.match(/^#\s+(.+)$/m);
-  if (!m) return "";
-  return m[1].replace(/^["'「"']|["'」"']$/g, "").trim();
-}
-
-function formatRecentRaces(races: RecentRace[]): string {
-  if (races.length === 0) return "(최근 경주 데이터 없음)";
-  return races
-    .map(
-      (r) =>
-        `- ${r.year}년 ${r.round}회차 ${r.day}일차 ${r.race_no}경주: ${r.rank ?? "-"}착 / 전법 ${r.tactic ?? "-"}`,
-    )
-    .join("\n");
-}
-
-function formatResponses(responses: ResponseRow[]): string {
-  return responses
-    .map((r, i) => {
-      const parts: string[] = [];
-      parts.push(`Q${i + 1}. [${r.question_code}] ${r.question_text}`);
-      if (r.answer_choice) parts.push(`선택: ${r.answer_choice}`);
-      if (r.answer_text) parts.push(`답변: ${r.answer_text}`);
-      return parts.join("\n");
-    })
-    .join("\n\n");
-}
-
-async function fetchRecentRaces(
-  sb: ReturnType<typeof createAdminClient>,
+function buildArticleMarkdown(
   playerName: string,
-): Promise<RecentRace[]> {
-  const { data: results } = await sb
-    .from("race_results")
-    .select("race_id, rank, tactic")
-    .eq("name", playerName)
-    .order("race_id", { ascending: false })
-    .limit(20);
+  responses: ResponseRow[],
+): { markdown: string; uniquePhotos: string[] } {
+  const uniquePhotos: string[] = [];
+  const seen = new Set<string>();
 
-  if (!results || results.length === 0) return [];
+  const lines: string[] = [];
+  lines.push(`# ${playerName} 인터뷰`);
+  lines.push("");
 
-  const raceIds = results.map((r) => r.race_id);
-  const { data: races } = await sb
-    .from("races")
-    .select("id, year, round, day, race_no")
-    .in("id", raceIds);
+  for (const r of responses) {
+    const q = (r.question_text ?? "").trim();
+    const choice = (r.answer_choice ?? "").trim();
+    const text = (r.answer_text ?? "").trim();
+    const answerParts: string[] = [];
+    if (choice) answerParts.push(choice);
+    if (text) answerParts.push(text);
+    const a = answerParts.join(" / ");
 
-  if (!races) return [];
+    if (!q && !a) continue;
 
-  const byId = new Map(races.map((r) => [r.id as number, r]));
-  const merged: RecentRace[] = results
-    .map((r) => {
-      const race = byId.get(r.race_id as number);
-      if (!race) return null;
-      return {
-        year: race.year as number,
-        round: race.round as number,
-        day: race.day as number,
-        race_no: race.race_no as number,
-        rank: (r.rank as number | null) ?? null,
-        tactic: (r.tactic as string | null) ?? null,
-      };
-    })
-    .filter((r): r is RecentRace => r !== null)
-    .sort((a, b) => {
-      if (a.year !== b.year) return b.year - a.year;
-      if (a.round !== b.round) return b.round - a.round;
-      if (a.day !== b.day) return b.day - a.day;
-      return b.race_no - a.race_no;
-    })
-    .slice(0, 5);
+    if (q) {
+      lines.push(`Q. ${q}`);
+    }
+    if (a) {
+      lines.push(`A. ${a}`);
+    }
 
-  return merged;
-}
+    const urls = r.photo_urls ?? [];
+    for (const u of urls) {
+      if (!u) continue;
+      if (seen.has(u)) continue;
+      seen.add(u);
+      uniquePhotos.push(u);
+      lines.push("");
+      lines.push(`[PHOTO_${uniquePhotos.length}]`);
+    }
 
-async function callClaude(userPrompt: string): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다");
-
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-5-20250929",
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userPrompt }],
-    }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Claude API 오류 (${res.status}): ${text}`);
+    lines.push("");
   }
-  const json = (await res.json()) as {
-    content: Array<{ type: string; text?: string }>;
+
+  return {
+    markdown: lines.join("\n").trimEnd(),
+    uniquePhotos,
   };
-  const text = json.content
-    .filter((c) => c.type === "text")
-    .map((c) => c.text ?? "")
-    .join("\n");
-  return text.trim();
 }
 
 export interface GenerateResult {
@@ -170,7 +79,7 @@ export async function generateInterviewArticle(
 
   const { data: responses, error: respErr } = await sb
     .from("interview_responses")
-    .select("question_code, question_text, answer_text, answer_choice, photo_urls")
+    .select("question_text, answer_text, answer_choice, photo_urls")
     .eq("request_id", requestId)
     .order("id", { ascending: true });
 
@@ -179,40 +88,13 @@ export async function generateInterviewArticle(
     throw new Error("답변이 없습니다");
   }
 
-  const allPhotos: string[] = [];
-  for (const r of responses) {
-    const urls = r.photo_urls as string[] | null;
-    if (urls) {
-      for (const u of urls) {
-        if (u) allPhotos.push(u);
-      }
-    }
-  }
+  const playerName = request.player_name as string;
+  const { markdown: articleRaw, uniquePhotos } = buildArticleMarkdown(
+    playerName,
+    responses as ResponseRow[],
+  );
 
-  const recentRaces = await fetchRecentRaces(sb, request.player_name as string);
-
-  const photoInstruction =
-    allPhotos.length > 0
-      ? `\n[사진 정보]\n이 인터뷰에는 사진이 ${allPhotos.length}장 첨부되어 있습니다. 본문에 [PHOTO_1]~[PHOTO_${allPhotos.length}] 태그를 적절한 위치에 배치해주세요.\n`
-      : "\n[사진 정보]\n첨부된 사진이 없습니다. [PHOTO_N] 태그를 넣지 마세요.\n";
-
-  const userPrompt = `아래 정보를 바탕으로 7RANDOMS 인터뷰 기사를 작성해주세요.
-
-[선수 기본 정보]
-- 이름: ${request.player_name}
-- 등급: ${request.grade ?? "-"}
-- 지부: ${request.region ?? "-"}
-
-[최근 5경주 결과]
-${formatRecentRaces(recentRaces)}
-${photoInstruction}
-[인터뷰 질문-답변]
-${formatResponses(responses as ResponseRow[])}
-
-위 내용을 시스템 지침에 따라 Q&A 인터뷰 기사로 작성해주세요.`;
-
-  const articleRaw = await callClaude(userPrompt);
-  const headline = extractHeadline(articleRaw);
+  const headline = `${playerName} 인터뷰`;
 
   const { data: inserted, error: insErr } = await sb
     .from("interview_articles")
@@ -223,7 +105,7 @@ ${formatResponses(responses as ResponseRow[])}
       region: request.region,
       article_raw: articleRaw,
       headline,
-      photos: allPhotos.length > 0 ? allPhotos : null,
+      photos: uniquePhotos.length > 0 ? uniquePhotos : null,
       status: "review",
     })
     .select("id")
