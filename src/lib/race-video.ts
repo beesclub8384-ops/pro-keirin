@@ -29,7 +29,8 @@ export function extractRaceVideo(text: string): RaceVideoInfo | null {
   const code = VENUE_CODE[venue];
   if (!code) return null;
 
-  const url = `https://www.kcycle.or.kr/broadcast/popup/race/${year}/${round}/${day}/${code}/${raceNo}/F`;
+  const raceNoPadded = String(raceNo).padStart(2, "0");
+  const url = `https://www.kcycle.or.kr/broadcast/popup/race/${year}/${round}/${day}/${code}/${raceNoPadded}/F`;
 
   return { year, venue, round, day, raceNo, url };
 }
