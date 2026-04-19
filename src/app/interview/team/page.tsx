@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronDown, ExternalLink, Loader2 } from "lucide-react";
 import Image from "next/image";
+import PhotoLightbox from "@/components/PhotoLightbox";
 
 const textShadow = "0 2px 4px rgba(0,0,0,0.5)";
 
@@ -29,6 +30,7 @@ export default function InterviewTeamPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openRegion, setOpenRegion] = useState<string | null>(null);
+  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
 
   const currentYear = new Date().getFullYear();
 
@@ -115,15 +117,17 @@ export default function InterviewTeamPage() {
                       {rg.players.map((p) => {
                         const { surname } = splitKoreanName(p.name);
                         return (
-                          <a
+                          <div
                             key={p.racerId}
-                            href={`https://www.kcycle.or.kr/racer/info/${p.racerId}/${currentYear}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2.5 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-foreground hover:border-brand/30 hover:text-brand transition-colors"
+                            className="flex items-center gap-2.5 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-brand/30"
                           >
-                            <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-border">
-                              {p.photoUrl ? (
+                            {p.photoUrl ? (
+                              <button
+                                type="button"
+                                onClick={() => setLightboxPhoto(p.photoUrl)}
+                                className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-border cursor-zoom-in"
+                                aria-label={`${p.name} 사진 크게 보기`}
+                              >
                                 <Image
                                   src={p.photoUrl}
                                   alt={p.name}
@@ -132,15 +136,24 @@ export default function InterviewTeamPage() {
                                   className="object-cover"
                                   unoptimized
                                 />
-                              ) : (
+                              </button>
+                            ) : (
+                              <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-border">
                                 <div className="flex h-full w-full items-center justify-center bg-muted text-sm font-bold text-muted-foreground">
                                   {surname}
                                 </div>
-                              )}
-                            </div>
-                            <span className="flex-1 truncate">{p.name}</span>
-                            <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
-                          </a>
+                              </div>
+                            )}
+                            <a
+                              href={`https://www.kcycle.or.kr/racer/info/${p.racerId}/${currentYear}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-1 min-w-0 items-center justify-between gap-2 hover:text-brand"
+                            >
+                              <span className="flex-1 truncate">{p.name}</span>
+                              <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            </a>
+                          </div>
                         );
                       })}
                     </div>
@@ -150,6 +163,14 @@ export default function InterviewTeamPage() {
             );
           })}
         </div>
+      )}
+
+      {lightboxPhoto && (
+        <PhotoLightbox
+          photos={[lightboxPhoto]}
+          startIndex={0}
+          onClose={() => setLightboxPhoto(null)}
+        />
       )}
     </div>
   );
