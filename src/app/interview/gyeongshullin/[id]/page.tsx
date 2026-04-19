@@ -125,7 +125,7 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
 
       {/* Recommender */}
       <div className="mt-5 px-4">
-        <Card className="border-brand/30 bg-brand/5">
+        <Card className="border-brand/40 bg-white">
           <CardContent className="flex items-center gap-3 py-4">
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-base font-bold text-white">
               {data.recommenderName?.[0] ?? "?"}
