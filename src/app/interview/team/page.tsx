@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronDown, ExternalLink, Loader2 } from "lucide-react";
 import Image from "next/image";
 import PhotoLightbox from "@/components/PhotoLightbox";
+import { splitKoreanName } from "@/lib/racer-avatar";
 
 const textShadow = "0 2px 4px rgba(0,0,0,0.5)";
 
@@ -12,12 +13,6 @@ interface Player {
   racerId: string;
   name: string;
   photoUrl: string | null;
-}
-
-function splitKoreanName(fullName: string): { surname: string; given: string } {
-  const trimmed = (fullName ?? "").trim();
-  if (trimmed.length <= 1) return { surname: trimmed, given: "" };
-  return { surname: trimmed.slice(0, 1), given: trimmed.slice(1) };
 }
 
 interface RegionGroup {

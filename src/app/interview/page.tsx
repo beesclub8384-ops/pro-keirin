@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import RacerAvatar from "@/components/RacerAvatar";
 import type { InterviewArticle } from "@/lib/interview";
 
 const API_URL = "/api/interview/published";
@@ -53,6 +54,7 @@ function ArticleCard({
       onClick={onClick}
     >
       <div className="flex items-center gap-2 mb-2">
+        <RacerAvatar name={a.playerName} photoUrl={a.photoUrl} size={32} />
         <span className="text-lg font-bold text-foreground group-hover:text-brand transition-colors">
           {a.playerName}
         </span>

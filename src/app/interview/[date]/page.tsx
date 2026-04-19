@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, User, MapPin, Award } from "lucide-react";
+import { ChevronLeft, MapPin, Award } from "lucide-react";
 import Markdown from "react-markdown";
 import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import RacerAvatar from "@/components/RacerAvatar";
 import { fetchInterviewsByDate } from "@/lib/interview";
 
 /** 본문 시작이 "# 헤드라인" 형식이면 제거 (헤드라인은 별도 필드에서 표시) */
@@ -210,9 +211,7 @@ export default async function InterviewDatePage({
                 <CardContent className="px-6 py-8 sm:px-10 sm:py-10">
                   {/* Player info header */}
                   <div className="mb-8 flex flex-wrap items-center gap-3 border-b pb-5">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand/10 text-brand">
-                      <User className="h-5 w-5" />
-                    </div>
+                    <RacerAvatar name={article.playerName} photoUrl={article.photoUrl} size={44} />
                     <div>
                       <p className="font-bold text-lg">{article.playerName}</p>
                       <div className="flex items-center gap-2 mt-0.5">

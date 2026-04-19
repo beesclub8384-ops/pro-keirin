@@ -28,6 +28,29 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const playerNames = Array.from(
+    new Set(
+      (articles ?? [])
+        .map((a) => (a.player_name as string) ?? "")
+        .filter(Boolean),
+    ),
+  );
+  const photoUrlByName = new Map<string, string>();
+  if (playerNames.length > 0) {
+    const { data: racers } = await sb
+      .from("racer_profiles")
+      .select("name, photo_url")
+      .in("name", playerNames)
+      .not("photo_url", "is", null);
+    for (const r of racers ?? []) {
+      const n = r.name as string;
+      const u = r.photo_url as string | null;
+      if (n && u && !photoUrlByName.has(n)) {
+        photoUrlByName.set(n, u);
+      }
+    }
+  }
+
   const requestIds = Array.from(
     new Set((articles ?? []).map((a) => a.request_id as number)),
   );
@@ -56,6 +79,7 @@ export async function GET() {
     return {
       date: toKSTDate(a.published_at as string | null),
       playerName: a.player_name,
+      photoUrl: photoUrlByName.get((a.player_name as string) ?? "") ?? null,
       grade: a.grade,
       region: a.region,
       headline: (a.headline as string | null) ?? "",
