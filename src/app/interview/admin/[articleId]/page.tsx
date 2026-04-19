@@ -346,6 +346,8 @@ export default function InterviewAdminDetailPage({
                 value={headline}
                 onChange={(e) => setHeadline(e.target.value)}
                 placeholder="기사 헤드라인"
+                spellCheck
+                lang="ko"
                 className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
@@ -367,6 +369,8 @@ export default function InterviewAdminDetailPage({
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 rows={24}
+                spellCheck
+                lang="ko"
                 className="w-full resize-y rounded-lg border border-border bg-white px-3 py-3 font-mono text-[13px] leading-relaxed focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>

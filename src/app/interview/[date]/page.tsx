@@ -56,11 +56,27 @@ const mdComponents: Components = {
       {props.children}
     </h3>
   ),
-  p: (props) => (
-    <p className="text-[15px] sm:text-base leading-[1.85] text-foreground/85 mb-5">
-      {props.children}
-    </p>
-  ),
+  p: (props) => {
+    const children = props.children;
+    let firstText = "";
+    if (typeof children === "string") {
+      firstText = children;
+    } else if (Array.isArray(children) && typeof children[0] === "string") {
+      firstText = children[0];
+    }
+    const isAnswer = /^A\.\s/.test(firstText.trim());
+    return (
+      <p
+        className={
+          isAnswer
+            ? "text-[15px] sm:text-base leading-[1.85] text-blue-700 mb-5"
+            : "text-[15px] sm:text-base leading-[1.85] text-foreground/85 mb-5"
+        }
+      >
+        {props.children}
+      </p>
+    );
+  },
   img: (props) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
