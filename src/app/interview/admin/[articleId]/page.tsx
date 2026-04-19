@@ -15,6 +15,7 @@ import {
   Eye,
   Pencil,
   Rocket,
+  Search,
 } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -110,6 +111,32 @@ export default function InterviewAdminDetailPage({
   const [actionMsg, setActionMsg] = useState<string | null>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+
+  const [spellChecking, setSpellChecking] = useState(false);
+  const [spellResults, setSpellResults] = useState<
+    Array<{ wrong: string; correct: string; type: string }> | null
+  >(null);
+  const [spellError, setSpellError] = useState<string | null>(null);
+
+  async function handleSpellCheck() {
+    setSpellChecking(true);
+    setSpellResults(null);
+    setSpellError(null);
+    try {
+      const res = await fetch("/api/interview/admin/spellcheck", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: body }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "검사 실패");
+      setSpellResults(json.items ?? []);
+    } catch (err) {
+      setSpellError(err instanceof Error ? err.message : "검사 실패");
+    } finally {
+      setSpellChecking(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -373,6 +400,68 @@ export default function InterviewAdminDetailPage({
                 lang="ko"
                 className="w-full resize-y rounded-lg border border-border bg-white px-3 py-3 font-mono text-[13px] leading-relaxed focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
+              <div className="mt-3 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSpellCheck}
+                  disabled={spellChecking || !body.trim()}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground/70 hover:bg-muted disabled:opacity-50 transition-colors"
+                >
+                  {spellChecking ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Search className="h-3.5 w-3.5" />
+                  )}
+                  맞춤법 검사
+                </button>
+              </div>
+              {spellError && (
+                <p className="mt-2 text-xs text-red-500">{spellError}</p>
+              )}
+              {spellResults !== null && (
+                <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-amber-800">
+                      {spellResults.length === 0
+                        ? "맞춤법 오류가 발견되지 않았습니다"
+                        : `${spellResults.length}개의 의심 사항이 발견되었습니다`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSpellResults(null)}
+                      className="text-xs text-amber-600 hover:text-amber-800"
+                    >
+                      닫기
+                    </button>
+                  </div>
+                  {spellResults.length > 0 && (
+                    <>
+                      <p className="mb-2 text-[11px] text-amber-700">
+                        AI가 발견한 후보입니다. 본문에서 직접 수정해주세요.
+                      </p>
+                      <div className="space-y-1.5">
+                        {spellResults.map((r, i) => (
+                          <div
+                            key={i}
+                            className="flex items-baseline gap-2 text-xs"
+                          >
+                            <span className="line-through text-red-600">
+                              {r.wrong}
+                            </span>
+                            <span className="text-amber-800">→</span>
+                            <span className="font-medium text-emerald-700">
+                              {r.correct}
+                            </span>
+                            <span className="rounded bg-amber-200/60 px-1.5 py-0.5 text-[10px] text-amber-700">
+                              {r.type}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
