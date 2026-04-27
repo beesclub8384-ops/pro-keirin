@@ -19,7 +19,7 @@ import {
   type InterviewArticle,
 } from "@/lib/interview";
 
-/** 본문 시작이 "# 헤드라인" 형식이면 제거 (헤드라인은 별도 필드에서 표시) */
+/** 본문 시작이 "# 헤드라인" 형식이면 제거 (헤드라인은 카드 헤더의 선수 정보와 중복) */
 function stripLeadingHeadline(article: string): string {
   return article.replace(/^#\s+.+\n+/, "");
 }
@@ -49,14 +49,54 @@ function splitAnalysisNote(md: string): {
   return { main: md, analysis: null };
 }
 
-function flattenText(node: unknown): string {
-  if (typeof node === "string") return node;
-  if (Array.isArray(node)) return node.map(flattenText).join("");
-  if (node && typeof node === "object" && "props" in node) {
-    const inner = (node as { props?: { children?: unknown } }).props?.children;
-    return flattenText(inner);
+interface QABlock {
+  question: string;
+  answer: string;
+}
+
+/**
+ * 본문을 Q+A 블록 단위로 파싱.
+ * - "Q." 으로 시작하는 줄에서 새 블록 시작
+ * - "A." 등장 후 다음 "Q." 직전까지의 모든 라인(사진/공백 포함)은 직전 블록의 answer에 귀속
+ * - 첫 Q. 이전 라인(preamble)은 버린다 — stripLeadingHeadline 후엔 보통 비어 있음
+ */
+function parseQABlocks(text: string): QABlock[] {
+  const lines = text.split("\n");
+  const blocks: QABlock[] = [];
+  let qLines: string[] = [];
+  let aLines: string[] = [];
+  let mode: "q" | "a" | null = null;
+  let inBlock = false;
+
+  const flush = () => {
+    if (!inBlock) return;
+    blocks.push({
+      question: qLines.join("\n").trim(),
+      answer: aLines.join("\n").trim(),
+    });
+    qLines = [];
+    aLines = [];
+    mode = null;
+    inBlock = false;
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^Q\.\s/.test(trimmed)) {
+      flush();
+      inBlock = true;
+      mode = "q";
+      qLines.push(line);
+    } else if (/^A\.\s/.test(trimmed) && inBlock) {
+      mode = "a";
+      aLines.push(line);
+    } else if (inBlock) {
+      if (mode === "q") qLines.push(line);
+      else aLines.push(line);
+    }
   }
-  return "";
+  flush();
+  return blocks;
 }
 
 const dateKey = (info: Pick<RaceInfo, "year" | "round" | "day">) =>
@@ -71,10 +111,11 @@ async function resolveChangwonDates(
 ): Promise<Map<string, string>> {
   const needed = new Set<string>();
   for (const article of articles) {
-    const lines = (article.article || "").split(/\n/);
-    for (const line of lines) {
-      if (!/^Q\.\s/.test(line.trim())) continue;
-      const info = extractRaceInfo(line);
+    const blocks = parseQABlocks(
+      replacePhotoTags(stripLeadingHeadline(article.article), article.photos),
+    );
+    for (const block of blocks) {
+      const info = extractRaceInfo(block.question);
       if (!info || info.venue !== "창원") continue;
       if (info.month !== null && info.dayOfMonth !== null) continue;
       needed.add(dateKey(info));
@@ -91,108 +132,33 @@ async function resolveChangwonDates(
   return result;
 }
 
-/** 본문 마크다운 컴포넌트 — 매거진 스타일. dateMap을 클로저로 공유 */
-function buildMdComponents(dateMap: Map<string, string>): Components {
-  return {
-    h1: (props) => (
-      <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight text-foreground mt-1 mb-5">
-        {props.children}
-      </h1>
-    ),
-    h2: (props) => (
-      <h2 className="text-lg sm:text-xl font-semibold text-muted-foreground mt-10 mb-3 leading-snug">
-        {props.children}
-      </h2>
-    ),
-    h3: (props) => (
-      <h3 className="text-base sm:text-lg font-semibold text-foreground mt-8 mb-2">
-        {props.children}
-      </h3>
-    ),
-    p: (props) => {
-      const children = props.children;
-      let firstText = "";
-      if (typeof children === "string") {
-        firstText = children;
-      } else if (Array.isArray(children) && typeof children[0] === "string") {
-        firstText = children[0];
-      }
-      const isAnswer = /^A\.\s/.test(firstText.trim());
-      const isQuestion = /^Q\.\s/.test(firstText.trim());
-      const fullText = flattenText(children);
-      const info = isQuestion ? extractRaceInfo(fullText) : null;
-      const fallback =
-        info && info.venue === "창원"
-          ? dateMap.get(dateKey(info)) ?? null
-          : null;
-      const url = info ? buildRaceVideoUrl(info, fallback) : null;
-
-      return (
-        <>
-          <p
-            className={
-              isAnswer
-                ? "text-[15px] sm:text-base leading-[1.85] text-blue-700 mb-5"
-                : "text-[15px] sm:text-base leading-[1.85] text-foreground/85 mb-5"
-            }
-          >
-            {props.children}
-          </p>
-          {info && url && (
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="not-prose mb-5 flex items-center gap-3 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 transition-colors hover:bg-brand/10"
-            >
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white">
-                <Play className="h-4 w-4 fill-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-medium text-muted-foreground">
-                  해당 경주 영상
-                </div>
-                <div className="truncate text-sm font-semibold text-foreground">
-                  {info.venue} {info.round}회 {info.day}일차 {info.raceNo}경주
-                </div>
-              </div>
-              <span className="text-xs text-brand">
-                {info.venue === "창원" ? "lepopark ↗" : "kcycle ↗"}
-              </span>
-            </a>
-          )}
-        </>
-      );
-    },
-    img: (props) => (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={props.src}
-        alt={props.alt || ""}
-        className="block mx-auto my-10 w-[87%] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
-      />
-    ),
-    strong: (props) => (
-      <strong className="font-bold text-foreground">{props.children}</strong>
-    ),
-    hr: () => <hr className="my-10 border-border" />,
-    blockquote: (props) => (
-      <blockquote className="border-l-4 border-brand/30 pl-4 my-6 italic text-muted-foreground">
-        {props.children}
-      </blockquote>
-    ),
-    a: (props) => (
-      <a
-        href={props.href}
-        className="text-brand hover:underline"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {props.children}
-      </a>
-    ),
-  };
-}
+/** 블록 내부용 — Q/A 감지 로직 없이 단순 마크다운 렌더 (색상은 부모 div에서 상속) */
+const blockMdComponents: Components = {
+  p: (props) => (
+    <p className="text-[15px] sm:text-base leading-[1.85] mb-3 last:mb-0">
+      {props.children}
+    </p>
+  ),
+  img: (props) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={props.src}
+      alt={props.alt || ""}
+      className="block mx-auto my-4 w-[87%] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
+    />
+  ),
+  strong: (props) => <strong className="font-bold">{props.children}</strong>,
+  a: (props) => (
+    <a
+      href={props.href}
+      className="text-brand hover:underline"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {props.children}
+    </a>
+  ),
+};
 
 /** 📊 분석 노트용 컴포넌트 — 작고 밀도 있는 스타일 */
 const analysisComponents: Components = {
@@ -233,7 +199,6 @@ export default async function InterviewDatePage({
     : allArticles;
 
   const dateMap = await resolveChangwonDates(articles);
-  const mdComponents = buildMdComponents(dateMap);
 
   const displayDate = date.replace(
     /(\d{4})-(\d{2})-(\d{2})/,
@@ -292,6 +257,7 @@ export default async function InterviewDatePage({
               article.photos,
             );
             const { main, analysis } = splitAnalysisNote(processed);
+            const blocks = parseQABlocks(main);
 
             return (
               <Card
@@ -301,7 +267,11 @@ export default async function InterviewDatePage({
                 <CardContent className="px-6 py-8 sm:px-10 sm:py-10">
                   {/* Player info header */}
                   <div className="mb-8 flex flex-wrap items-center gap-3 border-b pb-5">
-                    <RacerAvatar name={article.playerName} photoUrl={article.photoUrl} size={44} />
+                    <RacerAvatar
+                      name={article.playerName}
+                      photoUrl={article.photoUrl}
+                      size={44}
+                    />
                     <div>
                       <p className="font-bold text-lg">{article.playerName}</p>
                       <div className="flex items-center gap-2 mt-0.5">
@@ -317,14 +287,70 @@ export default async function InterviewDatePage({
                     </div>
                   </div>
 
-                  {/* Article body */}
-                  <article>
-                    <Markdown
-                      remarkPlugins={[remarkGfm]}
-                      components={mdComponents}
-                    >
-                      {main}
-                    </Markdown>
+                  {/* Q&A blocks */}
+                  <article className="space-y-4">
+                    {blocks.map((block, bi) => {
+                      const info = extractRaceInfo(block.question);
+                      const fallback =
+                        info && info.venue === "창원"
+                          ? dateMap.get(dateKey(info)) ?? null
+                          : null;
+                      const url = info
+                        ? buildRaceVideoUrl(info, fallback)
+                        : null;
+
+                      return (
+                        <div
+                          key={bi}
+                          className="rounded-xl border border-border/50 bg-white px-5 py-4 shadow-sm"
+                        >
+                          <div className="font-semibold text-foreground">
+                            <Markdown
+                              remarkPlugins={[remarkGfm]}
+                              components={blockMdComponents}
+                            >
+                              {block.question}
+                            </Markdown>
+                          </div>
+                          {block.answer && (
+                            <div className="mt-3 text-blue-700">
+                              <Markdown
+                                remarkPlugins={[remarkGfm]}
+                                components={blockMdComponents}
+                              >
+                                {block.answer}
+                              </Markdown>
+                            </div>
+                          )}
+                          {info && url && (
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="not-prose mt-4 flex items-center gap-3 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 transition-colors hover:bg-brand/10"
+                            >
+                              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white">
+                                <Play className="h-4 w-4 fill-white" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs font-medium text-muted-foreground">
+                                  해당 경주 영상
+                                </div>
+                                <div className="truncate text-sm font-semibold text-foreground">
+                                  {info.venue} {info.round}회 {info.day}일차{" "}
+                                  {info.raceNo}경주
+                                </div>
+                              </div>
+                              <span className="text-xs text-brand">
+                                {info.venue === "창원"
+                                  ? "lepopark ↗"
+                                  : "kcycle ↗"}
+                              </span>
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
                   </article>
 
                   {/* 📊 Analysis note */}
