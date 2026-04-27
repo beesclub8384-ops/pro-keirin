@@ -26,13 +26,17 @@ const CHANGWON_DAY_LETTER: Record<number, string> = {
 
 const VENUE_RE = /(광명|창원|부산)/;
 const YEAR_RE = /(\d{4})년/;
-const ROUND_RE = /(\d+)회/;
+// "16회" 또는 "17회차" — 차 접미사는 선택
+const ROUND_RE = /(\d+)회(?:차)?/;
 const DAY_RE = /(\d+)일차/;
-const RACE_RE = /(\d+)경주/;
+// "07경주" 또는 "06R/6R" — 경주번호 표기 두 가지 모두 지원
+const RACE_RE = /(\d+)(?:경주|R)/;
 const DATE_RE = /(\d{1,2})월\s*(\d{1,2})일/;
 
 // venue 토큰 좌우 윈도우 — 한 단락 안에서 토큰 순서가 바뀌어도 잡히도록.
-const WINDOW = 30;
+// 40자: "광명 12경주 (우수결승, 2026년 04월 19일 16회 3일차)" 같이 부속어가
+// 끼어 늘어나는 케이스까지 포괄.
+const WINDOW = 40;
 
 /**
  * 텍스트에서 경주 정보를 감지. 순서 무관, venue 좌우 WINDOW자 안에 모든 요소가 있으면 매칭.
