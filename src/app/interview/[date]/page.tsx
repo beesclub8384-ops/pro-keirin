@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { ChevronLeft, MapPin, Award, Play } from "lucide-react";
-import { extractRaceVideo } from "@/lib/race-video";
+import {
+  extractRaceInfo,
+  buildRaceVideoUrl,
+  type RaceInfo,
+} from "@/lib/race-video";
+import { lookupRaceDate } from "@/lib/race-date";
 import Markdown from "react-markdown";
 import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -9,7 +14,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import RacerAvatar from "@/components/RacerAvatar";
-import { fetchInterviewsByDate } from "@/lib/interview";
+import {
+  fetchInterviewsByDate,
+  type InterviewArticle,
+} from "@/lib/interview";
 
 /** 본문 시작이 "# 헤드라인" 형식이면 제거 (헤드라인은 별도 필드에서 표시) */
 function stripLeadingHeadline(article: string): string {
@@ -41,110 +49,150 @@ function splitAnalysisNote(md: string): {
   return { main: md, analysis: null };
 }
 
-/** 본문 마크다운 컴포넌트 — 매거진 스타일 */
-const mdComponents: Components = {
-  h1: (props) => (
-    <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight text-foreground mt-1 mb-5">
-      {props.children}
-    </h1>
-  ),
-  h2: (props) => (
-    <h2 className="text-lg sm:text-xl font-semibold text-muted-foreground mt-10 mb-3 leading-snug">
-      {props.children}
-    </h2>
-  ),
-  h3: (props) => (
-    <h3 className="text-base sm:text-lg font-semibold text-foreground mt-8 mb-2">
-      {props.children}
-    </h3>
-  ),
-  p: (props) => {
-    const children = props.children;
-    let firstText = "";
-    function flattenText(node: unknown): string {
-      if (typeof node === "string") return node;
-      if (Array.isArray(node)) return node.map(flattenText).join("");
-      if (node && typeof node === "object" && "props" in node) {
-        const inner = (node as { props?: { children?: unknown } }).props
-          ?.children;
-        return flattenText(inner);
-      }
-      return "";
-    }
-    if (typeof children === "string") {
-      firstText = children;
-    } else if (Array.isArray(children) && typeof children[0] === "string") {
-      firstText = children[0];
-    }
-    const isAnswer = /^A\.\s/.test(firstText.trim());
-    const isQuestion = /^Q\.\s/.test(firstText.trim());
-    const fullText = flattenText(children);
-    const raceVideo = isQuestion ? extractRaceVideo(fullText) : null;
+function flattenText(node: unknown): string {
+  if (typeof node === "string") return node;
+  if (Array.isArray(node)) return node.map(flattenText).join("");
+  if (node && typeof node === "object" && "props" in node) {
+    const inner = (node as { props?: { children?: unknown } }).props?.children;
+    return flattenText(inner);
+  }
+  return "";
+}
 
-    return (
-      <>
-        <p
-          className={
-            isAnswer
-              ? "text-[15px] sm:text-base leading-[1.85] text-blue-700 mb-5"
-              : "text-[15px] sm:text-base leading-[1.85] text-foreground/85 mb-5"
-          }
-        >
-          {props.children}
-        </p>
-        {raceVideo && (
-          <a
-            href={raceVideo.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="not-prose mb-5 flex items-center gap-3 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 transition-colors hover:bg-brand/10"
+const dateKey = (info: Pick<RaceInfo, "year" | "round" | "day">) =>
+  `${info.year}-${info.round}-${info.day}`;
+
+/**
+ * Q. 단락 사전 스캔 — 본문에 날짜가 빠진 창원 경주만 (year, round, day) 키로 모아
+ * decision_card_pages에서 일괄 조회. URL 빌드 시 fallbackDate로 주입한다.
+ */
+async function resolveChangwonDates(
+  articles: InterviewArticle[],
+): Promise<Map<string, string>> {
+  const needed = new Set<string>();
+  for (const article of articles) {
+    const lines = (article.article || "").split(/\n/);
+    for (const line of lines) {
+      if (!/^Q\.\s/.test(line.trim())) continue;
+      const info = extractRaceInfo(line);
+      if (!info || info.venue !== "창원") continue;
+      if (info.month !== null && info.dayOfMonth !== null) continue;
+      needed.add(dateKey(info));
+    }
+  }
+  const result = new Map<string, string>();
+  await Promise.all(
+    Array.from(needed).map(async (key) => {
+      const [y, r, d] = key.split("-").map(Number);
+      const date = await lookupRaceDate(y, r, d);
+      if (date) result.set(key, date);
+    }),
+  );
+  return result;
+}
+
+/** 본문 마크다운 컴포넌트 — 매거진 스타일. dateMap을 클로저로 공유 */
+function buildMdComponents(dateMap: Map<string, string>): Components {
+  return {
+    h1: (props) => (
+      <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight text-foreground mt-1 mb-5">
+        {props.children}
+      </h1>
+    ),
+    h2: (props) => (
+      <h2 className="text-lg sm:text-xl font-semibold text-muted-foreground mt-10 mb-3 leading-snug">
+        {props.children}
+      </h2>
+    ),
+    h3: (props) => (
+      <h3 className="text-base sm:text-lg font-semibold text-foreground mt-8 mb-2">
+        {props.children}
+      </h3>
+    ),
+    p: (props) => {
+      const children = props.children;
+      let firstText = "";
+      if (typeof children === "string") {
+        firstText = children;
+      } else if (Array.isArray(children) && typeof children[0] === "string") {
+        firstText = children[0];
+      }
+      const isAnswer = /^A\.\s/.test(firstText.trim());
+      const isQuestion = /^Q\.\s/.test(firstText.trim());
+      const fullText = flattenText(children);
+      const info = isQuestion ? extractRaceInfo(fullText) : null;
+      const fallback =
+        info && info.venue === "창원"
+          ? dateMap.get(dateKey(info)) ?? null
+          : null;
+      const url = info ? buildRaceVideoUrl(info, fallback) : null;
+
+      return (
+        <>
+          <p
+            className={
+              isAnswer
+                ? "text-[15px] sm:text-base leading-[1.85] text-blue-700 mb-5"
+                : "text-[15px] sm:text-base leading-[1.85] text-foreground/85 mb-5"
+            }
           >
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white">
-              <Play className="h-4 w-4 fill-white" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-medium text-muted-foreground">
-                해당 경주 영상
+            {props.children}
+          </p>
+          {info && url && (
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="not-prose mb-5 flex items-center gap-3 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 transition-colors hover:bg-brand/10"
+            >
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white">
+                <Play className="h-4 w-4 fill-white" />
               </div>
-              <div className="truncate text-sm font-semibold text-foreground">
-                {raceVideo.venue} {raceVideo.round}회 {raceVideo.day}일차{" "}
-                {raceVideo.raceNo}경주
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-medium text-muted-foreground">
+                  해당 경주 영상
+                </div>
+                <div className="truncate text-sm font-semibold text-foreground">
+                  {info.venue} {info.round}회 {info.day}일차 {info.raceNo}경주
+                </div>
               </div>
-            </div>
-            <span className="text-xs text-brand">kcycle ↗</span>
-          </a>
-        )}
-      </>
-    );
-  },
-  img: (props) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={props.src}
-      alt={props.alt || ""}
-      className="block mx-auto my-10 w-[87%] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
-    />
-  ),
-  strong: (props) => (
-    <strong className="font-bold text-foreground">{props.children}</strong>
-  ),
-  hr: () => <hr className="my-10 border-border" />,
-  blockquote: (props) => (
-    <blockquote className="border-l-4 border-brand/30 pl-4 my-6 italic text-muted-foreground">
-      {props.children}
-    </blockquote>
-  ),
-  a: (props) => (
-    <a
-      href={props.href}
-      className="text-brand hover:underline"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {props.children}
-    </a>
-  ),
-};
+              <span className="text-xs text-brand">
+                {info.venue === "창원" ? "lepopark ↗" : "kcycle ↗"}
+              </span>
+            </a>
+          )}
+        </>
+      );
+    },
+    img: (props) => (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={props.src}
+        alt={props.alt || ""}
+        className="block mx-auto my-10 w-[87%] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
+      />
+    ),
+    strong: (props) => (
+      <strong className="font-bold text-foreground">{props.children}</strong>
+    ),
+    hr: () => <hr className="my-10 border-border" />,
+    blockquote: (props) => (
+      <blockquote className="border-l-4 border-brand/30 pl-4 my-6 italic text-muted-foreground">
+        {props.children}
+      </blockquote>
+    ),
+    a: (props) => (
+      <a
+        href={props.href}
+        className="text-brand hover:underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {props.children}
+      </a>
+    ),
+  };
+}
 
 /** 📊 분석 노트용 컴포넌트 — 작고 밀도 있는 스타일 */
 const analysisComponents: Components = {
@@ -183,6 +231,9 @@ export default async function InterviewDatePage({
   const articles = player
     ? allArticles.filter((a) => a.playerName === player)
     : allArticles;
+
+  const dateMap = await resolveChangwonDates(articles);
+  const mdComponents = buildMdComponents(dateMap);
 
   const displayDate = date.replace(
     /(\d{4})-(\d{2})-(\d{2})/,
