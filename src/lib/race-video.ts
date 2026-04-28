@@ -16,14 +16,6 @@ export interface RaceVideoInfo extends RaceInfo {
   url: string;
 }
 
-// 창원 VOD 파일명의 요일 접두사 — 금=f, 토/일=s. 토/일이 같은 's'이므로
-// 파일명 안의 일차(DD) 숫자로만 구분된다.
-const CHANGWON_DAY_LETTER: Record<number, string> = {
-  1: "f",
-  2: "s",
-  3: "s",
-};
-
 const VENUE_RE = /(광명|창원|부산)/;
 const YEAR_RE = /(\d{4})년/;
 // "16회" 또는 "17회차" — 차 접미사는 선택
@@ -77,7 +69,7 @@ export function extractRaceInfo(text: string): RaceInfo | null {
  * 파싱된 경주 정보를 영상 URL로 빌드.
  * - 광명: kcycle popup URL — variant "F"=전체재생, "M"=유도원 퇴피후. 날짜 불필요
  * - 창원: lepopark VOD URL — 날짜 필수. info에 월/일이 없으면 fallbackDate("YYYY-MM-DD") 에서 채움.
- *   유도원 퇴피후(M) 패턴은 미확인이므로 variant "M" 요청 시 null
+ *   파일명 prefix는 variant로만 결정: "F"=f, "M"=s (요일/일차 무관, kcycle 응답으로 검증).
  * - 부산: 미지원 (null)
  */
 export function buildRaceVideoUrl(
@@ -92,7 +84,6 @@ export function buildRaceVideoUrl(
   }
 
   if (info.venue === "창원") {
-    if (variant === "M") return null;
     let month = info.month;
     let dayOfMonth = info.dayOfMonth;
     if ((month === null || dayOfMonth === null) && fallbackDate) {
@@ -103,13 +94,12 @@ export function buildRaceVideoUrl(
       }
     }
     if (month === null || dayOfMonth === null) return null;
-    const dayLetter = CHANGWON_DAY_LETTER[info.day];
-    if (!dayLetter) return null;
+    const prefix = variant === "F" ? "f" : "s";
     const mm = String(month).padStart(2, "0");
     const dd = String(dayOfMonth).padStart(2, "0");
     const roundPadded = String(info.round).padStart(2, "0");
     const dayPadded = String(info.day).padStart(2, "0");
-    return `https://vod.lepopark.or.kr/${info.year}/${mm}-${dd}/${dayLetter}${roundPadded}${dayPadded}_${raceNoPadded}.mp4`;
+    return `https://vod.lepopark.or.kr/${info.year}/${mm}-${dd}/${prefix}${roundPadded}${dayPadded}_${raceNoPadded}.mp4`;
   }
 
   return null;
