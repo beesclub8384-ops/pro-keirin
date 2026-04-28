@@ -295,8 +295,11 @@ export default async function InterviewDatePage({
                         info && info.venue === "창원"
                           ? dateMap.get(dateKey(info)) ?? null
                           : null;
-                      const url = info
-                        ? buildRaceVideoUrl(info, fallback)
+                      const fullUrl = info
+                        ? buildRaceVideoUrl(info, fallback, "F")
+                        : null;
+                      const halfUrl = info
+                        ? buildRaceVideoUrl(info, fallback, "M")
                         : null;
 
                       return (
@@ -322,31 +325,45 @@ export default async function InterviewDatePage({
                               </Markdown>
                             </div>
                           )}
-                          {info && url && (
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="not-prose mt-4 flex items-center gap-3 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 transition-colors hover:bg-brand/10"
-                            >
-                              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white">
-                                <Play className="h-4 w-4 fill-white" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="text-xs font-medium text-muted-foreground">
-                                  해당 경주 영상
+                          {info && fullUrl && (
+                            <div className="not-prose mt-4 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3">
+                              <div className="mb-3 flex items-center gap-3">
+                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white">
+                                  <Play className="h-4 w-4 fill-white" />
                                 </div>
-                                <div className="truncate text-sm font-semibold text-foreground">
-                                  {info.venue} {info.round}회 {info.day}일차{" "}
-                                  {info.raceNo}경주
+                                <div className="min-w-0 flex-1">
+                                  <div className="text-xs font-medium text-muted-foreground">
+                                    해당 경주 영상
+                                  </div>
+                                  <div className="truncate text-sm font-semibold text-foreground">
+                                    {info.venue} {info.round}회 {info.day}일차{" "}
+                                    {info.raceNo}경주
+                                  </div>
                                 </div>
                               </div>
-                              <span className="text-xs text-brand">
-                                {info.venue === "창원"
-                                  ? "lepopark ↗"
-                                  : "kcycle ↗"}
-                              </span>
-                            </a>
+                              <div className="flex gap-2">
+                                <a
+                                  href={fullUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand/90"
+                                >
+                                  <Play className="h-3.5 w-3.5 fill-white" />
+                                  전체재생
+                                </a>
+                                {halfUrl && (
+                                  <a
+                                    href={halfUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-brand/40 bg-white px-3 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand/10"
+                                  >
+                                    <Play className="h-3.5 w-3.5" />
+                                    유도원 퇴피후
+                                  </a>
+                                )}
+                              </div>
+                            </div>
                           )}
                         </div>
                       );

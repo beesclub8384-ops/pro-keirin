@@ -75,21 +75,24 @@ export function extractRaceInfo(text: string): RaceInfo | null {
 
 /**
  * 파싱된 경주 정보를 영상 URL로 빌드.
- * - 광명: kcycle popup URL — 날짜 불필요
- * - 창원: lepopark VOD URL — 날짜 필수. info에 월/일이 없으면 fallbackDate("YYYY-MM-DD") 에서 채움
+ * - 광명: kcycle popup URL — variant "F"=전체재생, "M"=유도원 퇴피후. 날짜 불필요
+ * - 창원: lepopark VOD URL — 날짜 필수. info에 월/일이 없으면 fallbackDate("YYYY-MM-DD") 에서 채움.
+ *   유도원 퇴피후(M) 패턴은 미확인이므로 variant "M" 요청 시 null
  * - 부산: 미지원 (null)
  */
 export function buildRaceVideoUrl(
   info: RaceInfo,
   fallbackDate?: string | null,
+  variant: "F" | "M" = "F",
 ): string | null {
   const raceNoPadded = String(info.raceNo).padStart(2, "0");
 
   if (info.venue === "광명") {
-    return `https://www.kcycle.or.kr/broadcast/popup/race/${info.year}/${info.round}/${info.day}/001/${raceNoPadded}/F`;
+    return `https://www.kcycle.or.kr/broadcast/popup/race/${info.year}/${info.round}/${info.day}/001/${raceNoPadded}/${variant}`;
   }
 
   if (info.venue === "창원") {
+    if (variant === "M") return null;
     let month = info.month;
     let dayOfMonth = info.dayOfMonth;
     if ((month === null || dayOfMonth === null) && fallbackDate) {
