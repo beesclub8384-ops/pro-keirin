@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 
+export const revalidate = 60;
+
 function toKSTDate(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
@@ -89,5 +91,9 @@ export async function GET() {
     };
   });
 
-  return NextResponse.json(result);
+  return NextResponse.json(result, {
+    headers: {
+      "Cache-Control": "s-maxage=60, stale-while-revalidate=300",
+    },
+  });
 }
