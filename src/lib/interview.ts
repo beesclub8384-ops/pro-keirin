@@ -32,26 +32,30 @@ function asStringArray(v: unknown): string[] {
   return v.filter((x): x is string => typeof x === "string");
 }
 
-/** Supabase에서 published 상태의 인터뷰 기사를 직접 조회 */
-export async function fetchInterviews(): Promise<InterviewArticle[]> {
+type ArticleRow = {
+  request_id: number;
+  player_name: string | null;
+  grade: string | null;
+  region: string | null;
+  headline: string | null;
+  article_raw: string | null;
+  article_edited: string | null;
+  photos: unknown;
+  published_at: string | null;
+};
+
+/**
+ * 조회된 articles에 racer 사진 + interview_responses 사진을 결합해 InterviewArticle[]로 변환.
+ * fetchInterviews / fetchInterviewsByDate 둘 다 같은 enrichment를 쓰므로 헬퍼로 추출.
+ */
+async function enrichArticles(
+  articles: ArticleRow[],
+): Promise<InterviewArticle[]> {
+  if (articles.length === 0) return [];
   const sb = createAdminClient();
 
-  const { data: articles, error } = await sb
-    .from("interview_articles")
-    .select(
-      "request_id, player_name, grade, region, headline, article_raw, article_edited, photos, published_at",
-    )
-    .eq("status", "published")
-    .order("published_at", { ascending: false });
-
-  if (error || !articles) return [];
-
   const playerNames = Array.from(
-    new Set(
-      articles
-        .map((a) => (a.player_name as string) ?? "")
-        .filter(Boolean),
-    ),
+    new Set(articles.map((a) => a.player_name ?? "").filter(Boolean)),
   );
   const photoUrlByName = new Map<string, string>();
   if (playerNames.length > 0) {
@@ -69,10 +73,7 @@ export async function fetchInterviews(): Promise<InterviewArticle[]> {
     }
   }
 
-  const requestIds = Array.from(
-    new Set(articles.map((a) => a.request_id as number)),
-  );
-
+  const requestIds = Array.from(new Set(articles.map((a) => a.request_id)));
   const photosByReq = new Map<number, string[]>();
   if (requestIds.length > 0) {
     const { data: responses } = await sb
@@ -91,30 +92,66 @@ export async function fetchInterviews(): Promise<InterviewArticle[]> {
 
   return articles.map((a) => {
     const articlePhotos = asStringArray(a.photos);
-    const responsePhotos = photosByReq.get(a.request_id as number) ?? [];
+    const responsePhotos = photosByReq.get(a.request_id) ?? [];
     const uniquePhotos = Array.from(
       new Set([...articlePhotos, ...responsePhotos]),
     );
     return {
-      date: toKSTDate(a.published_at as string | null),
-      playerName: (a.player_name as string) ?? "",
-      photoUrl: photoUrlByName.get((a.player_name as string) ?? "") ?? null,
-      grade: (a.grade as string) ?? "",
-      region: (a.region as string) ?? "",
-      headline: (a.headline as string | null) ?? "",
-      article:
-        (a.article_edited as string | null) ??
-        (a.article_raw as string | null) ??
-        "",
+      date: toKSTDate(a.published_at),
+      playerName: a.player_name ?? "",
+      photoUrl: photoUrlByName.get(a.player_name ?? "") ?? null,
+      grade: a.grade ?? "",
+      region: a.region ?? "",
+      headline: a.headline ?? "",
+      article: a.article_edited ?? a.article_raw ?? "",
       docLink: "",
       photos: uniquePhotos,
     };
   });
 }
 
+/** Supabase에서 published 상태의 인터뷰 기사를 직접 조회 */
+export async function fetchInterviews(): Promise<InterviewArticle[]> {
+  const sb = createAdminClient();
+
+  const { data: articles, error } = await sb
+    .from("interview_articles")
+    .select(
+      "request_id, player_name, grade, region, headline, article_raw, article_edited, photos, published_at",
+    )
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+
+  if (error || !articles) return [];
+  return enrichArticles(articles as ArticleRow[]);
+}
+
+/**
+ * 특정 KST 날짜의 published 인터뷰만 조회.
+ * published_at은 timestamp이므로 KST 자정 ~ 다음 날 KST 자정 범위로 SQL 필터를 건다.
+ */
 export async function fetchInterviewsByDate(
   date: string,
 ): Promise<InterviewArticle[]> {
-  const all = await fetchInterviews();
-  return all.filter((a) => a.date === date);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+
+  const startKstUtc = `${date}T00:00:00+09:00`;
+  const next = new Date(startKstUtc);
+  next.setUTCDate(next.getUTCDate() + 1);
+  const endKstUtc = next.toISOString();
+
+  const sb = createAdminClient();
+
+  const { data: articles, error } = await sb
+    .from("interview_articles")
+    .select(
+      "request_id, player_name, grade, region, headline, article_raw, article_edited, photos, published_at",
+    )
+    .eq("status", "published")
+    .gte("published_at", startKstUtc)
+    .lt("published_at", endKstUtc)
+    .order("published_at", { ascending: false });
+
+  if (error || !articles) return [];
+  return enrichArticles(articles as ArticleRow[]);
 }
