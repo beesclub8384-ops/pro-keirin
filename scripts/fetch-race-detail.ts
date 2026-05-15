@@ -436,6 +436,7 @@ async function seedToSupabase(races: RaceDetail[]): Promise<void> {
     day: r.day,
     race_no: r.raceNo,
     date: r.date,
+    venue: '광명',
     env_time: r.environment?.time || null,
     env_weather: r.environment?.weather || null,
     env_wind_dir: r.environment?.windDir || null,
@@ -451,7 +452,7 @@ async function seedToSupabase(races: RaceDetail[]): Promise<void> {
     const batch = raceRows.slice(i, i + BATCH_SIZE);
     const { error } = await supabase
       .from("races")
-      .upsert(batch, { onConflict: "year,round,day,race_no" });
+      .upsert(batch, { onConflict: "year,round,day,race_no,venue" });
     if (error) {
       console.error(`  races upsert 에러 (batch ${i}):`, error.message);
     }
@@ -467,7 +468,8 @@ async function seedToSupabase(races: RaceDetail[]): Promise<void> {
     .select("id, year, round, day, race_no")
     .eq("year", year)
     .eq("round", round)
-    .eq("day", day);
+    .eq("day", day)
+    .eq("venue", '광명');
 
   if (fetchErr || !insertedRaces) {
     console.error("  race ID 조회 에러:", fetchErr?.message);
