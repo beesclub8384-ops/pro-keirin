@@ -1,0 +1,42 @@
+name: Changwon Race Results (lepopark)
+
+# 창원 경주일: KST 금/토/일 12:50~20:00 = UTC 금/토/일 03:50~11:00
+# cron 요일: 0=일, 1=월, ..., 5=금, 6=토
+# KST 금 → UTC 금(5), KST 토 → UTC 토(6), KST 일 → UTC 일(0)
+on:
+  schedule:
+    # 매 10분, UTC 04~09시 (KST 13~18시), 금/토/일
+    - cron: '*/10 4-9 * * 0,5,6'
+    # 첫 수집: UTC 03:50 (KST 12:50)
+    - cron: '50 3 * * 0,5,6'
+    # 마감 수집: UTC 10:00 (KST 19:00)
+    - cron: '0 10 * * 0,5,6'
+    # 최종 sweep: UTC 11:00 (KST 20:00) - 모든 경주 확정 후 최종 수집
+    - cron: '0 11 * * 0,5,6'
+  workflow_dispatch:
+
+jobs:
+  fetch-and-seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch Changwon race results and seed to Supabase
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/fetch-changwon-results.ts
