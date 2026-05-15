@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     if (!round) {
       // Paginate to get ALL races for this year (can exceed 1000)
       const races = await fetchAllRows(
-        supabase.from("races").select("round, day").eq("year", yearNum)
+        supabase.from("races").select("round, day").eq("year", yearNum).eq("venue", "광명")
       );
 
       const totalRaces = races.length;
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       }
 
       const rounds = Array.from(roundDayMap.entries())
-        .sort(([a], [b]) => a - b)
+        .sort(([a], [b]) => parseInt(a) - parseInt(b))
         .map(([r, days]) => ({
           round: r,
           days: Array.from(days).sort((a, b) => a - b),
@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
       .select("*")
       .eq("year", yearNum)
       .eq("round", roundNum)
+      .eq("venue", "광명")
       .order("race_no", { ascending: true });
 
     if (dayNum) {
