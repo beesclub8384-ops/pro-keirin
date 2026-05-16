@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const year = sp.get("year");
     const round = sp.get("round");
     const day = sp.get("day");
+    const venue = sp.get("venue") || "광명";
 
     if (!year) {
       const years = await getDistinctYears("races");
@@ -20,19 +21,20 @@ export async function GET(request: NextRequest) {
     if (!round) {
       // Paginate to get ALL races for this year (can exceed 1000)
       const races = await fetchAllRows(
-        supabase.from("races").select("round, day").eq("year", yearNum).eq("venue", "광명")
+        supabase.from("races").select("round, day").eq("year", yearNum).eq("venue", venue)
       );
 
       const totalRaces = races.length;
-      const roundDayMap = new Map<number, Set<number>>();
+      const roundDayMap = new Map<string, Set<number>>();
       for (const race of races) {
-        const r = race as { round: number; day: number };
+        const r = race as { round: string; day: number };
         if (!roundDayMap.has(r.round)) roundDayMap.set(r.round, new Set());
         roundDayMap.get(r.round)!.add(r.day);
       }
 
       const rounds = Array.from(roundDayMap.entries())
-        .sort(([a], [b]) => parseInt(a) - parseInt(b))
+        // round 는 text 컬럼 (예: "18A" 보강회차) — 숫자 인식 텍스트 정렬
+        .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
         .map(([r, days]) => ({
           round: r,
           days: Array.from(days).sort((a, b) => a - b),
@@ -41,16 +43,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ year: yearNum, totalRaces, rounds });
     }
 
-    const roundNum = parseInt(round, 10);
     const dayNum = day ? parseInt(day, 10) : null;
 
     // Fetch races (per round+day, max ~50 rows)
+    // round 는 text 컬럼 → 문자열 그대로 필터 ("18A" 등 보강회차 대응)
     let raceQuery = supabase
       .from("races")
       .select("*")
       .eq("year", yearNum)
-      .eq("round", roundNum)
-      .eq("venue", "광명")
+      .eq("round", round)
+      .eq("venue", venue)
       .order("race_no", { ascending: true });
 
     if (dayNum) {
@@ -61,7 +63,7 @@ export async function GET(request: NextRequest) {
     if (raceErr || !raceRows) return NextResponse.json({ error: raceErr?.message || "Data not found" }, { status: 404 });
 
     if (raceRows.length === 0) {
-      return NextResponse.json({ year: yearNum, round: roundNum, day: dayNum, races: [] });
+      return NextResponse.json({ year: yearNum, round, day: dayNum, races: [] });
     }
 
     const raceIds = raceRows.map((r) => r.id);
@@ -168,7 +170,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       year: yearNum,
-      round: roundNum,
+      round,
       day: dayNum,
       races,
     });

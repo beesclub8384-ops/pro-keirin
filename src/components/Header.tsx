@@ -21,8 +21,8 @@ const navItems: NavItem[] = [
     href: "/data/race-results",
     children: [
       { label: "광명스피돔", href: "/data/race-results" },
-      { label: "창원레포츠파크", href: "#", disabled: true },
-      { label: "부산스포원파크", href: "#", disabled: true },
+      { label: "창원레포츠파크", href: "/data/race-results?venue=창원" },
+      { label: "부산스포원파크", href: "/data/race-results?venue=부산" },
     ],
   },
   {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -63,9 +64,11 @@ interface RaceEnvironment {
   lastLap: string;
 }
 
+const VENUES = ["광명", "창원", "부산"] as const;
+
 interface Race {
   year: number;
-  round: number;
+  round: string;
   day: number;
   raceNo: number;
   date: string;
@@ -75,11 +78,26 @@ interface Race {
 }
 
 interface RoundMeta {
-  round: number;
+  round: string;
   days: number[];
 }
 
 export default function RaceResultsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-muted-foreground">로딩 중...</div>}>
+      <RaceResultsContent />
+    </Suspense>
+  );
+}
+
+function RaceResultsContent() {
+  const searchParams = useSearchParams();
+  const initialVenue = (() => {
+    const v = searchParams.get("venue");
+    return v && (VENUES as readonly string[]).includes(v) ? v : "광명";
+  })();
+
+  const [venue, setVenue] = useState<string>(initialVenue);
   const [years, setYears] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [rounds, setRounds] = useState<RoundMeta[]>([]);
@@ -99,26 +117,34 @@ export default function RaceResultsPage() {
       });
   }, []);
 
-  // Load rounds when year changes
+  // Sync venue → URL (?venue=창원). 광명은 기본값이라 파라미터 생략
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    if (venue === "광명") u.searchParams.delete("venue");
+    else u.searchParams.set("venue", venue);
+    window.history.replaceState(null, "", u.toString());
+  }, [venue]);
+
+  // Load rounds when year or venue changes
   useEffect(() => {
     if (!selectedYear) return;
     setSelectedRound("");
     setSelectedDay("");
     setRaces([]);
-    fetch(`/api/data/race-results?year=${selectedYear}`)
+    fetch(`/api/data/race-results?year=${selectedYear}&venue=${encodeURIComponent(venue)}`)
       .then((r) => r.json())
       .then((d) => {
         setRounds(d.rounds || []);
         if (d.rounds?.length) setSelectedRound(String(d.rounds[d.rounds.length - 1].round));
       });
-  }, [selectedYear]);
+  }, [selectedYear, venue]);
 
   // Update days when round changes
   useEffect(() => {
     if (!selectedRound) return;
     setSelectedDay("");
     setRaces([]);
-    const found = rounds.find((r) => r.round === parseInt(selectedRound, 10));
+    const found = rounds.find((r) => String(r.round) === selectedRound);
     if (found) {
       setDays(found.days);
       setSelectedDay(String(found.days[found.days.length - 1]));
@@ -131,14 +157,14 @@ export default function RaceResultsPage() {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/data/race-results?year=${selectedYear}&round=${selectedRound}&day=${selectedDay}`
+        `/api/data/race-results?year=${selectedYear}&round=${encodeURIComponent(selectedRound)}&day=${selectedDay}&venue=${encodeURIComponent(venue)}`
       );
       const d = await res.json();
       setRaces(d.races || []);
     } finally {
       setLoading(false);
     }
-  }, [selectedYear, selectedRound, selectedDay]);
+  }, [selectedYear, selectedRound, selectedDay, venue]);
 
   useEffect(() => {
     loadRaces();
@@ -160,6 +186,17 @@ export default function RaceResultsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
+        <Select value={venue} onValueChange={setVenue}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="경기장" />
+          </SelectTrigger>
+          <SelectContent>
+            {VENUES.map((v) => (
+              <SelectItem key={v} value={v}>{v}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <Select value={selectedYear} onValueChange={setSelectedYear}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="연도" />
