@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase, getDistinctYears, fetchAllRows } from "@/lib/supabase";
+import { getSupabase, fetchAllRows } from "@/lib/supabase";
 import { transformRaceWithResults } from "@/lib/db-transformers";
 
 export async function GET(request: NextRequest) {
@@ -12,7 +12,22 @@ export async function GET(request: NextRequest) {
     const venue = sp.get("venue") || "광명";
 
     if (!year) {
-      const years = await getDistinctYears("races");
+      // 선택한 경기장(venue)에 데이터가 있는 연도만 반환
+      const currentYear = new Date().getFullYear();
+      const checks = Array.from(
+        { length: currentYear - 2003 + 1 },
+        (_, i) => 2003 + i
+      ).map(async (y) => {
+        const { count } = await supabase
+          .from("races")
+          .select("*", { count: "exact", head: true })
+          .eq("year", y)
+          .eq("venue", venue);
+        return count && count > 0 ? y : null;
+      });
+      const years = (await Promise.all(checks))
+        .filter((y): y is number => y !== null)
+        .sort((a, b) => b - a);
       return NextResponse.json({ years });
     }
 
