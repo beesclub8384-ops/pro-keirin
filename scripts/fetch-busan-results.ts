@@ -113,6 +113,26 @@ interface RaceEnv {
   lastLap: string;
 }
 
+// 결과 페이지 선수행에 박혀 있는 raceReason.do 링크 참조
+interface ReasonRef {
+  backNo: number;
+  name: string;
+  query: string; // raceReason.do 쿼리스트링 (RACEYY=..&...&RACEID=..)
+  raceId: string; // RACEID (선수ID) — 중복 제거 키
+}
+
+interface Violation {
+  backNo: number;
+  name: string;
+  violationTime: string; // 위반시기 (예: "4주회")
+  violationPlace: string; // 위반장소 (예: "3코너부근")
+  article: string; // 저촉조 (예: "72")
+  paragraph: string; // 저촉항 (없으면 "-")
+  clause: string; // 저촉호 (예: "2", 없으면 "-")
+  judgment: string; // 판정구분 (실격/경고/주의)
+  description: string; // 경륜시행규정명 + 설명
+}
+
 interface BusanRace {
   year: number;
   round: string;
@@ -121,6 +141,8 @@ interface BusanRace {
   date: string; // YYYY-MM-DD
   env: RaceEnv;
   results: RacerResult[];
+  reasonRefs: ReasonRef[]; // 임시: raceReason.do 조회 대상
+  violations: Violation[];
 }
 
 // ---------- API: 해당 월 경주일 목록 ----------
@@ -199,7 +221,11 @@ function parseRoundDay(
 }
 
 // 한 경주 블록에서 12컬럼(+번호) 선수 데이터 + 환경 추출
-function parseBlock(block: string): { env: RaceEnv; results: RacerResult[] } {
+function parseBlock(block: string): {
+  env: RaceEnv;
+  results: RacerResult[];
+  reasonRefs: ReasonRef[];
+} {
   const env: RaceEnv = {
     time: "",
     weather: "",
@@ -237,6 +263,7 @@ function parseBlock(block: string): { env: RaceEnv; results: RacerResult[] } {
 
   // 선수 상세 테이블: thead 에 "선수명" 이 있는 race_t02 의 tbody
   const results: RacerResult[] = [];
+  const reasonRefs: ReasonRef[] = [];
   const nameIdx = block.indexOf("선수명");
   if (nameIdx > -1) {
     const tb = block.substring(nameIdx).match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/);
@@ -278,11 +305,100 @@ function parseBlock(block: string): { env: RaceEnv; results: RacerResult[] } {
           record200m: txt(11),
           speed200m: speedRaw && !isNaN(parseFloat(speedRaw)) ? parseFloat(speedRaw) : null,
         });
+
+        // 이 선수행에 raceReason.do 링크가 있으면 판정 조회 대상으로 기록
+        // (실격/경고 칼럼 셀에 <a href="/race/raceReason.do?...RACEID=..."> 형태)
+        const reasonSeen = new Set<string>();
+        for (const rm of tr[1].matchAll(/raceReason\.do\?([^"'\s]+)/g)) {
+          const query = decodeHtmlEntities(rm[1]);
+          const idM = query.match(/RACEID=(\d+)/);
+          const raceId = idM ? idM[1] : "";
+          if (!raceId || reasonSeen.has(raceId)) continue;
+          reasonSeen.add(raceId);
+          reasonRefs.push({ backNo, name, query, raceId });
+        }
       }
     }
   }
 
-  return { env, results };
+  return { env, results, reasonRefs };
+}
+
+// raceReason.do 응답에서 판정 상세 파싱
+// table.race_t02: 위반시기 | 위반장소 | 경륜시행규정 | 판정구분
+// div.contents_box03: <h2>NN조 M호 규칙명</h2> <p>설명</p>
+function parseReasonPage(html: string, ref: ReasonRef): Violation[] {
+  const out: Violation[] = [];
+  const nameIdx = html.indexOf("위반시기");
+  if (nameIdx === -1) return out;
+  const tb = html.substring(nameIdx).match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/);
+  if (!tb) return out;
+
+  // 설명: contents_box03 의 h2(규칙명) + p(설명문)
+  let description = "";
+  const box = html.match(
+    /contents_box03[\s\S]*?<h2[^>]*>([\s\S]*?)<\/h2>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/,
+  );
+  if (box) {
+    const ruleName = stripTags(box[1]).replace(/^\s*\d+\s*조\s*\d*\s*항?\s*\d*\s*호?\s*/, "");
+    description = `${ruleName} ${stripTags(box[2])}`.trim();
+  }
+
+  const trs = [...tb[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)];
+  for (const tr of trs) {
+    const tds = [...tr[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((m) =>
+      stripTags(m[1]),
+    );
+    if (tds.length < 4) continue;
+    // "72조 2호" / "73조 1항" / "75조" → article/paragraph/clause
+    const reg = tds[2];
+    const am = reg.match(/(\d+)\s*조/);
+    const pm = reg.match(/(\d+)\s*항/);
+    const cm = reg.match(/(\d+)\s*호/);
+    const judgment = tds[3];
+    if (judgment !== "실격" && judgment !== "경고" && judgment !== "주의") continue;
+    out.push({
+      backNo: ref.backNo,
+      name: ref.name,
+      violationTime: tds[0] || "",
+      violationPlace: tds[1] || "",
+      article: am ? am[1] : "",
+      paragraph: pm ? pm[1] : "-",
+      clause: cm ? cm[1] : "-",
+      judgment,
+      description,
+    });
+  }
+  return out;
+}
+
+async function fetchReasonPage(query: string): Promise<string> {
+  const url = `https://www.spo1.or.kr/race/raceReason.do?${query}`;
+  const res = await fetch(url, { headers: { "User-Agent": UA } });
+  if (!res.ok) throw new Error(`raceReason HTTP ${res.status}`);
+  return res.text();
+}
+
+// 각 경주의 reasonRefs 를 따라 raceReason.do 를 호출해 violations 채움
+async function fetchBusanViolations(races: BusanRace[]): Promise<void> {
+  for (const race of races) {
+    // RACEID 기준 중복 제거 (같은 선수가 실격+경고면 링크가 중복될 수 있음)
+    const seen = new Set<string>();
+    for (const ref of race.reasonRefs) {
+      if (seen.has(ref.raceId)) continue;
+      seen.add(ref.raceId);
+      try {
+        const html = await fetchReasonPage(ref.query);
+        race.violations.push(...parseReasonPage(html, ref));
+      } catch (err) {
+        console.warn(
+          `  ⚠️ raceReason 조회 실패 (${race.raceNo}R ${ref.name}):`,
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+      await delay(300);
+    }
+  }
 }
 
 // 결과 페이지에서 부산 경주 전부 파싱
@@ -320,7 +436,7 @@ function parseResultPage(html: string, ymd: string): BusanRace[] {
     const end = i + 1 < anchors.length ? anchors[i + 1].index! : html.length;
     const block = html.substring(start, end);
 
-    const { env, results } = parseBlock(block);
+    const { env, results, reasonRefs } = parseBlock(block);
     if (results.length === 0) continue; // 미확정/데이터 없음 → 다음 실행에서 갱신
 
     races.push({
@@ -331,6 +447,8 @@ function parseResultPage(html: string, ymd: string): BusanRace[] {
       date: isoDate,
       env,
       results,
+      reasonRefs,
+      violations: [],
     });
   }
 
@@ -433,26 +551,69 @@ async function seedToSupabase(races: BusanRace[]): Promise<void> {
     if (error) console.error(`  race_results upsert 에러 (batch ${i}):`, error.message);
   }
 
-  console.log(`  → races ${raceRows.length}건 / race_results ${resultRows.length}건 적재`);
+  // violations upsert (venue='부산')
+  const violationRows: Array<Record<string, unknown>> = [];
+  for (const race of races) {
+    const raceId = raceIdMap.get(`${race.year}|${race.round}|${race.day}|${race.raceNo}`);
+    if (!raceId) continue;
+    for (const v of race.violations) {
+      violationRows.push({
+        race_id: raceId,
+        back_no: v.backNo,
+        name: v.name,
+        violation_time: v.violationTime || "",
+        violation_place: v.violationPlace || "",
+        article: v.article || "",
+        paragraph: v.paragraph || "",
+        clause: v.clause || "",
+        judgment: v.judgment || "",
+        description: v.description || null,
+        venue: VENUE,
+      });
+    }
+  }
+
+  if (violationRows.length > 0) {
+    for (let i = 0; i < violationRows.length; i += BATCH_SIZE) {
+      const batch = violationRows.slice(i, i + BATCH_SIZE);
+      const { error } = await supabase.from("violations").upsert(batch, {
+        onConflict:
+          "race_id,back_no,judgment,article,paragraph,clause,violation_time,violation_place",
+        ignoreDuplicates: true,
+      });
+      if (error) console.error(`  violations upsert 에러 (batch ${i}):`, error.message);
+    }
+  }
+
+  console.log(
+    `  → races ${raceRows.length}건 / race_results ${resultRows.length}건 / violations ${violationRows.length}건 적재`,
+  );
 }
 
-// ---------- DB에 이미 있는 부산 날짜 집합 (--year 모드용) ----------
+// ---------- 이미 violations 까지 수집된 부산 날짜 집합 (--year 모드용) ----------
+// race_results 만 있고 violations 가 없는 날짜는 재수집해야 하므로
+// "races 존재" 가 아니라 "violations 존재" 기준으로 스킵 판정한다.
+// (races/race_results upsert 는 멱등이라 재처리해도 무손상)
 async function existingBusanDates(year: number): Promise<Set<string>> {
   const dates = new Set<string>();
   let from = 0;
   while (true) {
     const { data, error } = await supabase
-      .from("races")
-      .select("date")
-      .eq("year", year)
-      .eq("venue", VENUE)
+      .from("violations")
+      .select("races!inner(date, year, venue)")
+      .eq("races.venue", VENUE)
+      .eq("races.year", year)
       .range(from, from + 999);
     if (error) {
-      console.error("  기존 날짜 조회 에러:", error.message);
+      console.error("  기존 violations 날짜 조회 에러:", error.message);
       break;
     }
     if (!data || data.length === 0) break;
-    for (const row of data) if (row.date) dates.add(row.date as string);
+    for (const row of data) {
+      const rel = (row as { races?: { date?: string } | { date?: string }[] }).races;
+      const d = Array.isArray(rel) ? rel[0]?.date : rel?.date;
+      if (d) dates.add(d);
+    }
     if (data.length < 1000) break;
     from += 1000;
   }
@@ -470,6 +631,7 @@ async function collectOne(ymd: string): Promise<number> {
   console.log(
     `  ${ymd} (${races[0].round}회 ${races[0].day}일차): 부산 ${races.length}경주`,
   );
+  await fetchBusanViolations(races);
   await seedToSupabase(races);
   return races.length;
 }

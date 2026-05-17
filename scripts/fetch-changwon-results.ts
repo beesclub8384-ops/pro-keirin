@@ -106,6 +106,18 @@ interface RaceEnv {
   lastLap: string;
 }
 
+interface Violation {
+  backNo: number;
+  name: string;
+  violationTime: string; // 위반시기 (예: "5주회")
+  violationPlace: string; // 위반장소 (예: "4코너")
+  article: string; // 저촉조 (예: "74")
+  paragraph: string; // 저촉항 (예: "2", 없으면 "-")
+  clause: string; // 저촉호 (없으면 "-")
+  judgment: string; // 판정구분 (실격/경고/주의)
+  description: string; // 경주규칙명 + 설명
+}
+
 interface ChangwonRace {
   year: number;
   round: string;
@@ -114,6 +126,7 @@ interface ChangwonRace {
   date: string; // YYYY-MM-DD
   env: RaceEnv;
   results: RacerResult[];
+  violations: Violation[];
 }
 
 // ---------- API: 회차/일차 목록 ----------
@@ -189,6 +202,63 @@ function parseRaceBlock(block: string): { env: RaceEnv; results: RacerResult[] }
   return { env, results };
 }
 
+// 한 경주 블록에서 판정결과 테이블 파싱
+// 구조: <h5>판정결과</h5> <table ...><caption>해당경주의판정정보</caption>
+//   thead(선수,위반시기,위반장소,저촉조,저촉항,저촉호,판정구분)
+//   선수마다 <tbody>: tr1=위반행(7셀, 선수셀에 racer_color_N + <span>이름</span>),
+//                      tr2=<td>경주규칙</td><td colspan=6><div bold>규칙명</div><div>설명</div></td>
+function parseJudgments(block: string): Violation[] {
+  const violations: Violation[] = [];
+  const capIdx = block.indexOf("해당경주의판정정보");
+  if (capIdx === -1) return violations;
+  const tblEnd = block.indexOf("</table>", capIdx);
+  const section = block.substring(capIdx, tblEnd === -1 ? block.length : tblEnd);
+
+  const trs = [...section.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)];
+  let pending: Violation | null = null;
+  for (const tr of trs) {
+    const tds = [...tr[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)];
+    if (tds.length === 0) continue;
+
+    const backMatch = tr[1].match(/racer_color_(\d+)/);
+    if (backMatch && tds.length >= 7) {
+      // 위반 행
+      if (pending) violations.push(pending);
+      // 선수명: class 없는 <span>이름</span> (첫 span 은 racer_color)
+      const nameSpan = tds[0][1].match(/<span>([^<]+)<\/span>/);
+      const name = nameSpan
+        ? decodeHtmlEntities(nameSpan[1].trim()).replace(/\s+/g, " ")
+        : stripTags(tds[0][1]).replace(/^\d+\s*/, "");
+      const txt = (i: number) => stripTags(tds[i][1]);
+      pending = {
+        backNo: parseInt(backMatch[1], 10),
+        name,
+        violationTime: txt(1),
+        violationPlace: txt(2),
+        article: txt(3),
+        paragraph: txt(4) || "-",
+        clause: txt(5) || "-",
+        judgment: txt(6),
+        description: "",
+      };
+    } else if (pending && stripTags(tds[0][1]) === "경주규칙" && tds.length >= 2) {
+      // 경주규칙 설명 행: div(bold)=규칙명, div=설명
+      const divs = [...tds[1][1].matchAll(/<div[^>]*>([\s\S]*?)<\/div>/g)].map((m) =>
+        stripTags(m[1]),
+      );
+      pending.description = divs.filter(Boolean).join(" ").trim();
+      violations.push(pending);
+      pending = null;
+    }
+  }
+  if (pending) violations.push(pending);
+
+  // 실격/경고/주의 만 저장 (광명 fetch-race-detail.ts 와 동일 기준)
+  return violations.filter(
+    (v) => v.judgment === "실격" || v.judgment === "경고" || v.judgment === "주의",
+  );
+}
+
 // 결과 페이지에서 창원 경주 전부 파싱 + 요청일 검증
 function parseResultPage(
   html: string,
@@ -227,6 +297,7 @@ function parseResultPage(
 
     const { env, results } = parseRaceBlock(block);
     if (results.length === 0) continue; // 미확정/데이터 없음 → 스킵 (다음 실행에서 갱신)
+    const violations = parseJudgments(block);
 
     races.push({
       year,
@@ -236,6 +307,7 @@ function parseResultPage(
       date: isoDate,
       env,
       results,
+      violations,
     });
   }
 
@@ -336,26 +408,69 @@ async function seedToSupabase(races: ChangwonRace[]): Promise<void> {
     if (error) console.error(`  race_results upsert 에러 (batch ${i}):`, error.message);
   }
 
-  console.log(`  → races ${raceRows.length}건 / race_results ${resultRows.length}건 적재`);
+  // 4) violations upsert (venue='창원')
+  const violationRows: Array<Record<string, unknown>> = [];
+  for (const race of races) {
+    const raceId = raceIdMap.get(`${race.year}|${race.round}|${race.day}|${race.raceNo}`);
+    if (!raceId) continue;
+    for (const v of race.violations) {
+      violationRows.push({
+        race_id: raceId,
+        back_no: v.backNo,
+        name: v.name,
+        violation_time: v.violationTime || "",
+        violation_place: v.violationPlace || "",
+        article: v.article || "",
+        paragraph: v.paragraph || "",
+        clause: v.clause || "",
+        judgment: v.judgment || "",
+        description: v.description || null,
+        venue: VENUE,
+      });
+    }
+  }
+
+  if (violationRows.length > 0) {
+    for (let i = 0; i < violationRows.length; i += BATCH_SIZE) {
+      const batch = violationRows.slice(i, i + BATCH_SIZE);
+      const { error } = await supabase.from("violations").upsert(batch, {
+        onConflict:
+          "race_id,back_no,judgment,article,paragraph,clause,violation_time,violation_place",
+        ignoreDuplicates: true,
+      });
+      if (error) console.error(`  violations upsert 에러 (batch ${i}):`, error.message);
+    }
+  }
+
+  console.log(
+    `  → races ${raceRows.length}건 / race_results ${resultRows.length}건 / violations ${violationRows.length}건 적재`,
+  );
 }
 
-// ---------- DB에 이미 있는 창원 날짜 집합 (--year 모드용) ----------
+// ---------- 이미 violations 까지 수집된 창원 날짜 집합 (--year 모드용) ----------
+// race_results 만 있고 violations 가 없는 날짜는 재수집해야 하므로
+// "races 존재" 가 아니라 "violations 존재" 기준으로 스킵 판정한다.
+// (races/race_results upsert 는 멱등이라 재처리해도 무손상)
 async function existingChangwonDates(year: number): Promise<Set<string>> {
   const dates = new Set<string>();
   let from = 0;
   while (true) {
     const { data, error } = await supabase
-      .from("races")
-      .select("date")
-      .eq("year", year)
-      .eq("venue", VENUE)
+      .from("violations")
+      .select("races!inner(date, year, venue)")
+      .eq("races.venue", VENUE)
+      .eq("races.year", year)
       .range(from, from + 999);
     if (error) {
-      console.error("  기존 날짜 조회 에러:", error.message);
+      console.error("  기존 violations 날짜 조회 에러:", error.message);
       break;
     }
     if (!data || data.length === 0) break;
-    for (const row of data) if (row.date) dates.add(row.date as string);
+    for (const row of data) {
+      const rel = (row as { races?: { date?: string } | { date?: string }[] }).races;
+      const d = Array.isArray(rel) ? rel[0]?.date : rel?.date;
+      if (d) dates.add(d);
+    }
     if (data.length < 1000) break;
     from += 1000;
   }
