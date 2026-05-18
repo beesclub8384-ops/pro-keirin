@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const judgment = sp.get("judgment"); // 실격/경고/주의 필터
     const year = sp.get("year");
     const violationType = sp.get("violationType"); // A/B 유형 필터
+    const venue = sp.get("venue") || "광명";
 
     if (!article) {
       return NextResponse.json({ error: "article parameter required" }, { status: 400 });
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("violations")
       .select("id, race_id, back_no, name, violation_time, violation_place, judgment, article, paragraph, clause, description")
+      .eq("venue", venue)
       .eq("article", article);
 
     if (clause !== "-") query = query.eq("clause", clause);

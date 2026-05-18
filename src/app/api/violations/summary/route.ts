@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = getSupabase();
+    const venue = new URL(request.url).searchParams.get("venue") || "광명";
 
     // 1. 총 건수 + 판정별 건수
     const { count: totalCount } = await supabase
       .from("violations")
-      .select("*", { count: "exact", head: true });
+      .select("*", { count: "exact", head: true })
+      .eq("venue", venue);
 
     const judgmentCounts = await Promise.all(
       ["실격", "경고", "주의"].map(async (j) => {
         const { count } = await supabase
           .from("violations")
           .select("*", { count: "exact", head: true })
+          .eq("venue", venue)
           .eq("judgment", j);
         return { judgment: j, count: count || 0 };
       })
@@ -24,6 +27,7 @@ export async function GET() {
     const { data: articleDisqRows } = await supabase
       .from("violations")
       .select("article, paragraph, clause")
+      .eq("venue", venue)
       .eq("judgment", "실격");
 
     const articleDisqMap = new Map<string, { article: string; paragraph: string; clause: string; count: number }>();
@@ -41,7 +45,8 @@ export async function GET() {
     // 3. 연도별 판정 건수 (races join)
     const { data: yearRows } = await supabase
       .from("violations")
-      .select("race_id, judgment");
+      .select("race_id, judgment")
+      .eq("venue", venue);
 
     // Get race years for violations
     const raceIds = [...new Set((yearRows || []).map((r) => r.race_id))];
@@ -79,6 +84,7 @@ export async function GET() {
     const { data: recentDisqViolations } = await supabase
       .from("violations")
       .select("race_id, name, article, paragraph, clause, judgment, description")
+      .eq("venue", venue)
       .eq("judgment", "실격")
       .order("id", { ascending: false })
       .limit(20);

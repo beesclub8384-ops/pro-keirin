@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const article = sp.get("article");
     const clause = sp.get("clause") || "-";
     const paragraph = sp.get("paragraph") || "-";
+    const venue = sp.get("venue") || "광명";
 
     if (!name) {
       return NextResponse.json({ error: "name parameter required" }, { status: 400 });
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("violations")
       .select("id, race_id, back_no, name, violation_time, violation_place, article, paragraph, clause, judgment, description, violation_type")
+      .eq("venue", venue)
       .eq("name", name);
 
     if (article) {

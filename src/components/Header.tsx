@@ -38,7 +38,15 @@ const navItems: NavItem[] = [
   { label: "통계", href: "/data/statistics" },
   { label: "매출 통계", href: "/data/sales-statistics" },
   { label: "상금통계", href: "/prize-stats" },
-  { label: "판정기록", href: "/violations" },
+  {
+    label: "판정기록",
+    href: "/violations",
+    children: [
+      { label: "광명스피돔", href: "/violations" },
+      { label: "창원레포츠파크", href: "/violations?venue=창원" },
+      { label: "부산스포원파크", href: "/violations?venue=부산" },
+    ],
+  },
   { label: "선수 인터뷰", href: "/interview" },
   { label: "륜슐랭", href: "/interview/gyeongshullin" },
   { label: "커뮤니티", href: "/community" },

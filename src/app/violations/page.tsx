@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -86,7 +87,24 @@ function JudgmentBadge({ judgment }: { judgment: string }) {
   );
 }
 
+const VENUES = ["광명", "창원", "부산"] as const;
+
 export default function ViolationsPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-8 text-muted-foreground">로딩 중...</div>}>
+      <ViolationsContent />
+    </Suspense>
+  );
+}
+
+function ViolationsContent() {
+  const searchParams = useSearchParams();
+  const initialVenue = (() => {
+    const v = searchParams.get("venue");
+    return v && (VENUES as readonly string[]).includes(v) ? v : "광명";
+  })();
+
+  const [venue, setVenue] = useState<string>(initialVenue);
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -100,12 +118,25 @@ export default function ViolationsPage() {
   const [sanctionRegulation, setSanctionRegulation] = useState<string>("all");
   const [sanctionPage, setSanctionPage] = useState(1);
 
+  // venue → URL (?venue=창원). 광명은 기본값이라 파라미터 생략
   useEffect(() => {
-    fetch("/api/violations/summary")
+    const u = new URL(window.location.href);
+    if (venue === "광명") u.searchParams.delete("venue");
+    else u.searchParams.set("venue", venue);
+    window.history.replaceState(null, "", u.toString());
+  }, [venue]);
+
+  const loadSummary = useCallback(() => {
+    setLoading(true);
+    fetch(`/api/violations/summary?venue=${encodeURIComponent(venue)}`)
       .then((r) => r.json())
       .then((d) => setData(d))
       .finally(() => setLoading(false));
-  }, []);
+  }, [venue]);
+
+  useEffect(() => {
+    loadSummary();
+  }, [loadSummary]);
 
   const fetchSanctions = useCallback((search: string, year: string, type: string, regulation: string, page: number) => {
     setSanctionsLoading(true);
@@ -125,9 +156,26 @@ export default function ViolationsPage() {
     fetchSanctions(sanctionSearch, sanctionYear, sanctionType, sanctionRegulation, sanctionPage);
   }, [sanctionSearch, sanctionYear, sanctionType, sanctionRegulation, sanctionPage, fetchSanctions]);
 
+  const header = (
+    <div className="flex flex-wrap items-center gap-3">
+      <h1 className="text-2xl font-bold">판정기록</h1>
+      <Select value={venue} onValueChange={setVenue}>
+        <SelectTrigger className="w-[120px]">
+          <SelectValue placeholder="경기장" />
+        </SelectTrigger>
+        <SelectContent>
+          {VENUES.map((v) => (
+            <SelectItem key={v} value={v}>{v}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 space-y-8">
+        {header}
         <div className="flex items-center justify-center py-20 text-muted-foreground">데이터 로딩 중...</div>
       </div>
     );
@@ -135,7 +183,8 @@ export default function ViolationsPage() {
 
   if (!data) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 space-y-8">
+        {header}
         <div className="flex items-center justify-center py-20 text-muted-foreground">데이터를 불러올 수 없습니다.</div>
       </div>
     );
@@ -146,7 +195,7 @@ export default function ViolationsPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 space-y-8">
-      <h1 className="text-2xl font-bold">판정기록</h1>
+      {header}
 
       {/* 핵심 지표 카드 4개 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
