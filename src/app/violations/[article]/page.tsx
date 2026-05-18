@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, use } from "react";
+import { Suspense, useEffect, useState, useCallback, use } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -89,11 +90,28 @@ function JudgmentBadge({ judgment }: { judgment: string }) {
   );
 }
 
+const VENUES = ["광명", "창원", "부산"] as const;
+
 export default function ArticlePage({ params }: { params: Promise<{ article: string }> }) {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-8 text-muted-foreground">로딩 중...</div>}>
+      <ArticleContent params={params} />
+    </Suspense>
+  );
+}
+
+function ArticleContent({ params }: { params: Promise<{ article: string }> }) {
   const { article: articleKey_ } = use(params);
   const articleParam = decodeURIComponent(articleKey_);
   const parsed = parseArticleKey(articleParam);
   const articleInfo = findArticleByKey(articleParam);
+
+  const searchParams = useSearchParams();
+  const venueParam = searchParams.get("venue");
+  const venue =
+    venueParam && (VENUES as readonly string[]).includes(venueParam) ? venueParam : "광명";
+  // 광명은 기본값이라 쿼리 생략, 그 외는 ?venue= 로 이동 시 유지
+  const venueQS = venue === "광명" ? "" : `?venue=${encodeURIComponent(venue)}`;
 
   const [data, setData] = useState<ArticleData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,12 +132,13 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
     if (judgment !== "all") params.set("judgment", judgment);
     if (year !== "all") params.set("year", year);
     if (violationType !== "all") params.set("violationType", violationType);
+    params.set("venue", venue);
 
     fetch(`/api/violations/article?${params}`)
       .then((r) => r.json())
       .then((d) => setData(d))
       .finally(() => setLoading(false));
-  }, [parsed.article, parsed.clause, parsed.paragraph, judgment, year, violationType]);
+  }, [parsed.article, parsed.clause, parsed.paragraph, judgment, year, violationType, venue]);
 
   // 검색 필터링
   const filteredPlayers = data?.playerRanking.filter(
@@ -135,12 +154,13 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
       ps.set("article", parsed.article);
       ps.set("clause", parsed.clause);
       ps.set("paragraph", parsed.paragraph);
+      ps.set("venue", venue);
       fetch(`/api/violations/player?${ps}`)
         .then((r) => r.json())
         .then((d) => setPlayerHistory(d))
         .finally(() => setHistoryLoading(false));
     },
-    [parsed.article, parsed.clause, parsed.paragraph]
+    [parsed.article, parsed.clause, parsed.paragraph, venue]
   );
 
   useEffect(() => {
@@ -159,7 +179,7 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
     <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
       {/* 뒤로가기 + 제목 */}
       <div className="flex items-center gap-3">
-        <Link href="/violations">
+        <Link href={`/violations${venueQS}`}>
           <Button variant="ghost" size="sm">&larr; 판정기록</Button>
         </Link>
       </div>
@@ -275,7 +295,7 @@ export default function ArticlePage({ params }: { params: Promise<{ article: str
                           <TableCell className="text-center text-muted-foreground">{i + 1}</TableCell>
                           <TableCell className="font-medium">
                             <Link
-                              href={`/violations/${articleParam}/player/${encodeURIComponent(p.name)}`}
+                              href={`/violations/${articleParam}/player/${encodeURIComponent(p.name)}${venueQS}`}
                               className="hover:text-brand transition-colors"
                             >
                               {p.name}

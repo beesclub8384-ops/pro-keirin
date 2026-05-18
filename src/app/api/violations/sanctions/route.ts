@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const sanctionType = sp.get("sanctionType");
     const regulation = sp.get("regulation");
     const search = sp.get("search");
+    const venue = sp.get("venue") || "광명";
     const page = parseInt(sp.get("page") || "1");
     const limit = 20;
     const offset = (page - 1) * limit;
@@ -16,6 +17,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("judge_sanctions")
       .select("*", { count: "exact" })
+      .eq("venue", venue)
       .order("no", { ascending: false });
 
     if (year) query = query.eq("race_year", parseInt(year));
@@ -29,6 +31,7 @@ export async function GET(request: NextRequest) {
     const { data: years } = await supabase
       .from("judge_sanctions")
       .select("race_year")
+      .eq("venue", venue)
       .not("race_year", "is", null)
       .order("race_year", { ascending: false });
     const uniqueYears = [...new Set((years || []).map((r) => r.race_year))];
@@ -36,12 +39,14 @@ export async function GET(request: NextRequest) {
     const { data: types } = await supabase
       .from("judge_sanctions")
       .select("sanction_type")
+      .eq("venue", venue)
       .not("sanction_type", "is", null);
     const uniqueTypes = [...new Set((types || []).map((r) => r.sanction_type))];
 
     const { data: typeCounts } = await supabase
       .from("judge_sanctions")
-      .select("sanction_type");
+      .select("sanction_type")
+      .eq("venue", venue);
     const typeCountMap: Record<string, number> = {};
     for (const r of typeCounts || []) {
       if (r.sanction_type) {
@@ -53,6 +58,7 @@ export async function GET(request: NextRequest) {
     const { data: regCounts } = await supabase
       .from("judge_sanctions")
       .select("regulation")
+      .eq("venue", venue)
       .not("regulation", "is", null);
     const regulationStats: { regulation: string; count: number }[] = [];
     const regMap = new Map<string, number>();

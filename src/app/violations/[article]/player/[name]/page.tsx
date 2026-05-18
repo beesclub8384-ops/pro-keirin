@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { Suspense, useEffect, useState, use } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,21 @@ function JudgmentBadge({ judgment }: { judgment: string }) {
   );
 }
 
+const VENUES = ["광명", "창원", "부산"] as const;
+
 export default function PlayerViolationsPage({
+  params,
+}: {
+  params: Promise<{ article: string; name: string }>;
+}) {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-8 text-muted-foreground">로딩 중...</div>}>
+      <PlayerContent params={params} />
+    </Suspense>
+  );
+}
+
+function PlayerContent({
   params,
 }: {
   params: Promise<{ article: string; name: string }>;
@@ -53,6 +68,12 @@ export default function PlayerViolationsPage({
   const parsed = parseArticleKey(articleParam);
   const articleInfo = findArticleByKey(articleParam);
 
+  const searchParams = useSearchParams();
+  const venueParam = searchParams.get("venue");
+  const venue =
+    venueParam && (VENUES as readonly string[]).includes(venueParam) ? venueParam : "광명";
+  const venueQS = venue === "광명" ? "" : `?venue=${encodeURIComponent(venue)}`;
+
   const [data, setData] = useState<PlayerData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -62,12 +83,13 @@ export default function PlayerViolationsPage({
     params.set("article", parsed.article);
     params.set("clause", parsed.clause);
     params.set("paragraph", parsed.paragraph);
+    params.set("venue", venue);
 
     fetch(`/api/violations/player?${params}`)
       .then((r) => r.json())
       .then((d) => setData(d))
       .finally(() => setLoading(false));
-  }, [playerName, parsed.article, parsed.clause, parsed.paragraph]);
+  }, [playerName, parsed.article, parsed.clause, parsed.paragraph, venue]);
 
   const articleLabel = articleInfo?.label || `${parsed.article}조`;
 
@@ -75,7 +97,7 @@ export default function PlayerViolationsPage({
     <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
       {/* 뒤로가기 */}
       <div className="flex items-center gap-3">
-        <Link href={`/violations/${articleParam}`}>
+        <Link href={`/violations/${articleParam}${venueQS}`}>
           <Button variant="ghost" size="sm">&larr; {articleLabel}</Button>
         </Link>
       </div>

@@ -145,16 +145,20 @@ function ViolationsContent() {
     if (year !== "all") params.set("year", year);
     if (type !== "all") params.set("sanctionType", type);
     if (regulation !== "all") params.set("regulation", regulation);
+    params.set("venue", venue);
     params.set("page", String(page));
     fetch(`/api/violations/sanctions?${params}`)
       .then((r) => r.json())
       .then((d) => setSanctions(d))
       .finally(() => setSanctionsLoading(false));
-  }, []);
+  }, [venue]);
 
   useEffect(() => {
     fetchSanctions(sanctionSearch, sanctionYear, sanctionType, sanctionRegulation, sanctionPage);
   }, [sanctionSearch, sanctionYear, sanctionType, sanctionRegulation, sanctionPage, fetchSanctions]);
+
+  // 조항 상세로 이동할 때 venue 유지 (광명은 기본값이라 생략)
+  const venueQS = venue === "광명" ? "" : `?venue=${encodeURIComponent(venue)}`;
 
   const header = (
     <div className="flex flex-wrap items-center gap-3">
@@ -245,7 +249,7 @@ function ViolationsContent() {
               const label = formatArticleLabel(a.article, a.paragraph, a.clause);
               const pct = (a.count / maxArticleCount) * 100;
               return (
-                <Link key={key} href={`/violations/${key}`} className="block group">
+                <Link key={key} href={`/violations/${key}${venueQS}`} className="block group">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium group-hover:text-brand transition-colors">{label}</span>
                     <span className="text-sm font-semibold text-red-600">{a.count}건</span>
@@ -319,7 +323,7 @@ function ViolationsContent() {
                       <TableCell className="font-mono text-sm">{d.date}</TableCell>
                       <TableCell className="font-medium">{d.name}</TableCell>
                       <TableCell>
-                        <Link href={`/violations/${key}`} className="hover:text-brand transition-colors">
+                        <Link href={`/violations/${key}${venueQS}`} className="hover:text-brand transition-colors">
                           <Badge variant="outline">{formatArticleLabel(d.article, d.paragraph, d.clause)}</Badge>
                         </Link>
                       </TableCell>
