@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabase, getDistinctYears, fetchAllRows } from "@/lib/supabase";
 import { assembleDCPages } from "@/lib/db-transformers";
 
-// 출주표: 5분 캐시
-export const revalidate = 300;
+// 동적 라우트(searchParams 의존)라 revalidate 무효 → 응답 Cache-Control 헤더로 캐싱
+const CACHE = "public, s-maxage=300, stale-while-revalidate=3600";
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +15,10 @@ export async function GET(request: NextRequest) {
 
     if (!year) {
       const years = await getDistinctYears("decision_card_pages");
-      return NextResponse.json({ years });
+      return NextResponse.json(
+        { years },
+        { headers: { "Cache-Control": CACHE } },
+      );
     }
 
     const yearNum = parseInt(year, 10);
@@ -44,7 +47,10 @@ export async function GET(request: NextRequest) {
           days: Array.from(days).sort((a, b) => a - b),
         }));
 
-      return NextResponse.json({ year: yearNum, totalPages, rounds });
+      return NextResponse.json(
+        { year: yearNum, totalPages, rounds },
+        { headers: { "Cache-Control": CACHE } },
+      );
     }
 
     const roundNum = parseInt(round, 10);
@@ -218,12 +224,15 @@ export async function GET(request: NextRequest) {
       }>
     );
 
-    return NextResponse.json({
-      year: yearNum,
-      round: roundNum,
-      day: dayNum,
-      pages,
-    });
+    return NextResponse.json(
+      {
+        year: yearNum,
+        round: roundNum,
+        day: dayNum,
+        pages,
+      },
+      { headers: { "Cache-Control": CACHE } },
+    );
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: msg }, { status: 500 });

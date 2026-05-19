@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase, fetchAllRows } from "@/lib/supabase";
 
-// 선수별 판정 이력: 1시간 캐시
-export const revalidate = 3600;
+// 동적 라우트(searchParams 의존)라 revalidate 무효 → 응답 Cache-Control 헤더로 캐싱
+const CACHE = "public, s-maxage=3600, stale-while-revalidate=86400";
 
 export async function GET(request: NextRequest) {
   try {
@@ -80,7 +80,10 @@ export async function GET(request: NextRequest) {
       if (j === "실격" || j === "경고" || j === "주의") summary[j]++;
     }
 
-    return NextResponse.json({ name, summary, history });
+    return NextResponse.json(
+      { name, summary, history },
+      { headers: { "Cache-Control": CACHE } },
+    );
   } catch (error) {
     console.error("violations player error:", error);
     return NextResponse.json({ error: "Failed to fetch player violations" }, { status: 500 });

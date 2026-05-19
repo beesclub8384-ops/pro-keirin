@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabase, fetchAllRows } from "@/lib/supabase";
 import { transformRaceWithResults } from "@/lib/db-transformers";
 
-// 경주결과: 5분 캐시 (당일 갱신 빈도 대비 충분, 과거 데이터는 불변)
-export const revalidate = 300;
+// 동적 라우트(searchParams 의존)라 revalidate 무효 → 응답 Cache-Control 헤더로 캐싱
+// 연도/회차 목록: 1시간 / 경주 상세: 5분
+const CACHE_LIST = "public, s-maxage=3600, stale-while-revalidate=86400";
+const CACHE_DETAIL = "public, s-maxage=300, stale-while-revalidate=3600";
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +29,10 @@ export async function GET(request: NextRequest) {
       const years = (yearRows as Array<{ year: number }> | null)?.map(
         (r) => r.year
       ) ?? [];
-      return NextResponse.json({ years });
+      return NextResponse.json(
+        { years },
+        { headers: { "Cache-Control": CACHE_LIST } },
+      );
     }
 
     const yearNum = parseInt(year, 10);
@@ -54,7 +59,10 @@ export async function GET(request: NextRequest) {
           days: Array.from(days).sort((a, b) => a - b),
         }));
 
-      return NextResponse.json({ year: yearNum, totalRaces, rounds });
+      return NextResponse.json(
+        { year: yearNum, totalRaces, rounds },
+        { headers: { "Cache-Control": CACHE_LIST } },
+      );
     }
 
     const dayNum = day ? parseInt(day, 10) : null;
@@ -77,7 +85,10 @@ export async function GET(request: NextRequest) {
     if (raceErr || !raceRows) return NextResponse.json({ error: raceErr?.message || "Data not found" }, { status: 404 });
 
     if (raceRows.length === 0) {
-      return NextResponse.json({ year: yearNum, round, day: dayNum, races: [] });
+      return NextResponse.json(
+        { year: yearNum, round, day: dayNum, races: [] },
+        { headers: { "Cache-Control": CACHE_DETAIL } },
+      );
     }
 
     const raceIds = raceRows.map((r) => r.id);
@@ -182,12 +193,15 @@ export async function GET(request: NextRequest) {
       return transformRaceWithResults(race, results as never[], odds as never);
     });
 
-    return NextResponse.json({
-      year: yearNum,
-      round,
-      day: dayNum,
-      races,
-    });
+    return NextResponse.json(
+      {
+        year: yearNum,
+        round,
+        day: dayNum,
+        races,
+      },
+      { headers: { "Cache-Control": CACHE_DETAIL } },
+    );
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: msg }, { status: 500 });

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase, fetchAllRows } from "@/lib/supabase";
 
-// 조항별 판정 집계: 1시간 캐시
-export const revalidate = 3600;
+// 동적 라우트(searchParams 의존)라 revalidate 무효 → 응답 Cache-Control 헤더로 캐싱
+const CACHE = "public, s-maxage=3600, stale-while-revalidate=86400";
 
 export async function GET(request: NextRequest) {
   try {
@@ -109,13 +109,16 @@ export async function GET(request: NextRequest) {
     // Available years for filter
     const availableYears = Array.from(yearStatsMap.keys()).sort((a, b) => b - a);
 
-    return NextResponse.json({
-      playerRanking,
-      placeStats,
-      yearlyData,
-      availableYears,
-      totalFiltered: filtered.length,
-    });
+    return NextResponse.json(
+      {
+        playerRanking,
+        placeStats,
+        yearlyData,
+        availableYears,
+        totalFiltered: filtered.length,
+      },
+      { headers: { "Cache-Control": CACHE } },
+    );
   } catch (error) {
     console.error("violations article error:", error);
     return NextResponse.json({ error: "Failed to fetch article violations" }, { status: 500 });

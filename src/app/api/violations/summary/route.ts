@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 
-// 판정 요약: 1시간 캐시 (집계성 데이터, 실시간성 불필요)
-export const revalidate = 3600;
+// 판정 요약: 동적 라우트(searchParams 의존)라 revalidate 무효 → 응답 Cache-Control 헤더로 캐싱
+const CACHE = "public, s-maxage=3600, stale-while-revalidate=86400";
 
 export async function GET(request: Request) {
   try {
@@ -10,21 +10,22 @@ export async function GET(request: Request) {
     const venue = new URL(request.url).searchParams.get("venue") || "광명";
 
     // 1. 총 건수 + 판정별 건수
-    const { count: totalCount } = await supabase
-      .from("violations")
-      .select("*", { count: "exact", head: true })
-      .eq("venue", venue);
-
-    const judgmentCounts = await Promise.all(
-      ["실격", "경고", "주의"].map(async (j) => {
-        const { count } = await supabase
-          .from("violations")
-          .select("*", { count: "exact", head: true })
-          .eq("venue", venue)
-          .eq("judgment", j);
-        return { judgment: j, count: count || 0 };
-      })
-    );
+    // count:"exact" 4회(전체+판정3종, 광명 ~3만행 풀카운트) → 단일 RPC
+    const { data: countsRaw } = await supabase.rpc("violations_counts_by_venue", {
+      p_venue: venue,
+    });
+    const counts = (countsRaw as {
+      total?: number;
+      실격?: number;
+      경고?: number;
+      주의?: number;
+    } | null) ?? {};
+    const totalCount = counts.total ?? 0;
+    const judgmentCounts = {
+      실격: counts.실격 ?? 0,
+      경고: counts.경고 ?? 0,
+      주의: counts.주의 ?? 0,
+    };
 
     // 2. 조항별 실격 건수
     const { data: articleDisqRows } = await supabase
@@ -112,13 +113,16 @@ export async function GET(request: Request) {
       .sort((a, b) => (b!.date > a!.date ? 1 : -1))
       .slice(0, 5);
 
-    return NextResponse.json({
-      total: totalCount || 0,
-      judgmentCounts: Object.fromEntries(judgmentCounts.map((j) => [j.judgment, j.count])),
-      articleDisqualifications,
-      yearlyData,
-      recentDisqualifications,
-    });
+    return NextResponse.json(
+      {
+        total: totalCount,
+        judgmentCounts,
+        articleDisqualifications,
+        yearlyData,
+        recentDisqualifications,
+      },
+      { headers: { "Cache-Control": CACHE } },
+    );
   } catch (error) {
     console.error("violations summary error:", error);
     return NextResponse.json({ error: "Failed to fetch violations summary" }, { status: 500 });

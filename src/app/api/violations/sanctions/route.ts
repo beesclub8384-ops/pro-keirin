@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 
-// 심판제재선수: 1시간 캐시 (주 1회 수집)
-export const revalidate = 3600;
+// 동적 라우트(searchParams 의존)라 revalidate 무효 → 응답 Cache-Control 헤더로 캐싱
+const CACHE = "public, s-maxage=3600, stale-while-revalidate=86400";
 
 export async function GET(request: NextRequest) {
   try {
@@ -75,16 +75,19 @@ export async function GET(request: NextRequest) {
     }
     regulationStats.sort((a, b) => b.count - a.count);
 
-    return NextResponse.json({
-      data: data || [],
-      total: count || 0,
-      page,
-      totalPages: Math.ceil((count || 0) / limit),
-      availableYears: uniqueYears,
-      availableTypes: uniqueTypes,
-      typeCountMap,
-      regulationStats,
-    });
+    return NextResponse.json(
+      {
+        data: data || [],
+        total: count || 0,
+        page,
+        totalPages: Math.ceil((count || 0) / limit),
+        availableYears: uniqueYears,
+        availableTypes: uniqueTypes,
+        typeCountMap,
+        regulationStats,
+      },
+      { headers: { "Cache-Control": CACHE } },
+    );
   } catch (error) {
     console.error("sanctions error:", error);
     return NextResponse.json({ error: "Failed to fetch sanctions" }, { status: 500 });
