@@ -93,29 +93,40 @@ export async function GET(request: NextRequest) {
 
     const raceIds = raceRows.map((r) => r.id);
 
-    // Fetch results — chunk IDs to avoid URI length limits
-    let resultRows: Record<string, unknown>[] = [];
+    // race_id 청크 (URI 길이 제한 회피)
+    const idChunks: number[][] = [];
     for (let i = 0; i < raceIds.length; i += 200) {
-      const chunk = raceIds.slice(i, i + 200);
-      const { data, error } = await supabase
-        .from("race_results")
-        .select("*")
-        .in("race_id", chunk)
-        .order("back_no", { ascending: true });
+      idChunks.push(raceIds.slice(i, i + 200));
+    }
+
+    // race_results + race_odds 를 병렬 조회 (기존: 순차 await 2중 루프)
+    const [resultChunks, oddsChunks] = await Promise.all([
+      Promise.all(
+        idChunks.map((chunk) =>
+          supabase
+            .from("race_results")
+            .select("*")
+            .in("race_id", chunk)
+            .order("back_no", { ascending: true })
+        )
+      ),
+      Promise.all(
+        idChunks.map((chunk) =>
+          supabase.from("race_odds").select("*").in("race_id", chunk)
+        )
+      ),
+    ]);
+
+    const resultRows: Record<string, unknown>[] = [];
+    for (const { data, error } of resultChunks) {
       if (error) {
         return NextResponse.json({ error: `race_results query failed: ${error.message}` }, { status: 500 });
       }
       if (data) resultRows.push(...data);
     }
 
-    // Fetch odds
-    let oddsRows: Record<string, unknown>[] = [];
-    for (let i = 0; i < raceIds.length; i += 200) {
-      const chunk = raceIds.slice(i, i + 200);
-      const { data, error } = await supabase
-        .from("race_odds")
-        .select("*")
-        .in("race_id", chunk);
+    const oddsRows: Record<string, unknown>[] = [];
+    for (const { data, error } of oddsChunks) {
       if (error) {
         return NextResponse.json({ error: `race_odds query failed: ${error.message}` }, { status: 500 });
       }

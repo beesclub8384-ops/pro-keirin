@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Select,
@@ -97,24 +97,34 @@ function RaceResultsContent() {
     return v && (VENUES as readonly string[]).includes(v) ? v : "광명";
   })();
 
+  // URL 직접 진입(year/round/day 보유) 시: 연도/회차 목록 API를 기다리지 않고
+  // 곧바로 경주결과 API 호출 (워터폴 제거). 사용자가 셀렉터를 만지면 해제.
+  const initialYear = searchParams.get("year") || "";
+  const initialRound = searchParams.get("round") || "";
+  const initialDay = searchParams.get("day") || "";
+  const directEntryRef = useRef<boolean>(
+    Boolean(initialYear && initialRound && initialDay),
+  );
+
   const [venue, setVenue] = useState<string>(initialVenue);
   const [years, setYears] = useState<number[]>([]);
-  const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>(initialYear);
   const [rounds, setRounds] = useState<RoundMeta[]>([]);
-  const [selectedRound, setSelectedRound] = useState<string>("");
+  const [selectedRound, setSelectedRound] = useState<string>(initialRound);
   const [days, setDays] = useState<number[]>([]);
-  const [selectedDay, setSelectedDay] = useState<string>("");
+  const [selectedDay, setSelectedDay] = useState<string>(initialDay);
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Load years
+  // Load years (드롭다운 채우기용 — URL 로 선택값이 이미 있으면 덮어쓰지 않음)
   useEffect(() => {
     fetch("/api/data/race-results")
       .then((r) => r.json())
       .then((d) => {
         setYears(d.years || []);
-        if (d.years?.length) setSelectedYear(String(d.years[0]));
+        if (!selectedYear && d.years?.length) setSelectedYear(String(d.years[0]));
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Sync venue → URL (?venue=창원). 광명은 기본값이라 파라미터 생략
@@ -128,27 +138,32 @@ function RaceResultsContent() {
   // Load rounds when year or venue changes
   useEffect(() => {
     if (!selectedYear) return;
-    setSelectedRound("");
-    setSelectedDay("");
-    setRaces([]);
+    // URL 직접 진입: 선택값 유지(초기화 안 함), 목록만 채움
+    const direct = directEntryRef.current;
+    if (!direct) {
+      setSelectedRound("");
+      setSelectedDay("");
+      setRaces([]);
+    }
     fetch(`/api/data/race-results?year=${selectedYear}&venue=${encodeURIComponent(venue)}`)
       .then((r) => r.json())
       .then((d) => {
         setRounds(d.rounds || []);
-        if (d.rounds?.length) setSelectedRound(String(d.rounds[d.rounds.length - 1].round));
+        if (!direct && d.rounds?.length) {
+          setSelectedRound(String(d.rounds[d.rounds.length - 1].round));
+        }
       });
   }, [selectedYear, venue]);
 
   // Update days when round changes
   useEffect(() => {
     if (!selectedRound) return;
-    setSelectedDay("");
-    setRaces([]);
+    const direct = directEntryRef.current;
     const found = rounds.find((r) => String(r.round) === selectedRound);
-    if (found) {
-      setDays(found.days);
-      setSelectedDay(String(found.days[found.days.length - 1]));
-    }
+    if (found) setDays(found.days);
+    if (direct) return; // URL 직접 진입: day 유지, races 초기화 안 함
+    setSelectedDay(found ? String(found.days[found.days.length - 1]) : "");
+    setRaces([]);
   }, [selectedRound, rounds]);
 
   // Load races when day changes
@@ -186,7 +201,7 @@ function RaceResultsContent() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <Select value={venue} onValueChange={setVenue}>
+        <Select value={venue} onValueChange={(v) => { directEntryRef.current = false; setVenue(v); }}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="경기장" />
           </SelectTrigger>
@@ -197,7 +212,7 @@ function RaceResultsContent() {
           </SelectContent>
         </Select>
 
-        <Select value={selectedYear} onValueChange={setSelectedYear}>
+        <Select value={selectedYear} onValueChange={(v) => { directEntryRef.current = false; setSelectedYear(v); }}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="연도" />
           </SelectTrigger>
@@ -208,7 +223,7 @@ function RaceResultsContent() {
           </SelectContent>
         </Select>
 
-        <Select value={selectedRound} onValueChange={setSelectedRound}>
+        <Select value={selectedRound} onValueChange={(v) => { directEntryRef.current = false; setSelectedRound(v); }}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="회차" />
           </SelectTrigger>
@@ -219,7 +234,7 @@ function RaceResultsContent() {
           </SelectContent>
         </Select>
 
-        <Select value={selectedDay} onValueChange={setSelectedDay}>
+        <Select value={selectedDay} onValueChange={(v) => { directEntryRef.current = false; setSelectedDay(v); }}>
           <SelectTrigger className="w-[100px]">
             <SelectValue placeholder="일차" />
           </SelectTrigger>
