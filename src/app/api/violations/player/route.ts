@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase, fetchAllRows } from "@/lib/supabase";
 
+// 선수별 판정 이력: 1시간 캐시
+export const revalidate = 3600;
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();

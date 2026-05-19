@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabase, getDistinctYears, fetchAllRows } from "@/lib/supabase";
 import { assembleDCPages } from "@/lib/db-transformers";
 
+// 출주표: 5분 캐시
+export const revalidate = 300;
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();

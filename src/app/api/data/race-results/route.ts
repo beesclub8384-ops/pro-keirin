@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabase, fetchAllRows } from "@/lib/supabase";
 import { transformRaceWithResults } from "@/lib/db-transformers";
 
+// 경주결과: 5분 캐시 (당일 갱신 빈도 대비 충분, 과거 데이터는 불변)
+export const revalidate = 300;
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
@@ -13,21 +16,17 @@ export async function GET(request: NextRequest) {
 
     if (!year) {
       // 선택한 경기장(venue)에 데이터가 있는 연도만 반환
-      const currentYear = new Date().getFullYear();
-      const checks = Array.from(
-        { length: currentYear - 2003 + 1 },
-        (_, i) => 2003 + i
-      ).map(async (y) => {
-        const { count } = await supabase
-          .from("races")
-          .select("*", { count: "exact", head: true })
-          .eq("year", y)
-          .eq("venue", venue);
-        return count && count > 0 ? y : null;
-      });
-      const years = (await Promise.all(checks))
-        .filter((y): y is number => y !== null)
-        .sort((a, b) => b - a);
+      // 연도별 count 24회 → 서버측 DISTINCT RPC 단일 호출 (idx_races_year_venue)
+      const { data: yearRows, error: yearErr } = await supabase.rpc(
+        "race_years_by_venue",
+        { p_venue: venue }
+      );
+      if (yearErr) {
+        return NextResponse.json({ error: yearErr.message }, { status: 500 });
+      }
+      const years = (yearRows as Array<{ year: number }> | null)?.map(
+        (r) => r.year
+      ) ?? [];
       return NextResponse.json({ years });
     }
 

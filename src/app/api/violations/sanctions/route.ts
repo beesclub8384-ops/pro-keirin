@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 
+// 심판제재선수: 1시간 캐시 (주 1회 수집)
+export const revalidate = 3600;
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();

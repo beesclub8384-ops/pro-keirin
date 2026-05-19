@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase, fetchAllRows } from "@/lib/supabase";
 
+// 조항별 판정 집계: 1시간 캐시
+export const revalidate = 3600;
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();

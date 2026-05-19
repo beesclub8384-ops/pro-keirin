@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 
+// 판정 요약: 1시간 캐시 (집계성 데이터, 실시간성 불필요)
+export const revalidate = 3600;
+
 export async function GET(request: Request) {
   try {
     const supabase = getSupabase();
@@ -42,42 +45,28 @@ export async function GET(request: Request) {
     }
     const articleDisqualifications = Array.from(articleDisqMap.values()).sort((a, b) => b.count - a.count);
 
-    // 3. 연도별 판정 건수 (races join)
-    const { data: yearRows } = await supabase
-      .from("violations")
-      .select("race_id, judgment")
-      .eq("venue", venue);
-
-    // Get race years for violations
-    const raceIds = [...new Set((yearRows || []).map((r) => r.race_id))];
-    const yearMap = new Map<number, number>();
-
-    // Fetch race years in chunks
-    for (let i = 0; i < raceIds.length; i += 200) {
-      const chunk = raceIds.slice(i, i + 200);
-      const { data: races } = await supabase
-        .from("races")
-        .select("id, year")
-        .in("id", chunk);
-      for (const race of races || []) {
-        yearMap.set(race.id, race.year);
-      }
-    }
-
-    const yearlyStats = new Map<number, { total: number; 실격: number; 경고: number; 주의: number }>();
-    for (const row of yearRows || []) {
-      const year = yearMap.get(row.race_id);
-      if (!year) continue;
-      if (!yearlyStats.has(year)) yearlyStats.set(year, { total: 0, 실격: 0, 경고: 0, 주의: 0 });
-      const stat = yearlyStats.get(year)!;
-      stat.total++;
-      const judgment = row.judgment as "실격" | "경고" | "주의";
-      if (judgment === "실격" || judgment === "경고" || judgment === "주의") {
-        stat[judgment]++;
-      }
-    }
-    const yearlyData = Array.from(yearlyStats.entries())
-      .map(([year, stats]) => ({ year, ...stats }))
+    // 3. 연도별 판정 건수
+    // 기존: violations 전체행 fetch(~3만) + race_id 청크 매핑(~30쿼리)
+    // 변경: races JOIN GROUP BY 서버측 집계 RPC 단일 호출
+    const { data: yearlyRows } = await supabase.rpc("violations_yearly_by_venue", {
+      p_venue: venue,
+    });
+    const yearlyData = (
+      (yearlyRows as Array<{
+        year: number;
+        total: number;
+        disq: number;
+        warn: number;
+        caution: number;
+      }> | null) ?? []
+    )
+      .map((r) => ({
+        year: r.year,
+        total: Number(r.total),
+        실격: Number(r.disq),
+        경고: Number(r.warn),
+        주의: Number(r.caution),
+      }))
       .sort((a, b) => a.year - b.year);
 
     // 4. 최근 실격 5건
