@@ -223,7 +223,7 @@ async function saveAndVerify(year: number, records: SanctionRecord[]): Promise<v
     const batch = records.slice(i, i + BATCH)
     const { error } = await supabase
       .from('judge_sanctions')
-      .upsert(batch, { onConflict: 'no,race_year' })
+      .upsert(batch, { onConflict: 'no,race_year,venue' })
     if (error) {
       console.error(`  ❌ 배치 저장 실패 (${i}~${i + BATCH}):`, error.message)
     } else {
