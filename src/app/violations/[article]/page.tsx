@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
 import { parseArticleKey, findArticleByKey, formatArticleLabel } from "@/lib/violation-articles";
+import { VideoButton } from "@/components/VideoButton";
 
 interface PlayerStat {
   name: string;
@@ -341,6 +342,7 @@ function ArticleContent({ params }: { params: Promise<{ article: string }> }) {
                             <TableHead>위반시기</TableHead>
                             <TableHead>위반장소</TableHead>
                             <TableHead className="text-center">판정</TableHead>
+                            <TableHead className="text-center">영상</TableHead>
                             <TableHead className="hidden md:table-cell">판정내용</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -353,6 +355,9 @@ function ArticleContent({ params }: { params: Promise<{ article: string }> }) {
                               <TableCell className="text-sm">{v.violationTime !== "-" ? v.violationTime : ""}</TableCell>
                               <TableCell className="text-sm">{v.violationPlace !== "-" ? v.violationPlace : ""}</TableCell>
                               <TableCell className="text-center"><JudgmentBadge judgment={v.judgment} /></TableCell>
+                              <TableCell className="text-center">
+                                <VideoButton venue={venue} round={v.round} day={v.day} raceNo={v.raceNo} date={v.date} />
+                              </TableCell>
                               <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-sm">
                                 {v.description !== "-" ? v.description : ""}
                               </TableCell>

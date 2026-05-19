@@ -110,6 +110,7 @@ export async function GET(request: Request) {
               round: race.round,
               day: race.day,
               raceNo: race.race_no,
+              venue,
               name: v.name,
               article: v.article,
               paragraph: v.paragraph,

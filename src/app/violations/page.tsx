@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatArticleLabel, articleKey } from "@/lib/violation-articles";
+import { VideoButton } from "@/components/VideoButton";
 
 interface SummaryData {
   total: number;
@@ -35,6 +36,7 @@ interface SummaryData {
     round: number;
     day: number;
     raceNo: number;
+    venue: string;
     name: string;
     article: string;
     paragraph: string;
@@ -312,6 +314,7 @@ function ViolationsContent() {
                   <TableHead>조항</TableHead>
                   <TableHead>회차</TableHead>
                   <TableHead>경주</TableHead>
+                  <TableHead>영상</TableHead>
                   <TableHead className="hidden md:table-cell">판정내용</TableHead>
                 </TableRow>
               </TableHeader>
@@ -329,6 +332,9 @@ function ViolationsContent() {
                       </TableCell>
                       <TableCell>{d.round}회 {d.day}일차</TableCell>
                       <TableCell>{d.raceNo}R</TableCell>
+                      <TableCell>
+                        <VideoButton venue={d.venue} round={d.round} day={d.day} raceNo={d.raceNo} date={d.date} />
+                      </TableCell>
                       <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-xs truncate">{d.description}</TableCell>
                     </TableRow>
                   );

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { parseArticleKey, findArticleByKey, formatArticleLabel } from "@/lib/violation-articles";
+import { VideoButton } from "@/components/VideoButton";
 
 interface ViolationRecord {
   date: string;
@@ -169,6 +170,7 @@ function PlayerContent({
                       <span className="text-sm text-muted-foreground">
                         {v.round}회 {v.day}일차 {v.raceNo}R
                       </span>
+                      <VideoButton venue={venue} round={v.round} day={v.day} raceNo={v.raceNo} date={v.date} />
                     </div>
 
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mb-1">
