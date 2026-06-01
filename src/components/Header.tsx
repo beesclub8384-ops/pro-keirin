@@ -35,6 +35,7 @@ const navItems: NavItem[] = [
     ],
   },
   { label: "선수 검색", href: "/data/racer-search" },
+  { label: "전체선수", href: "/racers" },
   { label: "통계", href: "/data/statistics" },
   { label: "매출 통계", href: "/data/sales-statistics" },
   { label: "상금통계", href: "/prize-stats" },
