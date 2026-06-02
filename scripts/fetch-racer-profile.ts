@@ -21,6 +21,7 @@ interface RacerProfile {
   bloodType: string;     // "O형"
   // Table 0: 기본 정보
   gradeChange: string;   // (전)SS -> (현)SS
+  grade: string;         // gradeChange 파싱한 현재 등급 (예: "SS"). 빈 문자열 가능.
   winRate: number;        // 승률(%)
   top2Rate: number;       // 연대율(%)
   top3Rate: number;       // 삼연대율(%)
@@ -271,6 +272,8 @@ function parseProfile(html: string, racerId: string, name: string, year: number)
     bloodType: bodyInfo.bloodType,
     // Table 0
     gradeChange: t0[0] || "",
+    // gradeChange "(전)X -> (현)Y" / "(전)X ->(현)Y" 에서 현재 등급 Y만 추출
+    grade: ((t0[0] || "").match(/\(현\)\s*([A-Z0-9]+)/)?.[1]) || "",
     winRate: safeNum(t0[1] || "0"),
     top2Rate: safeNum(t0[2] || "0"),
     top3Rate: safeNum(t0[3] || "0"),

@@ -44,6 +44,7 @@ async function seedRacerProfiles() {
       weight: p.weight || null,
       blood_type: p.bloodType || null,
       grade_change: p.gradeChange || null,
+      grade: p.grade || null,
       win_rate: p.winRate ?? null,
       top2_rate: p.top2Rate ?? null,
       top3_rate: p.top3Rate ?? null,

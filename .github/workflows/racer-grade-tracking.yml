@@ -1,0 +1,48 @@
+name: Racer Grade Tracking (선수 등급 자동 추적)
+
+# 매주 수요일 KST 22:00 = UTC 13:00
+# 현재 연도(올해)만 수집 → racer_profiles.grade 자동 갱신
+on:
+  schedule:
+    - cron: '0 13 * * 3'
+  workflow_dispatch:
+
+jobs:
+  fetch-and-seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set current year
+        id: year
+        run: echo "year=$(date -u +%Y)" >> "$GITHUB_OUTPUT"
+
+      # 1) kcycle 프로필 페이지에서 현재 연도 575명 수집 → src/data/yearly-racer-profile/{year}.json
+      - name: Fetch racer profiles (current year)
+        env:
+          START_YEAR: ${{ steps.year.outputs.year }}
+          END_YEAR: ${{ steps.year.outputs.year }}
+        run: npx tsx scripts/fetch-racer-profile.ts
+
+      # 2) JSON → Supabase racer_profiles upsert (grade 컬럼 포함)
+      - name: Seed racer profiles to Supabase
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          START_YEAR: ${{ steps.year.outputs.year }}
+          END_YEAR: ${{ steps.year.outputs.year }}
+        run: npx tsx scripts/seed/seed-racer-profiles.ts
