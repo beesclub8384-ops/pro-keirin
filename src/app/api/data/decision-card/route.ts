@@ -15,22 +15,16 @@ export async function GET(request: NextRequest) {
     const venue = sp.get("venue") || "광명";
 
     if (!year) {
-      // venue별 연도 목록 (count head 쿼리로 연도별 데이터 유무 판단)
-      const minYear = 2003;
-      const currentYear = new Date().getFullYear();
-      const yearChecks = Array.from(
-        { length: currentYear - minYear + 1 },
-        (_, i) => minYear + i
-      ).map(async (y) => {
-        const { count } = await supabase
-          .from("decision_card_pages")
-          .select("*", { count: "exact", head: true })
-          .eq("year", y)
-          .eq("venue", venue);
-        return count && count > 0 ? y : null;
-      });
-      const results = await Promise.all(yearChecks);
-      const years = results.filter((y): y is number => y !== null).sort((a, b) => b - a);
+      // venue별 연도 목록: DISTINCT RPC 단일 호출
+      const { data: yearRows, error: yearErr } = await supabase.rpc(
+        "decision_card_years_by_venue",
+        { p_venue: venue }
+      );
+      if (yearErr) {
+        return NextResponse.json({ error: yearErr.message }, { status: 500 });
+      }
+      const years =
+        (yearRows as Array<{ year: number }> | null)?.map((r) => r.year) ?? [];
       return NextResponse.json(
         { years },
         { headers: { "Cache-Control": CACHE } },
