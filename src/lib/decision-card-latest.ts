@@ -411,12 +411,12 @@ export async function seedPageToSupabase(
   supabase: SupabaseClient,
   page: PageDecisionCard
 ): Promise<{ racesCount: number; entriesCount: number }> {
-  // 1. decision_card_pages upsert
+  // 1. decision_card_pages upsert (광명)
   const { error: pageErr } = await supabase
     .from("decision_card_pages")
     .upsert(
-      { year: page.year, round: page.round, day: page.day, date: page.date },
-      { onConflict: "year,round,day" }
+      { year: page.year, round: page.round, day: page.day, date: page.date, venue: "광명" },
+      { onConflict: "year,round,day,venue" }
     );
   if (pageErr) throw new Error(`Page upsert failed: ${pageErr.message}`);
 
@@ -427,6 +427,7 @@ export async function seedPageToSupabase(
     .eq("year", page.year)
     .eq("round", page.round)
     .eq("day", page.day)
+    .eq("venue", "광명")
     .single();
 
   if (fetchPageErr || !pageRow) throw new Error(`Page ID fetch failed: ${fetchPageErr?.message}`);

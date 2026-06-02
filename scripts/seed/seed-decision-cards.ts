@@ -64,19 +64,20 @@ async function seedDecisionCards() {
 
     console.log(`  ${year}: ${pages.length} pages`);
 
-    // 1. Insert pages
+    // 1. Insert pages (광명)
     const pageRows = pages.map((p) => ({
       year: p.year,
       round: p.round,
       day: p.day,
       date: p.date,
+      venue: "광명",
     }));
 
     for (let i = 0; i < pageRows.length; i += BATCH_SIZE) {
       const batch = pageRows.slice(i, i + BATCH_SIZE);
       const { error } = await supabase
         .from("decision_card_pages")
-        .upsert(batch, { onConflict: "year,round,day", ignoreDuplicates: true });
+        .upsert(batch, { onConflict: "year,round,day,venue", ignoreDuplicates: true });
       if (error) console.error(`  Error inserting pages batch:`, error.message);
     }
 
@@ -84,7 +85,8 @@ async function seedDecisionCards() {
     const { data: insertedPages, error: fetchErr } = await supabase
       .from("decision_card_pages")
       .select("id, year, round, day")
-      .eq("year", year);
+      .eq("year", year)
+      .eq("venue", "광명");
 
     if (fetchErr || !insertedPages) {
       console.error(`  Error fetching page IDs for ${year}:`, fetchErr?.message);
