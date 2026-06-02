@@ -30,8 +30,8 @@ const navItems: NavItem[] = [
     href: "/data/decision-card",
     children: [
       { label: "광명스피돔", href: "/data/decision-card" },
-      { label: "창원레포츠파크", href: "#", disabled: true },
-      { label: "부산스포원파크", href: "#", disabled: true },
+      { label: "창원레포츠파크", href: "/data/decision-card?venue=창원" },
+      { label: "부산스포원파크", href: "/data/decision-card?venue=부산" },
     ],
   },
   { label: "선수 검색", href: "/data/racer-search" },

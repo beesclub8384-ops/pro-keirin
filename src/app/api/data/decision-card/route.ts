@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase, getDistinctYears, fetchAllRows } from "@/lib/supabase";
+import { getSupabase, fetchAllRows } from "@/lib/supabase";
 import { assembleDCPages } from "@/lib/db-transformers";
 
 // 동적 라우트(searchParams 의존)라 revalidate 무효 → 응답 Cache-Control 헤더로 캐싱
@@ -12,9 +12,25 @@ export async function GET(request: NextRequest) {
     const year = sp.get("year");
     const round = sp.get("round");
     const day = sp.get("day");
+    const venue = sp.get("venue") || "광명";
 
     if (!year) {
-      const years = await getDistinctYears("decision_card_pages");
+      // venue별 연도 목록 (count head 쿼리로 연도별 데이터 유무 판단)
+      const minYear = 2003;
+      const currentYear = new Date().getFullYear();
+      const yearChecks = Array.from(
+        { length: currentYear - minYear + 1 },
+        (_, i) => minYear + i
+      ).map(async (y) => {
+        const { count } = await supabase
+          .from("decision_card_pages")
+          .select("*", { count: "exact", head: true })
+          .eq("year", y)
+          .eq("venue", venue);
+        return count && count > 0 ? y : null;
+      });
+      const results = await Promise.all(yearChecks);
+      const years = results.filter((y): y is number => y !== null).sort((a, b) => b - a);
       return NextResponse.json(
         { years },
         { headers: { "Cache-Control": CACHE } },
@@ -28,7 +44,8 @@ export async function GET(request: NextRequest) {
       const { data: pages, error } = await supabase
         .from("decision_card_pages")
         .select("round, day")
-        .eq("year", yearNum);
+        .eq("year", yearNum)
+        .eq("venue", venue);
 
       if (error || !pages) return NextResponse.json({ error: error?.message || "Data not found" }, { status: 404 });
 
@@ -61,7 +78,8 @@ export async function GET(request: NextRequest) {
       .from("decision_card_pages")
       .select("id, year, round, day, date")
       .eq("year", yearNum)
-      .eq("round", roundNum);
+      .eq("round", roundNum)
+      .eq("venue", venue);
 
     if (dayNum) {
       pageQuery = pageQuery.eq("day", dayNum);

@@ -73,6 +73,8 @@ interface RoundMeta {
   days: number[];
 }
 
+const VENUES = ["광명", "창원", "부산"] as const;
+
 export default function DecisionCardPage() {
   return (
     <Suspense fallback={<div className="p-8 text-muted-foreground">로딩 중...</div>}>
@@ -86,8 +88,13 @@ function DecisionCardContent() {
   const paramYear = searchParams.get("year");
   const paramRound = searchParams.get("round");
   const paramDay = searchParams.get("day");
+  const initialVenue = (() => {
+    const v = searchParams.get("venue");
+    return v && (VENUES as readonly string[]).includes(v) ? v : "광명";
+  })();
   const initializedRef = useRef(false);
 
+  const [venue, setVenue] = useState<string>(initialVenue);
   const [years, setYears] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState("");
   const [rounds, setRounds] = useState<RoundMeta[]>([]);
@@ -97,29 +104,42 @@ function DecisionCardContent() {
   const [pages, setPages] = useState<DecisionPage[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // venue → URL ?venue=창원 동기화 (광명은 기본값이라 파라미터 생략)
   useEffect(() => {
-    fetch("/api/data/decision-card")
+    const u = new URL(window.location.href);
+    if (venue === "광명") u.searchParams.delete("venue");
+    else u.searchParams.set("venue", venue);
+    window.history.replaceState(null, "", u.toString());
+  }, [venue]);
+
+  useEffect(() => {
+    fetch(`/api/data/decision-card?venue=${encodeURIComponent(venue)}`)
       .then((r) => r.json())
       .then((d) => {
         setYears(d.years || []);
-        if (paramYear) {
+        if (!initializedRef.current && paramYear) {
           setSelectedYear(paramYear);
         } else if (d.years?.length) {
           setSelectedYear(String(d.years[0]));
+        } else {
+          setSelectedYear("");
+          setRounds([]);
+          setSelectedRound("");
+          setDays([]);
+          setSelectedDay("");
+          setPages([]);
         }
       });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [venue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!selectedYear) return;
-    if (!initializedRef.current) {
-      // 첫 로드: round/day 리셋하지 않음 (URL 파라미터 우선)
-    } else {
+    if (initializedRef.current) {
       setSelectedRound("");
       setSelectedDay("");
       setPages([]);
     }
-    fetch(`/api/data/decision-card?year=${selectedYear}`)
+    fetch(`/api/data/decision-card?year=${selectedYear}&venue=${encodeURIComponent(venue)}`)
       .then((r) => r.json())
       .then((d) => {
         const roundsList: RoundMeta[] = d.rounds || [];
@@ -128,12 +148,15 @@ function DecisionCardContent() {
           if (!initializedRef.current && paramRound) {
             setSelectedRound(paramRound);
           } else {
-            // 최신 회차 선택
             setSelectedRound(String(roundsList[roundsList.length - 1].round));
           }
+        } else {
+          setSelectedRound("");
+          setDays([]);
+          setSelectedDay("");
         }
       });
-  }, [selectedYear]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedYear, venue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!selectedRound) return;
@@ -147,7 +170,6 @@ function DecisionCardContent() {
       if (!initializedRef.current && paramDay) {
         setSelectedDay(paramDay);
       } else {
-        // 가장 큰 일차(최신) 선택
         setSelectedDay(String(found.days[found.days.length - 1]));
       }
       initializedRef.current = true;
@@ -159,14 +181,14 @@ function DecisionCardContent() {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/data/decision-card?year=${selectedYear}&round=${selectedRound}&day=${selectedDay}`
+        `/api/data/decision-card?year=${selectedYear}&round=${selectedRound}&day=${selectedDay}&venue=${encodeURIComponent(venue)}`
       );
       const d = await res.json();
       setPages(d.pages || []);
     } finally {
       setLoading(false);
     }
-  }, [selectedYear, selectedRound, selectedDay]);
+  }, [selectedYear, selectedRound, selectedDay, venue]);
 
   useEffect(() => {
     loadData();
@@ -178,6 +200,17 @@ function DecisionCardContent() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
+        <Select value={venue} onValueChange={setVenue}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="경기장" />
+          </SelectTrigger>
+          <SelectContent>
+            {VENUES.map((v) => (
+              <SelectItem key={v} value={v}>{v}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <Select value={selectedYear} onValueChange={setSelectedYear}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="연도" />
