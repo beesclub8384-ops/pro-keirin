@@ -28,7 +28,9 @@ export interface RacerWithAvailability {
 type ActivityStatus = "active" | "sporadic" | "inactive";
 
 const CONSONANT_ORDER = ["ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
-const GRADE_FILTERS = ["전체", "B", "A", "S", "SS"] as const;
+// 등급은 높은 순(SS → B3)으로 정렬해서 표시
+const GRADE_ORDER_DESC = ["SS", "S1", "S2", "S3", "A1", "A2", "A3", "B1", "B2", "B3"] as const;
+const GRADE_FILTERS = ["전체", ...GRADE_ORDER_DESC] as const;
 type GradeFilter = (typeof GRADE_FILTERS)[number];
 const STATUS_FILTERS = ["전체", "active", "sporadic", "inactive"] as const;
 type StatusFilter = (typeof STATUS_FILTERS)[number];
@@ -39,20 +41,38 @@ function activityOf(r: RacerWithAvailability): ActivityStatus {
   return "inactive";
 }
 
-function gradeLetter(grade: string): string {
-  if (grade === "SS") return "SS";
-  if (grade.startsWith("S")) return "S";
-  if (grade.startsWith("A")) return "A";
-  if (grade.startsWith("B")) return "B";
-  return "--";
+// 정렬 키: SS(0) < S1(1) < ... < B3(9). 매칭 안 되면 99
+function gradeSortKey(grade: string): number {
+  const i = (GRADE_ORDER_DESC as readonly string[]).indexOf(grade);
+  return i === -1 ? 99 : i;
 }
 
+// 10단계 등급 색상 (숫자가 낮을수록 진함)
 function gradeBadgeClass(grade: string): string {
-  if (grade === "SS") return "bg-red-500 text-white border-transparent";
-  if (grade.startsWith("S")) return "bg-purple-500 text-white border-transparent";
-  if (grade.startsWith("A")) return "bg-blue-500 text-white border-transparent";
-  if (grade.startsWith("B")) return "bg-green-500 text-white border-transparent";
-  return "bg-gray-400 text-white border-transparent";
+  switch (grade) {
+    case "SS":
+      return "bg-red-600 text-white border-transparent";
+    case "S1":
+      return "bg-purple-700 text-white border-transparent";
+    case "S2":
+      return "bg-purple-500 text-white border-transparent";
+    case "S3":
+      return "bg-purple-400 text-white border-transparent";
+    case "A1":
+      return "bg-blue-700 text-white border-transparent";
+    case "A2":
+      return "bg-blue-500 text-white border-transparent";
+    case "A3":
+      return "bg-blue-400 text-white border-transparent";
+    case "B1":
+      return "bg-green-700 text-white border-transparent";
+    case "B2":
+      return "bg-green-500 text-white border-transparent";
+    case "B3":
+      return "bg-green-400 text-white border-transparent";
+    default:
+      return "bg-gray-400 text-white border-transparent";
+  }
 }
 
 const OUTSIDE_TEXT_STYLE: React.CSSProperties = {
@@ -98,7 +118,11 @@ export default function RacersClient({ racers, asOfDate, dupNames }: Props) {
   const gradeStats = useMemo(() => {
     const counts: Record<string, number> = { SS: 0, S: 0, A: 0, B: 0, "--": 0 };
     for (const r of racers) {
-      counts[gradeLetter(r.grade)] = (counts[gradeLetter(r.grade)] || 0) + 1;
+      if (r.grade === "SS") counts.SS++;
+      else if (r.grade.startsWith("S")) counts.S++;
+      else if (r.grade.startsWith("A")) counts.A++;
+      else if (r.grade.startsWith("B")) counts.B++;
+      else counts["--"]++;
     }
     return counts;
   }, [racers]);
@@ -113,7 +137,7 @@ export default function RacersClient({ racers, asOfDate, dupNames }: Props) {
     const q = query.trim();
     return racers.filter((r) => {
       if (q && !r.name.includes(q)) return false;
-      if (gradeFilter !== "전체" && gradeLetter(r.grade) !== gradeFilter) return false;
+      if (gradeFilter !== "전체" && r.grade !== gradeFilter) return false;
       if (cohortFilter !== "전체" && r.cohort !== cohortFilter) return false;
       if (statusFilter !== "전체" && activityOf(r) !== statusFilter) return false;
       return true;
@@ -127,7 +151,11 @@ export default function RacersClient({ racers, asOfDate, dupNames }: Props) {
       map[r.initial].push(r);
     }
     for (const k of Object.keys(map)) {
-      map[k].sort((a, b) => a.name.localeCompare(b.name, "ko"));
+      map[k].sort((a, b) => {
+        const dg = gradeSortKey(a.grade) - gradeSortKey(b.grade);
+        if (dg !== 0) return dg;
+        return a.name.localeCompare(b.name, "ko");
+      });
     }
     return CONSONANT_ORDER
       .filter((c) => map[c]?.length)
