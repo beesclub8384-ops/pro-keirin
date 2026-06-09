@@ -21,17 +21,22 @@ const DATA_DIR = path.join(__dirname, '..', 'src', 'data', 'yearly-race-sales');
 const BATCH_SIZE = 500; // 한 번에 500건씩 업로드
 
 // ─── Supabase upsert 함수 ────────────────────────────────────
+// on_conflict=year,round,day,race_no + resolution=merge-duplicates 로
+// 동일 경주 재업로드 시 중복 INSERT 대신 갱신(UPSERT) 처리 (자동화 반복 실행 안전)
 async function upsert(rows) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/race_sales`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'apikey': SUPABASE_KEY,
-      'Prefer': 'return=minimal',
-    },
-    body: JSON.stringify(rows),
-  });
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/race_sales?on_conflict=year,round,day,race_no`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'apikey': SUPABASE_KEY,
+        'Prefer': 'return=minimal,resolution=merge-duplicates',
+      },
+      body: JSON.stringify(rows),
+    }
+  );
 
   if (!res.ok) {
     const err = await res.text();
@@ -71,8 +76,8 @@ async function main() {
       round:    r.round,
       day:      r.day,
       race_no:  r.raceNo,
-      meet_cd:  r.meetCd,
-      meet_name: r.meetName,
+      meet_cd:  r.meetCd || '001',     // 광명 전용 수집 (수집 스크립트 미출력분 보정)
+      meet_name: r.meetName || '광명',
       grade:    r.grade || null,
       race_date: r.date || null,
       s_단승:   r.sales?.단승   || 0,

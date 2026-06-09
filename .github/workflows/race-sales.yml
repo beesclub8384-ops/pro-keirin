@@ -1,0 +1,38 @@
+name: Race Sales (경주별 매출액 자동 수집)
+
+# 매주 수요일 KST 22:00 = UTC 13:00 (등급 자동추적과 동일 시각)
+# 배당률 3~5일 지연을 고려해 주중 1회 실행.
+# 현재 연도(올해) 광명 경주 중 race_sales 미수집분만 증분 수집 → Supabase upsert
+on:
+  schedule:
+    - cron: '0 13 * * 3'
+  workflow_dispatch:
+
+jobs:
+  fetch-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 경주 목록은 Supabase races(올해, 광명)에서 가져오고,
+      # race_sales 미수집분만 kcycle 최종배당률에서 수집 → race_sales upsert (자체완결)
+      - name: Fetch & upload race sales (current year)
+        run: npx tsx scripts/fetch-race-sales-current.ts
