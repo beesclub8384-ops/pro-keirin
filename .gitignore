@@ -44,6 +44,37 @@ src/data/decision-card-data.json
 src/data/entry-data.json
 src/data/race-detail-data.json
 
+# 재생성 가능한 대용량 수집 데이터 (Supabase가 정본, 로컬/Google Drive 백업)
+# 주의: 앱 빌드(all-racer-names.json, odds-data.ts)와 워크플로우 의존분
+#       (yearly/, yearly-race-detail/, race-data.json, race-schedule-*.json)은 추적 유지
+src/data/yearly-decision-card/
+src/data/yearly-entry/
+src/data/yearly-racer-profile/
+src/data/yearly-race-sales/
+src/data/yearly-ranking/
+src/data/yearly-prize-ranking/
+src/data/yearly-sanction/
+src/data/yearly-high-dividend/
+src/data/yearly-dividend-stats/
+src/data/yearly-sales-stats/
+src/data/racer-ids/
+src/data/racer-profile-data.json
+src/data/ranking-data.json
+src/data/sales-stats-data.json
+src/data/sanction-data.json
+src/data/dividend-stats-data.json
+src/data/high-dividend-data.json
+src/data/prize-info-data.json
+src/data/prize-ranking-data.json
+src/data/fall-injury-data.json
+src/data/special-promotion-data.json
+src/data/training-change-data.json
+src/data/most-win-streaks-data.json
+src/data/no-hit-races-data.json
+src/data/win-accrued-data.json
+src/data/win-streaks-data.json
+src/data/win-top30-data.json
+
 # sensitive files
 CIAUDE API.txt
 
