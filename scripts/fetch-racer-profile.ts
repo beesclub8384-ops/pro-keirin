@@ -77,7 +77,7 @@ interface YearProfiles {
 
 // --- 설정 ---
 const START_YEAR = parseInt(process.env.START_YEAR || "2003", 10);
-const END_YEAR = parseInt(process.env.END_YEAR || "2025", 10);
+const END_YEAR = parseInt(process.env.END_YEAR || "2026", 10);
 const YEARS = Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, i) => START_YEAR + i);
 
 const DELAY_MS = 500;
