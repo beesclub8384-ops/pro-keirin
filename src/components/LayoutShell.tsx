@@ -10,9 +10,11 @@ export default function LayoutShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isInterview = pathname.startsWith("/interview");
+  // 기본 사이트 네비/헤더/푸터를 제거하고 독립 화면으로 표시할 경로
+  const isChromeless =
+    pathname.startsWith("/interview") || pathname.startsWith("/vote");
 
-  if (isInterview) {
+  if (isChromeless) {
     return <main className="min-h-screen">{children}</main>;
   }
 
