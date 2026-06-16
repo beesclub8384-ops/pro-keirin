@@ -69,13 +69,13 @@ export default function VotePage({
 
   if (done) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow max-w-md w-full p-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-3xl">
+      <div className="flex min-h-screen items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-600">
             ✓
           </div>
           <h1 className="text-xl font-bold text-slate-900">투표가 완료되었습니다</h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-base text-slate-500">
             소중한 의견 감사합니다. 이 창은 닫으셔도 됩니다.
           </p>
         </div>
@@ -84,27 +84,27 @@ export default function VotePage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen scroll-smooth bg-slate-50 px-4 py-5 md:p-8">
+      <div className="mx-auto w-full max-w-2xl">
         {/* 헤더 */}
         <div className="mb-6">
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900">
+          <h1 className="text-xl font-bold leading-snug text-slate-900 md:text-2xl">
             {VOTE_TITLE}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="mt-1.5 text-base text-slate-500">
             각 후보에 대해 찬성 또는 반대를 선택해 주세요. ({answeredCount}/
             {VOTE_TOTAL} 선택됨)
           </p>
         </div>
 
         {/* 항목 그룹 */}
-        <div className="space-y-6">
+        <div className="space-y-5">
           {grouped.map(({ role, items }) => (
-            <div key={role} className="bg-white rounded-2xl shadow p-5">
-              <h2 className="text-sm font-semibold text-slate-500 mb-3">
+            <div key={role} className="rounded-2xl bg-white p-4 shadow sm:p-5">
+              <h2 className="mb-3 text-base font-semibold text-slate-500">
                 {role} <span className="text-slate-400">({items.length}명)</span>
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-1">
                 {items.map((item) => (
                   <VoteRow
                     key={item.id}
@@ -120,16 +120,16 @@ export default function VotePage({
 
         {/* 에러 */}
         {error && (
-          <p className="mt-4 text-center text-sm text-red-600">{error}</p>
+          <p className="mt-4 text-center text-base text-red-600">{error}</p>
         )}
 
         {/* 제출 */}
-        <div className="sticky bottom-0 mt-6 pb-4 pt-2">
+        <div className="sticky bottom-0 mt-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2">
           <button
             type="button"
             onClick={handleSubmit}
             disabled={!allAnswered || submitting}
-            className="w-full rounded-xl bg-blue-600 py-3.5 text-white font-semibold shadow-lg transition disabled:cursor-not-allowed disabled:bg-slate-300 hover:bg-blue-700"
+            className="min-h-[52px] w-full touch-manipulation rounded-xl bg-blue-600 py-3.5 text-base font-semibold text-white shadow-lg transition hover:bg-blue-700 active:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             {submitting
               ? "제출 중..."
@@ -153,16 +153,16 @@ function VoteRow({
   onChoose: (choice: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
-      <span className="font-medium text-slate-800">{item.name}</span>
-      <div className="flex gap-2 shrink-0">
+    <div className="flex items-center justify-between gap-3 border-b border-slate-100 py-2.5 last:border-0">
+      <span className="text-base font-medium text-slate-800">{item.name}</span>
+      <div className="flex shrink-0 gap-3">
         <button
           type="button"
           onClick={() => onChoose(true)}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+          className={`min-h-[44px] min-w-[72px] touch-manipulation rounded-lg px-5 text-base font-semibold transition ${
             choice === true
               ? "bg-emerald-600 text-white"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200 active:bg-slate-300"
           }`}
         >
           찬성
@@ -170,10 +170,10 @@ function VoteRow({
         <button
           type="button"
           onClick={() => onChoose(false)}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+          className={`min-h-[44px] min-w-[72px] touch-manipulation rounded-lg px-5 text-base font-semibold transition ${
             choice === false
               ? "bg-red-600 text-white"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200 active:bg-slate-300"
           }`}
         >
           반대
