@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import InterviewHeaderMenu from "@/components/InterviewHeaderMenu";
 import CapacitorBackButton from "@/components/CapacitorBackButton";
+import InterviewSWRegister from "@/components/InterviewSWRegister";
 
 export default function InterviewLayout({
   children,
@@ -10,6 +11,7 @@ export default function InterviewLayout({
 }) {
   return (
     <div className="relative flex min-h-screen flex-col">
+      <InterviewSWRegister />
       <CapacitorBackButton />
       {/* Background - fixed position div for iOS compatibility */}
       <div
