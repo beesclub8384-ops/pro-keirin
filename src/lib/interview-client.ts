@@ -109,3 +109,51 @@ export async function fetchPublishedArticles(): Promise<InterviewArticle[]> {
   if (error || !articles) return [];
   return enrichArticles(articles as ArticleRow[]);
 }
+
+/**
+ * 특정 KST 날짜의 published 인터뷰만 브라우저(anon)에서 조회.
+ * lib/interview.fetchInterviewsByDate와 동일한 KST 자정~다음날 자정 범위 필터.
+ */
+export async function fetchArticlesByDate(
+  date: string,
+): Promise<InterviewArticle[]> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+
+  const startKstUtc = `${date}T00:00:00+09:00`;
+  const next = new Date(startKstUtc);
+  next.setUTCDate(next.getUTCDate() + 1);
+  const endKstUtc = next.toISOString();
+
+  const { data: articles, error } = await supabaseBrowser
+    .from("interview_articles")
+    .select(
+      "request_id, player_name, grade, region, headline, article_raw, article_edited, photos, published_at",
+    )
+    .eq("status", "published")
+    .gte("published_at", startKstUtc)
+    .lt("published_at", endKstUtc)
+    .order("published_at", { ascending: false });
+
+  if (error || !articles) return [];
+  return enrichArticles(articles as ArticleRow[]);
+}
+
+/**
+ * decision_card_pages에서 (year, round, day) → 경주일("YYYY-MM-DD") 조회.
+ * lib/race-date.lookupRaceDate의 브라우저(anon) 버전.
+ */
+export async function lookupRaceDate(
+  year: number,
+  round: number,
+  day: number,
+): Promise<string | null> {
+  const { data, error } = await supabaseBrowser
+    .from("decision_card_pages")
+    .select("date")
+    .eq("year", year)
+    .eq("round", round)
+    .eq("day", day)
+    .maybeSingle();
+  if (error || !data) return null;
+  return (data.date as string) ?? null;
+}

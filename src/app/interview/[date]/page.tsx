@@ -1,3 +1,7 @@
+"use client";
+
+import { use } from "react";
+import useSWR from "swr";
 import Link from "next/link";
 import { ChevronLeft, MapPin, Award, Play } from "lucide-react";
 import {
@@ -5,7 +9,6 @@ import {
   buildRaceVideoUrl,
   type RaceInfo,
 } from "@/lib/race-video";
-import { lookupRaceDate } from "@/lib/race-date";
 import Markdown from "react-markdown";
 import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,10 +17,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import RacerAvatar from "@/components/RacerAvatar";
-import {
-  fetchInterviewsByDate,
-  type InterviewArticle,
-} from "@/lib/interview";
+import type { InterviewArticle } from "@/lib/interview";
+import { fetchArticlesByDate, lookupRaceDate } from "@/lib/interview-client";
 
 /** 본문 시작이 "# 헤드라인" 형식이면 제거 (헤드라인은 카드 헤더의 선수 정보와 중복) */
 function stripLeadingHeadline(article: string): string {
@@ -172,33 +173,87 @@ const analysisComponents: Components = {
   ),
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ date: string }>;
-}) {
-  const { date } = await params;
-  return {
-    title: `${date} 선수 인터뷰 | 7randoms`,
-    description: `${date} 경륜 선수 인터뷰 기사`,
-  };
+/** 상세 페이지 로딩 스켈레톤 (회색 박스 펄스) */
+function InterviewDateSkeleton() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12 animate-pulse">
+      <div className="mb-6 h-8 w-40 rounded bg-muted" />
+      <div className="mb-8">
+        <div className="h-8 w-56 rounded bg-muted" />
+        <div className="mt-2 h-4 w-32 rounded bg-muted/70" />
+      </div>
+      <div className="space-y-10">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-xl border bg-white px-6 py-8 shadow-sm"
+          >
+            <div className="mb-8 flex items-center gap-3 border-b pb-5">
+              <div className="h-11 w-11 rounded-full bg-muted" />
+              <div>
+                <div className="h-5 w-24 rounded bg-muted" />
+                <div className="mt-2 h-4 w-32 rounded bg-muted/70" />
+              </div>
+            </div>
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, j) => (
+                <div
+                  key={j}
+                  className="rounded-xl border border-border/50 bg-white px-5 py-4"
+                >
+                  <div className="h-4 w-2/3 rounded bg-muted" />
+                  <div className="mt-3 h-4 w-full rounded bg-muted/60" />
+                  <div className="mt-2 h-4 w-5/6 rounded bg-muted/60" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-export default async function InterviewDatePage({
+const swrOpts = { revalidateOnFocus: false, dedupingInterval: 60000 } as const;
+
+export default function InterviewDatePage({
   params,
   searchParams,
 }: {
   params: Promise<{ date: string }>;
   searchParams: Promise<{ player?: string }>;
 }) {
-  const { date } = await params;
-  const { player } = await searchParams;
-  const allArticles = await fetchInterviewsByDate(date);
-  const articles = player
-    ? allArticles.filter((a) => a.playerName === player)
-    : allArticles;
+  const { date } = use(params);
+  const { player } = use(searchParams);
 
-  const dateMap = await resolveChangwonDates(articles);
+  const { data: allArticles, error: articlesError } = useSWR(
+    ["interview-by-date", date],
+    () => fetchArticlesByDate(date),
+    swrOpts,
+  );
+
+  const filtered = allArticles
+    ? player
+      ? allArticles.filter((a) => a.playerName === player)
+      : allArticles
+    : undefined;
+
+  // 창원 경주(본문 날짜 누락) 영상 URL 보정용 날짜맵 — 기사 로드 후 조회
+  const { data: dateMapData, error: dateMapError } = useSWR(
+    filtered ? ["interview-changwon-dates", date, player ?? ""] : null,
+    () => resolveChangwonDates(filtered as InterviewArticle[]),
+    swrOpts,
+  );
+
+  // 기사 로딩 중 → 스켈레톤
+  if (!allArticles && !articlesError) return <InterviewDateSkeleton />;
+  // 기사는 있으나 날짜맵 조회 중 → 스켈레톤 (서버 렌더와 동일 결과 보장)
+  if (filtered && filtered.length > 0 && !dateMapData && !dateMapError) {
+    return <InterviewDateSkeleton />;
+  }
+
+  const articles = filtered ?? [];
+  const dateMap = dateMapData ?? new Map<string, string>();
 
   const displayDate = date.replace(
     /(\d{4})-(\d{2})-(\d{2})/,
