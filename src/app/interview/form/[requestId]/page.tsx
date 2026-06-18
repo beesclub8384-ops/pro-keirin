@@ -487,6 +487,7 @@ export default function InterviewFormPage({
                         <img
                           src={p.previewUrl || p.url}
                           alt=""
+                          loading="lazy"
                           className="h-full w-full object-cover"
                         />
                         {p.uploading && (

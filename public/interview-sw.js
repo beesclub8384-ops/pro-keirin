@@ -7,6 +7,15 @@ importScripts(
   "https://storage.googleapis.com/workbox-cdn/releases/7.3.0/workbox-sw.js",
 );
 
+// 오프라인 fallback 페이지 — install 시 프리캐시
+const OFFLINE_URL = "/interview-offline.html";
+const OFFLINE_CACHE = "7r-interview-offline";
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(OFFLINE_CACHE).then((cache) => cache.add(OFFLINE_URL)),
+  );
+});
+
 if (self.workbox) {
   const { core, routing, strategies, expiration, cacheableResponse } =
     self.workbox;
@@ -76,6 +85,15 @@ if (self.workbox) {
       plugins: [ok()],
     }),
   );
+
+  // 네트워크+캐시 모두 실패한 내비게이션(HTML) → 오프라인 페이지 fallback
+  routing.setCatchHandler(async ({ request }) => {
+    if (request.mode === "navigate") {
+      const cached = await caches.match(OFFLINE_URL, { cacheName: OFFLINE_CACHE });
+      if (cached) return cached;
+    }
+    return Response.error();
+  });
 } else {
   // Workbox 로드 실패(오프라인 최초설치 등) → 아무 것도 가로채지 않고 통과
   self.addEventListener("fetch", () => {});

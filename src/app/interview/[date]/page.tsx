@@ -145,6 +145,8 @@ const blockMdComponents: Components = {
     <img
       src={props.src}
       alt={props.alt || ""}
+      loading="lazy"
+      decoding="async"
       className="block mx-auto my-4 w-[87%] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
     />
   ),

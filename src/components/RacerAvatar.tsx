@@ -26,9 +26,10 @@ export default function RacerAvatar({
         <Image
           src={photoUrl}
           alt={name}
-          fill
-          sizes={`${size}px`}
-          className="object-cover"
+          width={size}
+          height={size}
+          loading="lazy"
+          className="h-full w-full object-cover"
           unoptimized
         />
       ) : (
