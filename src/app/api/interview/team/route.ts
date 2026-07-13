@@ -41,7 +41,7 @@ export async function GET() {
 
   const { data, error } = await sb
     .from("racer_profiles")
-    .select("racer_id, name, training, photo_url, grade")
+    .select("racer_id, name, training, photo_url")
     .eq("is_union", true)
     .eq("year", maxYear)
     .order("name", { ascending: true });
@@ -67,6 +67,21 @@ export async function GET() {
     }
   }
 
+  // 등급: 각 선수의 출주표 최신 grade_current(수집 시 자동 갱신)를 RPC로 조회.
+  // racer_profiles.grade(수동 업데이트)가 아니라 출주표 기준이므로 항상 최신.
+  const gradeById = new Map<string, string>();
+  if (racerIds.length > 0) {
+    const { data: gradeRows } = await sb.rpc("union_latest_grades", {
+      p_racer_ids: racerIds,
+    });
+    for (const r of (gradeRows ?? []) as Array<{
+      racer_id: string;
+      grade_current: string | null;
+    }>) {
+      if (r.grade_current) gradeById.set(r.racer_id, r.grade_current);
+    }
+  }
+
   const regionMap = new Map<string, Player[]>();
   for (const row of data ?? []) {
     const training = row.training as string | null;
@@ -76,7 +91,7 @@ export async function GET() {
       racerId: row.racer_id as string,
       name: row.name as string,
       photoUrl: (row.photo_url as string | null) ?? photoFallback.get(row.racer_id as string) ?? null,
-      grade: tierFromClassGrade(row.grade as string | null),
+      grade: tierFromClassGrade(gradeById.get(row.racer_id as string) ?? null),
     });
     regionMap.set(region, players);
   }
