@@ -36,6 +36,23 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // 사진 carry-forward: maxYear 행에 photo_url이 없으면(신규 노조 연도 등)
+  // 해당 선수의 과거 연도 최신 photo_url로 대체 (사진은 racer_id별로 안정적)
+  const photoFallback = new Map<string, string>();
+  const racerIds = (data ?? []).map((r) => r.racer_id as string);
+  if (racerIds.length > 0) {
+    const { data: photoRows } = await sb
+      .from("racer_profiles")
+      .select("racer_id, photo_url, year")
+      .in("racer_id", racerIds)
+      .not("photo_url", "is", null)
+      .order("year", { ascending: false });
+    for (const r of photoRows ?? []) {
+      const id = r.racer_id as string;
+      if (!photoFallback.has(id)) photoFallback.set(id, r.photo_url as string);
+    }
+  }
+
   const regionMap = new Map<string, Player[]>();
   for (const row of data ?? []) {
     const training = row.training as string | null;
@@ -44,7 +61,7 @@ export async function GET() {
     players.push({
       racerId: row.racer_id as string,
       name: row.name as string,
-      photoUrl: (row.photo_url as string | null) ?? null,
+      photoUrl: (row.photo_url as string | null) ?? photoFallback.get(row.racer_id as string) ?? null,
     });
     regionMap.set(region, players);
   }

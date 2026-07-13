@@ -35,14 +35,18 @@ const textShadowSm = "0 1px 3px rgba(0,0,0,0.5)";
 function ArticleCard({
   a,
   onClick,
+  onPrefetch,
 }: {
   a: InterviewArticle;
   onClick: () => void;
+  onPrefetch?: () => void;
 }) {
   return (
     <div
       className="group cursor-pointer rounded-xl border bg-white/95 p-5 shadow-lg backdrop-blur-sm transition-all hover:shadow-xl hover:-translate-y-0.5 hover:border-brand/30"
       onClick={onClick}
+      onMouseEnter={onPrefetch}
+      onFocus={onPrefetch}
     >
       <div className="flex items-center gap-2 mb-2">
         <RacerAvatar name={a.playerName} photoUrl={a.photoUrl} size={32} />
@@ -203,6 +207,11 @@ export default function InterviewListClient({
     );
   }
 
+  // 보이는 기사 카드에 hover/focus 시 상세 라우트 프리페치 (체감 전환 속도 개선)
+  function prefetchArticle(a: InterviewArticle) {
+    router.prefetch(`/interview/${a.date}`);
+  }
+
   return (
     <div>
       {/* Navigation bar */}
@@ -311,6 +320,7 @@ export default function InterviewListClient({
                 key={`search-${a.date}-${a.playerName}-${i}`}
                 a={a}
                 onClick={() => goToArticle(a)}
+                onPrefetch={() => prefetchArticle(a)}
               />
             ))}
           </div>
@@ -345,6 +355,7 @@ export default function InterviewListClient({
                   key={`all-${a.date}-${a.playerName}-${i}`}
                   a={a}
                   onClick={() => goToArticle(a)}
+                  onPrefetch={() => prefetchArticle(a)}
                 />
               ))}
               {hasMore && <div ref={sentinelRef} className="h-1" />}
@@ -458,6 +469,7 @@ export default function InterviewListClient({
                     key={`cal-${a.date}-${a.playerName}-${i}`}
                     a={a}
                     onClick={() => goToArticle(a)}
+                    onPrefetch={() => prefetchArticle(a)}
                   />
                 ))
               )}
