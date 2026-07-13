@@ -17,14 +17,18 @@ export default function RacerAvatar({
   const { surname } = splitKoreanName(name);
   const fontSize = size >= 40 ? "text-base" : "text-sm";
 
+  // 선수 사진 비노출 (선수 요청) - 복원 시 이 조건 제거 (displayPhotoUrl = photoUrl)
+  const HIDE_PHOTOS: boolean = true;
+  const displayPhotoUrl = HIDE_PHOTOS ? null : photoUrl;
+
   return (
     <div
       style={{ width: size, height: size }}
       className={`relative flex-shrink-0 overflow-hidden rounded-full border border-border ${className}`}
     >
-      {photoUrl ? (
+      {displayPhotoUrl ? (
         <Image
-          src={photoUrl}
+          src={displayPhotoUrl}
           alt={name}
           fill
           sizes={`${size}px`}

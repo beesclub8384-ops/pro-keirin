@@ -9,6 +9,9 @@ import { splitKoreanName } from "@/lib/racer-avatar";
 
 const textShadow = "0 2px 4px rgba(0,0,0,0.5)";
 
+// 선수 사진 비노출 (선수 요청) - 복원 시 false로 변경
+const HIDE_PHOTOS: boolean = true;
+
 interface Player {
   racerId: string;
   name: string;
@@ -116,29 +119,30 @@ export default function InterviewTeamPage() {
                             key={p.racerId}
                             className="flex items-center gap-2.5 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-brand/30"
                           >
-                            {p.photoUrl ? (
-                              <button
-                                type="button"
-                                onClick={() => setLightboxPhoto(p.photoUrl)}
-                                className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-border cursor-zoom-in"
-                                aria-label={`${p.name} 사진 크게 보기`}
-                              >
-                                <Image
-                                  src={p.photoUrl}
-                                  alt={p.name}
-                                  fill
-                                  sizes="32px"
-                                  className="object-cover"
-                                  unoptimized
-                                />
-                              </button>
-                            ) : (
-                              <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-border">
-                                <div className="flex h-full w-full items-center justify-center bg-muted text-sm font-bold text-muted-foreground">
-                                  {surname}
+                            {!HIDE_PHOTOS &&
+                              (p.photoUrl ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setLightboxPhoto(p.photoUrl)}
+                                  className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-border cursor-zoom-in"
+                                  aria-label={`${p.name} 사진 크게 보기`}
+                                >
+                                  <Image
+                                    src={p.photoUrl}
+                                    alt={p.name}
+                                    fill
+                                    sizes="32px"
+                                    className="object-cover"
+                                    unoptimized
+                                  />
+                                </button>
+                              ) : (
+                                <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border border-border">
+                                  <div className="flex h-full w-full items-center justify-center bg-muted text-sm font-bold text-muted-foreground">
+                                    {surname}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              ))}
                             <a
                               href={`https://www.kcycle.or.kr/racer/info/${p.racerId}/${currentYear}`}
                               target="_blank"
