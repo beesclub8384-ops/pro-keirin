@@ -16,7 +16,6 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import RacerAvatar from "@/components/RacerAvatar";
 import GradeBadge from "@/components/GradeBadge";
 import type { InterviewArticle } from "@/lib/interview";
 import { fetchArticlesByDate, lookupRaceDate } from "@/lib/interview-client";
@@ -325,11 +324,6 @@ export default function InterviewDatePage({
                 <CardContent className="px-6 py-8 sm:px-10 sm:py-10">
                   {/* Player info header */}
                   <div className="mb-8 flex flex-wrap items-center gap-3 border-b pb-5">
-                    <RacerAvatar
-                      name={article.playerName}
-                      photoUrl={article.photoUrl}
-                      size={44}
-                    />
                     <div>
                       <p className="flex items-center gap-1.5 font-bold text-lg">
                         <GradeBadge grade={article.grade} size={22} />

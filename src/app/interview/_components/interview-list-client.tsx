@@ -6,7 +6,6 @@ import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import RacerAvatar from "@/components/RacerAvatar";
 import GradeBadge from "@/components/GradeBadge";
 import type { InterviewArticle } from "@/lib/interview";
 
@@ -50,7 +49,6 @@ function ArticleCard({
       onFocus={onPrefetch}
     >
       <div className="flex items-center gap-2 mb-2">
-        <RacerAvatar name={a.playerName} photoUrl={a.photoUrl} size={32} />
         <GradeBadge grade={a.grade} size={18} />
         <span className="text-lg font-bold text-foreground group-hover:text-brand transition-colors">
           {a.playerName}
