@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import RacerAvatar from "@/components/RacerAvatar";
+import GradeBadge from "@/components/GradeBadge";
 import type { InterviewArticle } from "@/lib/interview";
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -50,6 +51,7 @@ function ArticleCard({
     >
       <div className="flex items-center gap-2 mb-2">
         <RacerAvatar name={a.playerName} photoUrl={a.photoUrl} size={32} />
+        <GradeBadge grade={a.grade} size={18} />
         <span className="text-lg font-bold text-foreground group-hover:text-brand transition-colors">
           {a.playerName}
         </span>

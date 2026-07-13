@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronDown, ExternalLink, Loader2 } from "lucide-react";
 import Image from "next/image";
 import PhotoLightbox from "@/components/PhotoLightbox";
+import GradeBadge from "@/components/GradeBadge";
 import { splitKoreanName } from "@/lib/racer-avatar";
 
 const textShadow = "0 2px 4px rgba(0,0,0,0.5)";
@@ -16,6 +17,7 @@ interface Player {
   racerId: string;
   name: string;
   photoUrl: string | null;
+  grade: string | null;
 }
 
 interface RegionGroup {
@@ -144,6 +146,7 @@ export default function InterviewTeamPage() {
                                   </div>
                                 </div>
                               ))}
+                            <GradeBadge grade={p.grade} size={18} />
                             <a
                               href={`https://www.kcycle.or.kr/racer/info/${p.racerId}/${currentYear}`}
                               target="_blank"

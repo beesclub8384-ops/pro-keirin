@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import RacerAvatar from "@/components/RacerAvatar";
+import GradeBadge from "@/components/GradeBadge";
 import type { InterviewArticle } from "@/lib/interview";
 import { fetchArticlesByDate, lookupRaceDate } from "@/lib/interview-client";
 
@@ -330,7 +331,10 @@ export default function InterviewDatePage({
                       size={44}
                     />
                     <div>
-                      <p className="font-bold text-lg">{article.playerName}</p>
+                      <p className="flex items-center gap-1.5 font-bold text-lg">
+                        <GradeBadge grade={article.grade} size={22} />
+                        {article.playerName}
+                      </p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <Badge variant="secondary" className="gap-1">
                           <Award className="h-3 w-3" />

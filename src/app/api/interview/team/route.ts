@@ -5,11 +5,25 @@ interface Player {
   racerId: string;
   name: string;
   photoUrl: string | null;
+  grade: string | null;
 }
 
 interface RegionGroup {
   region: string;
   players: Player[];
+}
+
+/**
+ * 선수 등급(class grade)을 경주 등급(특선/우수/선발)으로 변환.
+ * 표준 경륜 등급 체계: SS/S1~S3 → 특선, A1~A3 → 우수, B1~B3 → 선발
+ */
+function tierFromClassGrade(grade: string | null): string | null {
+  if (!grade) return null;
+  const c = grade.trim().charAt(0).toUpperCase();
+  if (c === "S") return "특선";
+  if (c === "A") return "우수";
+  if (c === "B") return "선발";
+  return null;
 }
 
 export async function GET() {
@@ -27,7 +41,7 @@ export async function GET() {
 
   const { data, error } = await sb
     .from("racer_profiles")
-    .select("racer_id, name, training, photo_url")
+    .select("racer_id, name, training, photo_url, grade")
     .eq("is_union", true)
     .eq("year", maxYear)
     .order("name", { ascending: true });
@@ -62,6 +76,7 @@ export async function GET() {
       racerId: row.racer_id as string,
       name: row.name as string,
       photoUrl: (row.photo_url as string | null) ?? photoFallback.get(row.racer_id as string) ?? null,
+      grade: tierFromClassGrade(row.grade as string | null),
     });
     regionMap.set(region, players);
   }
