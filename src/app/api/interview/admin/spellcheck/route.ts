@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 const SYSTEM_PROMPT = `당신은 한국어 맞춤법/띄어쓰기 검사기다.
 
@@ -17,6 +18,9 @@ const SYSTEM_PROMPT = `당신은 한국어 맞춤법/띄어쓰기 검사기다.
 - JSON만 출력. 다른 텍스트나 설명 없음.`;
 
 export async function POST(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json(

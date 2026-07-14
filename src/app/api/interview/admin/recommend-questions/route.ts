@@ -3,8 +3,12 @@ import {
   selectQuestionsForPlayer,
   type RequestType,
 } from "@/lib/interview-question-selector";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 export async function POST(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   let body: { playerName?: string; requestType?: string };
   try {
     body = await req.json();

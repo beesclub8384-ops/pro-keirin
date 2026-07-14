@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 function extractGrade(raceType: string | null): string | null {
   if (!raceType) return null;
@@ -10,6 +11,9 @@ function extractGrade(raceType: string | null): string | null {
 }
 
 export async function GET(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { searchParams } = new URL(req.url);
   const name = (searchParams.get("name") ?? "").trim();
   if (!name) {

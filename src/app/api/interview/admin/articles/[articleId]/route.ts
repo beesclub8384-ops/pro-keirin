@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 type Params = { params: Promise<{ articleId: string }> };
 
@@ -8,7 +9,10 @@ function parseId(raw: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export async function GET(_req: Request, { params }: Params) {
+export async function GET(req: Request, { params }: Params) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { articleId } = await params;
   const id = parseId(articleId);
   if (id === null) {
@@ -68,6 +72,9 @@ export async function GET(_req: Request, { params }: Params) {
 }
 
 export async function PUT(req: Request, { params }: Params) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { articleId } = await params;
   const id = parseId(articleId);
   if (id === null) {
@@ -96,6 +103,9 @@ export async function PUT(req: Request, { params }: Params) {
 }
 
 export async function PATCH(req: Request, { params }: Params) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { articleId } = await params;
   const id = parseId(articleId);
   if (id === null) {
@@ -139,7 +149,10 @@ export async function PATCH(req: Request, { params }: Params) {
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(_req: Request, { params }: Params) {
+export async function DELETE(req: Request, { params }: Params) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { articleId } = await params;
   const id = parseId(articleId);
   if (id === null) {

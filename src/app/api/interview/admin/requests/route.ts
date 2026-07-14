@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
-export async function GET() {
+export async function GET(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const sb = createAdminClient();
   const { data, error } = await sb
     .from("interview_requests")
@@ -39,6 +43,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   let body: {
     playerName?: string;
     grade?: string;
@@ -90,6 +97,9 @@ export async function POST(req: Request) {
 }
 
 export async function PUT(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   let body: {
     id?: number;
     playerName?: string;
@@ -137,6 +147,9 @@ export async function PUT(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   let body: { id?: number };
   try {
     body = await req.json();
