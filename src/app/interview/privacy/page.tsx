@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
 export const metadata = {
-  title: "개인정보처리방침 | 7RANDOMS 인터뷰",
+  // 레이아웃 template("%s | 7RANDOMS")이 적용되어 "개인정보처리방침 | 7RANDOMS"로 표시됨
+  title: "개인정보처리방침",
   description: "7RANDOMS 인터뷰 앱 개인정보처리방침",
 };
 

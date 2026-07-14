@@ -1,0 +1,17 @@
+{
+  "name": "7RANDOMS 인터뷰",
+  "short_name": "7RANDOMS",
+  "start_url": "/interview",
+  "scope": "/interview/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/images/app-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

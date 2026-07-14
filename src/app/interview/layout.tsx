@@ -1,8 +1,29 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import InterviewHeaderMenu from "@/components/InterviewHeaderMenu";
 import CapacitorBackButton from "@/components/CapacitorBackButton";
 import InterviewSWRegister from "@/components/InterviewSWRegister";
+
+// 인터뷰 전 페이지 기본 메타데이터. 하위 페이지가 title만 지정하면 template이 적용됨.
+export const metadata: Metadata = {
+  title: {
+    default: "7RANDOMS 인터뷰",
+    template: "%s | 7RANDOMS",
+  },
+  description: "프로경륜 선수 인터뷰 - 7RANDOMS",
+  manifest: "/manifest.json",
+  openGraph: {
+    title: "7RANDOMS 인터뷰",
+    description: "프로경륜 선수들의 생생한 이야기",
+    siteName: "7RANDOMS",
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+  },
+};
 
 export default function InterviewLayout({
   children,
