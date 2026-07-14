@@ -58,9 +58,9 @@ function newAnswer(): AnswerState {
 export default function InterviewFormPage({
   params,
 }: {
-  params: Promise<{ requestId: string }>;
+  params: Promise<{ token: string }>;
 }) {
-  const { requestId } = use(params);
+  const { token } = use(params);
   const [state, setState] = useState<LoadState>({ kind: "loading" });
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -70,7 +70,7 @@ export default function InterviewFormPage({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/interview/form/${requestId}`, {
+        const res = await fetch(`/api/interview/form/${token}`, {
           cache: "no-store",
         });
         if (cancelled) return;
@@ -124,7 +124,7 @@ export default function InterviewFormPage({
     return () => {
       cancelled = true;
     };
-  }, [requestId]);
+  }, [token]);
 
   const questions = state.kind === "ready" ? state.data.questions : [];
   const total = questions.length;
@@ -135,6 +135,9 @@ export default function InterviewFormPage({
 
   async function addPhoto(code: string, files: FileList | null) {
     if (!files) return;
+    // 업로드 경로는 숫자 request id 기준 — 로드된 요청 정보에서 가져온다 (URL은 토큰)
+    const numericId = state.kind === "ready" ? state.data.request.id : null;
+    if (numericId === null) return;
     const arr = Array.from(files);
 
     // 로컬 미리보기 + uploading=true로 즉시 표시
@@ -159,7 +162,7 @@ export default function InterviewFormPage({
         try {
           const fd = new FormData();
           fd.append("file", file);
-          fd.append("requestId", String(requestId));
+          fd.append("requestId", String(numericId));
           const res = await fetch("/api/interview/upload-photo", {
             method: "POST",
             body: fd,
@@ -257,7 +260,7 @@ export default function InterviewFormPage({
             .map((p) => p.url),
         };
       });
-      const res = await fetch(`/api/interview/form/${requestId}`, {
+      const res = await fetch(`/api/interview/form/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ responses }),

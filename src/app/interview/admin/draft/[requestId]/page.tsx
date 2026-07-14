@@ -27,6 +27,7 @@ interface DraftRequest {
   requestType: string;
   selectedQuestions: string[];
   status: string;
+  formToken: string;
 }
 
 type RequestType = "regular" | "rookie" | "event" | "special";
@@ -63,6 +64,7 @@ export default function DraftEditPage({
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
   const [sentId, setSentId] = useState<number | null>(null);
+  const [formToken, setFormToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareMsg, setShareMsg] = useState<string | null>(null);
 
@@ -115,6 +117,7 @@ export default function DraftEditPage({
           return;
         }
         setPlayerName(req.playerName);
+        setFormToken(req.formToken ?? null);
         setGrade(req.grade ?? "");
         setRegion(req.region ?? "");
         setRequestType((req.requestType as RequestType) ?? "regular");
@@ -248,8 +251,8 @@ export default function DraftEditPage({
     }
   }
 
-  const formUrl = sentId
-    ? `https://pro-keirin.vercel.app/interview/form/${sentId}`
+  const formUrl = sentId && formToken
+    ? `https://pro-keirin.vercel.app/interview/form/${formToken}`
     : "";
 
   async function handleCopy() {

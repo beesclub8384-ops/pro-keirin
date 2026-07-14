@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   const { data, error } = await sb
     .from("interview_requests")
     .select(
-      "id, racer_id, player_name, grade, region, request_type, selected_questions, status, form_url, sent_at, completed_at, created_at, interview_articles(id, status)",
+      "id, racer_id, player_name, grade, region, request_type, selected_questions, status, form_url, form_token, sent_at, completed_at, created_at, interview_articles(id, status)",
     )
     .order("created_at", { ascending: false });
 
@@ -31,6 +31,7 @@ export async function GET(req: Request) {
       selectedQuestions: r.selected_questions,
       status: r.status,
       formUrl: r.form_url,
+      formToken: r.form_token,
       sentAt: r.sent_at,
       completedAt: r.completed_at,
       createdAt: r.created_at,
@@ -89,11 +90,15 @@ export async function POST(req: Request) {
       status: isDraft ? "draft" : "sent",
       sent_at: isDraft ? null : new Date().toISOString(),
     })
-    .select("id")
+    .select("id, form_token")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true, id: data.id });
+  return NextResponse.json({
+    success: true,
+    id: data.id,
+    formToken: data.form_token,
+  });
 }
 
 export async function PUT(req: Request) {

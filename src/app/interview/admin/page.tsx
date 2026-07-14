@@ -44,6 +44,7 @@ interface AdminRequest {
   selectedQuestions: string[];
   status: "draft" | "pending" | "sent" | "in_progress" | "completed" | "expired";
   formUrl: string | null;
+  formToken: string;
   sentAt: string | null;
   completedAt: string | null;
   createdAt: string;
@@ -303,9 +304,7 @@ export default function InterviewAdminPage() {
   /* Actions */
   const copyFormUrl = useCallback(
     async (req: AdminRequest) => {
-      const url =
-        req.formUrl ||
-        `${window.location.origin}/interview/form/${req.id}`;
+      const url = `${window.location.origin}/interview/form/${req.formToken}`;
       await navigator.clipboard.writeText(url);
       setCopiedId(req.id);
       setTimeout(() => setCopiedId(null), 2000);
@@ -338,9 +337,7 @@ export default function InterviewAdminPage() {
   );
 
   const sendKakao = useCallback((req: AdminRequest) => {
-    const url =
-      req.formUrl ||
-      `${window.location.origin}/interview/form/${req.id}`;
+    const url = `${window.location.origin}/interview/form/${req.formToken}`;
     const text = `[7randoms 인터뷰 요청]\n${req.playerName} 선수님, 인터뷰 폼이 도착했습니다.\n\n${url}`;
     window.open(
       `https://accounts.kakao.com/login?continue=https://sharer.kakao.com/talk/friends/picker/link?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,

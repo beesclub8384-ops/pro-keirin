@@ -12,12 +12,11 @@ interface ResponseInput {
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ requestId: string }> },
+  { params }: { params: Promise<{ token: string }> },
 ) {
-  const { requestId } = await params;
-  const id = Number(requestId);
-  if (!Number.isFinite(id)) {
-    return NextResponse.json({ error: "invalid requestId" }, { status: 400 });
+  const { token } = await params;
+  if (!token) {
+    return NextResponse.json({ error: "invalid token" }, { status: 400 });
   }
 
   const sb = createAdminClient();
@@ -25,7 +24,7 @@ export async function GET(
   const { data: request, error: reqErr } = await sb
     .from("interview_requests")
     .select("id, player_name, grade, region, status, selected_questions")
-    .eq("id", id)
+    .eq("form_token", token)
     .maybeSingle();
 
   if (reqErr) {
@@ -94,12 +93,11 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ requestId: string }> },
+  { params }: { params: Promise<{ token: string }> },
 ) {
-  const { requestId } = await params;
-  const id = Number(requestId);
-  if (!Number.isFinite(id)) {
-    return NextResponse.json({ error: "invalid requestId" }, { status: 400 });
+  const { token } = await params;
+  if (!token) {
+    return NextResponse.json({ error: "invalid token" }, { status: 400 });
   }
 
   let body: { responses?: ResponseInput[] };
@@ -122,7 +120,7 @@ export async function POST(
   const { data: request, error: reqErr } = await sb
     .from("interview_requests")
     .select("id, status")
-    .eq("id", id)
+    .eq("form_token", token)
     .maybeSingle();
 
   if (reqErr) {
@@ -143,6 +141,8 @@ export async function POST(
       { status: 403 },
     );
   }
+
+  const id = request.id as number;
 
   const rows = responses.map((r) => ({
     request_id: id,

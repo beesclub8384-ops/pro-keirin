@@ -43,6 +43,7 @@ export default function NewInterviewRequestPage() {
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<number | null>(null);
+  const [createdToken, setCreatedToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareMsg, setShareMsg] = useState<string | null>(null);
 
@@ -185,8 +186,9 @@ export default function NewInterviewRequestPage() {
         setError(j.error ?? "생성 실패");
         return;
       }
-      const json = (await res.json()) as { id: number };
+      const json = (await res.json()) as { id: number; formToken: string };
       setCreatedId(json.id);
+      setCreatedToken(json.formToken);
     } catch {
       setError("네트워크 오류");
     } finally {
@@ -194,8 +196,8 @@ export default function NewInterviewRequestPage() {
     }
   }
 
-  const formUrl = createdId
-    ? `https://pro-keirin.vercel.app/interview/form/${createdId}`
+  const formUrl = createdToken
+    ? `https://pro-keirin.vercel.app/interview/form/${createdToken}`
     : "";
 
   async function handleCopy() {
@@ -290,6 +292,7 @@ export default function NewInterviewRequestPage() {
               <Button
                 onClick={() => {
                   setCreatedId(null);
+                  setCreatedToken(null);
                   setPlayerName("");
                   setGrade("");
                   setRegion("");
