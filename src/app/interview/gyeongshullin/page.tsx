@@ -24,7 +24,6 @@ function MiniRestaurantCard({ r }: { r: GyeongshullinRestaurant }) {
             fill
             sizes="(max-width: 640px) 50vw, 200px"
             className="object-cover"
-            unoptimized
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground">

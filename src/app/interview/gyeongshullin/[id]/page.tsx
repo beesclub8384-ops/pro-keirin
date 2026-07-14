@@ -41,19 +41,15 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
   }
 
   useEffect(() => {
-    fetch("/api/gyeongshullin/published", { cache: "no-store" })
-      .then((res) => res.json())
-      .then((all: GyeongshullinRestaurant[]) => {
-        if (!Array.isArray(all)) {
+    // 전체 목록을 받아 find하지 않고, 단건 API로 필요한 1건만 조회
+    fetch(`/api/gyeongshullin/${id}`, { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) {
           setNotFound(true);
           return;
         }
-        const found = all.find((r) => String(r.id) === id);
-        if (found) {
-          setData(found);
-        } else {
-          setNotFound(true);
-        }
+        const r = (await res.json()) as GyeongshullinRestaurant;
+        setData(r);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -227,7 +223,6 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
                   fill
                   sizes="(max-width: 640px) 100vw, 720px"
                   className="object-cover"
-                  unoptimized
                 />
               </button>
             ))}
@@ -268,7 +263,6 @@ export default function GyeongshullinDetailPage({ params }: PageProps) {
                   fill
                   sizes="(max-width: 640px) 50vw, 360px"
                   className="object-cover"
-                  unoptimized
                 />
               </button>
             ))}
