@@ -3,7 +3,7 @@
 import { use } from "react";
 import useSWR from "swr";
 import Link from "next/link";
-import { ChevronLeft, MapPin, Award, Play } from "lucide-react";
+import { ChevronLeft, MapPin, Award, Play, RefreshCw } from "lucide-react";
 import {
   extractRaceInfo,
   buildRaceVideoUrl,
@@ -228,7 +228,7 @@ export default function InterviewDatePage({
   const { date } = use(params);
   const { player } = use(searchParams);
 
-  const { data: allArticles, error: articlesError } = useSWR(
+  const { data: allArticles, error: articlesError, mutate } = useSWR(
     ["interview-by-date", date],
     () => fetchArticlesByDate(date),
     swrOpts,
@@ -246,6 +246,41 @@ export default function InterviewDatePage({
     () => resolveChangwonDates(filtered as InterviewArticle[]),
     swrOpts,
   );
+
+  // 로드 실패 → 에러 메시지 + 다시 시도 (무음 실패 방지)
+  if (articlesError) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+        <div className="mb-6">
+          <Link
+            href="/interview"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "sm" }),
+              "gap-1",
+            )}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            달력으로 돌아가기
+          </Link>
+        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="mb-4 text-red-500">
+              데이터를 불러오지 못했습니다. 다시 시도해주세요.
+            </p>
+            <button
+              type="button"
+              onClick={() => mutate()}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand/90"
+            >
+              <RefreshCw className="h-4 w-4" />
+              다시 시도
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // 기사 로딩 중 → 스켈레톤
   if (!allArticles && !articlesError) return <InterviewDateSkeleton />;

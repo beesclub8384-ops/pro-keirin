@@ -40,24 +40,8 @@ async function enrichArticles(
   if (articles.length === 0) return [];
   const sb = supabaseBrowser;
 
-  const playerNames = Array.from(
-    new Set(articles.map((a) => a.player_name ?? "").filter(Boolean)),
-  );
-  const photoUrlByName = new Map<string, string>();
-  if (playerNames.length > 0) {
-    const { data: racers } = await sb
-      .from("racer_profiles")
-      .select("name, photo_url")
-      .in("name", playerNames)
-      .not("photo_url", "is", null);
-    for (const r of racers ?? []) {
-      const n = r.name as string;
-      const u = r.photo_url as string | null;
-      if (n && u && !photoUrlByName.has(n)) {
-        photoUrlByName.set(n, u);
-      }
-    }
-  }
+  // 선수 사진 비노출 중 - 복원 시 이 조회(racer_profiles.photo_url) 활성화.
+  // 사진을 숨긴 상태라 photoUrl은 항상 null이므로, 매 로드마다의 DB 왕복을 생략한다.
 
   const requestIds = Array.from(new Set(articles.map((a) => a.request_id)));
   const photosByReq = new Map<number, string[]>();
@@ -85,7 +69,7 @@ async function enrichArticles(
     return {
       date: toKSTDate(a.published_at),
       playerName: a.player_name ?? "",
-      photoUrl: photoUrlByName.get(a.player_name ?? "") ?? null,
+      photoUrl: null, // 선수 사진 비노출 중 (위 racer_profiles 조회 생략)
       grade: a.grade ?? "",
       region: a.region ?? "",
       headline: a.headline ?? "",
@@ -106,7 +90,9 @@ export async function fetchPublishedArticles(): Promise<InterviewArticle[]> {
     .eq("status", "published")
     .order("published_at", { ascending: false });
 
-  if (error || !articles) return [];
+  // 에러는 던져서 SWR이 error를 감지하게 한다 (무음 실패 방지)
+  if (error) throw new Error(error.message);
+  if (!articles) return [];
   return enrichArticles(articles as ArticleRow[]);
 }
 
@@ -134,7 +120,9 @@ export async function fetchArticlesByDate(
     .lt("published_at", endKstUtc)
     .order("published_at", { ascending: false });
 
-  if (error || !articles) return [];
+  // 에러는 던져서 SWR이 error를 감지하게 한다 (무음 실패 방지)
+  if (error) throw new Error(error.message);
+  if (!articles) return [];
   return enrichArticles(articles as ArticleRow[]);
 }
 

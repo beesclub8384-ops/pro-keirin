@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import { RefreshCw } from "lucide-react";
 import InterviewListClient from "./_components/interview-list-client";
 import { fetchPublishedArticles } from "@/lib/interview-client";
 
@@ -41,15 +42,40 @@ function InterviewSkeleton() {
   );
 }
 
+// 로드 실패 시 에러 메시지 + 다시 시도 버튼 (무음 실패 방지)
+function InterviewLoadError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="rounded-xl bg-white/95 py-16 text-center shadow-lg backdrop-blur-sm">
+      <p className="mb-4 text-sm text-red-500">
+        데이터를 불러오지 못했습니다. 다시 시도해주세요.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand/90"
+      >
+        <RefreshCw className="h-4 w-4" />
+        다시 시도
+      </button>
+    </div>
+  );
+}
+
 export default function InterviewPage() {
-  const { data, error } = useSWR("interview-articles", fetchPublishedArticles, {
-    revalidateOnFocus: false,
-    dedupingInterval: 60000, // 1분간 동일 키 재요청 방지
-  });
+  const { data, error, mutate } = useSWR(
+    "interview-articles",
+    fetchPublishedArticles,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000, // 1분간 동일 키 재요청 방지
+    },
+  );
+
+  // 로드 실패 → 에러 메시지 + 다시 시도
+  if (error) return <InterviewLoadError onRetry={() => mutate()} />;
 
   // 최초 로딩(데이터 없음 + 에러 없음) → 스켈레톤
-  if (!data && !error) return <InterviewSkeleton />;
+  if (!data) return <InterviewSkeleton />;
 
-  // 성공 시 기존 UI 그대로. 에러 시에도 빈 배열로 안전 렌더링.
-  return <InterviewListClient articles={data ?? []} />;
+  return <InterviewListClient articles={data} />;
 }
