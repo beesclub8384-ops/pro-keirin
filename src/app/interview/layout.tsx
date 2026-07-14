@@ -47,6 +47,13 @@ export default function InterviewLayout({
         >
           7RANDOMS는 프로경륜선수노동조합의 지원을 받아 운영되고 있습니다.
         </p>
+        <Link
+          href="/interview/privacy"
+          className="mt-2 inline-block text-xs text-white/60 underline underline-offset-2 transition-colors hover:text-white/90"
+          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+        >
+          개인정보처리방침
+        </Link>
       </footer>
     </div>
   );
