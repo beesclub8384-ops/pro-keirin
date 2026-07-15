@@ -14,12 +14,14 @@ interface RegionGroup {
 }
 
 /**
- * 선수 등급(class grade)을 경주 등급(특선/우수/선발)으로 변환.
- * 표준 경륜 등급 체계: SS/S1~S3 → 특선, A1~A3 → 우수, B1~B3 → 선발
+ * 선수 등급(class grade)을 표시 등급으로 변환.
+ * SS → SS(별도), S1~S3 → 특선, A1~A3 → 우수, B1~B3 → 선발
  */
 function tierFromClassGrade(grade: string | null): string | null {
   if (!grade) return null;
-  const c = grade.trim().charAt(0).toUpperCase();
+  const g = grade.trim().toUpperCase();
+  if (g === "SS") return "SS";
+  const c = g.charAt(0);
   if (c === "S") return "특선";
   if (c === "A") return "우수";
   if (c === "B") return "선발";
