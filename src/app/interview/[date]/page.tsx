@@ -3,7 +3,7 @@
 import { use } from "react";
 import useSWR from "swr";
 import Link from "next/link";
-import { ChevronLeft, MapPin, Award, Play, RefreshCw } from "lucide-react";
+import { ChevronLeft, MapPin, Play, RefreshCw } from "lucide-react";
 import {
   extractRaceInfo,
   buildRaceVideoUrl,
@@ -14,7 +14,6 @@ import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import GradeBadge from "@/components/GradeBadge";
 import type { InterviewArticle } from "@/lib/interview";
@@ -365,10 +364,6 @@ export default function InterviewDatePage({
                         {article.playerName}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant="secondary" className="gap-1">
-                          <Award className="h-3 w-3" />
-                          {article.grade}
-                        </Badge>
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3" />
                           {article.region}

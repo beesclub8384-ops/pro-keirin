@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import GradeBadge from "@/components/GradeBadge";
 import type { InterviewArticle } from "@/lib/interview";
 
@@ -53,11 +52,6 @@ function ArticleCard({
         <span className="text-lg font-bold text-foreground group-hover:text-brand transition-colors">
           {a.playerName}
         </span>
-        {a.grade && (
-          <Badge variant="secondary" className="text-[11px] px-2 py-0.5">
-            {a.grade}
-          </Badge>
-        )}
         {a.region && (
           <span className="text-xs text-muted-foreground">{a.region}</span>
         )}
