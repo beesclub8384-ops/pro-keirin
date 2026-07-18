@@ -6,8 +6,12 @@
 //   우수 / 우수결승 / 우수준결(승)
 //   특선 / 특선결승 / 특선준결(승)
 //   경주취소 (등급 아님 → null)
-// 모든 정상 라벨이 '선발'/'우수'/'특선' 접두사로 시작하므로 접두사 규칙으로 100% 매핑된다.
-// 특별경주(그랑프리/GradeⅠ 등) 라벨은 전 기간 0건이었으나, 미래 등장 대비 접두사 미매칭은 null 처리.
+// 창원/부산은 모든 정상 라벨이 '선발'/'우수'/'특선' 접두사로 시작 → 접두사 규칙으로 100% 매핑.
+//
+// 광명 특별 라벨 (decision_card_races.race_type, 접두사 규칙 밖):
+//   그랑프리결승 / 준결 / 특우
+//   → 2022~2025 광명 51회차(연말 그랑프리 대회) 실측 결과 전량 특선급(races.grade=특선,
+//      entries 대부분 특선7)임을 확인, 태양 확정 판정 → '특선'으로 명시 매핑.
 
 export type BaseGrade = "선발" | "우수" | "특선";
 
@@ -18,6 +22,8 @@ export type BaseGrade = "선발" | "우수" | "특선";
 export function normalizeGrade(raw: string | null | undefined): BaseGrade | null {
   if (!raw) return null;
   const s = raw.trim();
+  // 특별 라벨 우선 매핑 (접두사 규칙 밖 — 광명 그랑프리 대회, 전량 특선급)
+  if (s === "그랑프리결승" || s === "준결" || s === "특우") return "특선";
   if (s.startsWith("선발")) return "선발";
   if (s.startsWith("우수")) return "우수";
   if (s.startsWith("특선")) return "특선";
@@ -37,6 +43,9 @@ export const GRADE_EXAMPLES: ReadonlyArray<[string | null, BaseGrade | null]> = 
   ["특선", "특선"],
   ["특선결승", "특선"],
   ["특선준결승", "특선"],
+  ["그랑프리결승", "특선"], // 광명 51회차 그랑프리 결승
+  ["준결", "특선"], // 광명 그랑프리 특선 준결승
+  ["특우", "특선"], // 광명 그랑프리 특선급 특별전
   ["경주취소", null],
   ["", null],
   [null, null],
