@@ -35,6 +35,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 import { createClient } from "@supabase/supabase-js";
+import { normalizeGrade } from "../src/lib/grade-normalizer";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey =
@@ -139,6 +140,7 @@ interface BusanRace {
   day: number;
   raceNo: number;
   date: string; // YYYY-MM-DD
+  gradeRaw: string; // 원본 등급 라벨 (앵커 a[5] 우선, 선발/우수/특선 + 접미사)
   env: RaceEnv;
   results: RacerResult[];
   reasonRefs: ReasonRef[]; // 임시: raceReason.do 조회 대상
@@ -225,7 +227,9 @@ function parseBlock(block: string): {
   env: RaceEnv;
   results: RacerResult[];
   reasonRefs: ReasonRef[];
+  gradeEnv: string;
 } {
+  let gradeEnv = ""; // 환경 테이블 c[0] = 등급 (이중 확인용)
   const env: RaceEnv = {
     time: "",
     weather: "",
@@ -248,6 +252,7 @@ function parseBlock(block: string): {
         stripTags(m[1]),
       );
       if (c.length >= 10) {
+        gradeEnv = c[0] || "";
         env.time = c[1] || "";
         env.weather = c[2] || "";
         env.windDir = c[3] || "";
@@ -321,7 +326,7 @@ function parseBlock(block: string): {
     }
   }
 
-  return { env, results, reasonRefs };
+  return { env, results, reasonRefs, gradeEnv };
 }
 
 // raceReason.do 응답에서 판정 상세 파싱
@@ -436,8 +441,16 @@ function parseResultPage(html: string, ymd: string): BusanRace[] {
     const end = i + 1 < anchors.length ? anchors[i + 1].index! : html.length;
     const block = html.substring(start, end);
 
-    const { env, results, reasonRefs } = parseBlock(block);
+    const { env, results, reasonRefs, gradeEnv } = parseBlock(block);
     if (results.length === 0) continue; // 미확정/데이터 없음 → 다음 실행에서 갱신
+
+    // 등급: 앵커 a[5] 우선, 환경 테이블 c[0](gradeEnv)는 이중 확인용
+    const gradeAnchor = (a[5] || "").trim();
+    if (gradeEnv && gradeAnchor && gradeEnv !== gradeAnchor) {
+      console.warn(
+        `  ⚠️ 등급 불일치 (${raceNo}R): 앵커 "${gradeAnchor}" / 요약 "${gradeEnv}" → 앵커값 사용`,
+      );
+    }
 
     races.push({
       year,
@@ -445,6 +458,7 @@ function parseResultPage(html: string, ymd: string): BusanRace[] {
       day: rd.day,
       raceNo,
       date: isoDate,
+      gradeRaw: gradeAnchor || gradeEnv,
       env,
       results,
       reasonRefs,
@@ -474,6 +488,8 @@ async function seedToSupabase(races: BusanRace[]): Promise<void> {
     race_no: r.raceNo,
     date: r.date,
     venue: VENUE,
+    grade_raw: r.gradeRaw || null,
+    grade: normalizeGrade(r.gradeRaw),
     env_time: r.env.time || null,
     env_weather: r.env.weather || null,
     env_wind_dir: r.env.windDir || null,

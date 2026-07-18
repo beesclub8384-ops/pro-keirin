@@ -24,6 +24,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 import { createClient } from "@supabase/supabase-js";
+import { normalizeGrade } from "../src/lib/grade-normalizer";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey =
@@ -124,6 +125,7 @@ interface ChangwonRace {
   day: number;
   raceNo: number;
   date: string; // YYYY-MM-DD
+  gradeRaw: string; // 원본 등급 라벨 (선발/우수/특선 + 결승/준결승 접미사)
   env: RaceEnv;
   results: RacerResult[];
   violations: Violation[];
@@ -140,9 +142,10 @@ async function fetchRcDates(year: number): Promise<RcDateEntry[]> {
 
 // ---------- HTML 파싱 ----------
 // 한 경주 블록(<h3>...</h3> ~ 다음 <h3>) 에서 12컬럼 선수 데이터 추출
-function parseRaceBlock(block: string): { env: RaceEnv; results: RacerResult[] } {
+function parseRaceBlock(block: string): { env: RaceEnv; results: RacerResult[]; grade: string } {
   // 1) 요약 테이블: 등급/시간/기온/습도/200m/최종주회/동영상
   const env: RaceEnv = { time: "", temp: "", humidity: "", record200m: "", lastLap: "" };
+  let grade = ""; // cells[0] = 등급 (원본 라벨)
   const summaryTbody = block.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/);
   if (summaryTbody) {
     const cells = [...summaryTbody[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((m) =>
@@ -150,6 +153,7 @@ function parseRaceBlock(block: string): { env: RaceEnv; results: RacerResult[] }
     );
     // [등급, 시간, 기온, 습도, 200m, 최종주회, (동영상)]
     if (cells.length >= 6) {
+      grade = cells[0] || "";
       env.time = cells[1] || "";
       env.temp = cells[2] || "";
       env.humidity = cells[3] || "";
@@ -199,7 +203,7 @@ function parseRaceBlock(block: string): { env: RaceEnv; results: RacerResult[] }
     }
   }
 
-  return { env, results };
+  return { env, results, grade };
 }
 
 // 한 경주 블록에서 판정결과 테이블 파싱
@@ -295,7 +299,7 @@ function parseResultPage(
     const end = i + 1 < heads.length ? heads[i + 1].index! : html.length;
     const block = html.substring(start, end);
 
-    const { env, results } = parseRaceBlock(block);
+    const { env, results, grade } = parseRaceBlock(block);
     if (results.length === 0) continue; // 미확정/데이터 없음 → 스킵 (다음 실행에서 갱신)
     const violations = parseJudgments(block);
 
@@ -305,6 +309,7 @@ function parseResultPage(
       day: parseInt(entry.rcdays, 10),
       raceNo,
       date: isoDate,
+      gradeRaw: grade,
       env,
       results,
       violations,
@@ -333,6 +338,8 @@ async function seedToSupabase(races: ChangwonRace[]): Promise<void> {
     race_no: r.raceNo,
     date: r.date,
     venue: VENUE,
+    grade_raw: r.gradeRaw || null,
+    grade: normalizeGrade(r.gradeRaw),
     env_time: r.env.time || null,
     env_temp: r.env.temp || null,
     env_humidity: r.env.humidity || null,
