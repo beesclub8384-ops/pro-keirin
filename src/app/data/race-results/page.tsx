@@ -50,7 +50,7 @@ interface RaceResult {
   record200m: string;
   speed200m: number;
   training: string;
-  isUnion: boolean;
+  unionType: "pkru" | "gray" | "korru" | null;
 }
 
 interface RaceEnvironment {
@@ -316,7 +316,7 @@ function RaceResultsContent() {
                               <TableCell className="font-medium">
                                 <span className="flex items-center gap-1">
                                   {r.name}
-                                  <UnionBadge isUnion={r.isUnion ?? false} />
+                                  <UnionBadge unionType={r.unionType} />
                                   {r.training && (
                                     <Link href={`/training/${encodeURIComponent(r.training)}`} onClick={(e) => e.stopPropagation()}>
                                       <Badge variant="outline" className="text-xs cursor-pointer hover:bg-accent">{r.training}</Badge>

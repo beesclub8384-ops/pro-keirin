@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
     // Fetch training from racer_profiles by name
     const nameSet = new Set(resultRows.map((r) => r.name as string).filter(Boolean));
     const trainingByName = new Map<string, string>();
-    const unionByName = new Map<string, boolean>();
+    const unionTypeByName = new Map<string, string>();
 
     if (nameSet.size > 0) {
       const names = Array.from(nameSet);
@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
         const chunk = names.slice(i, i + 200);
         const { data: profileRows } = await supabase
           .from("racer_profiles")
-          .select("name, training, is_union")
+          .select("name, training, union_type")
           .eq("year", profileYear)
           .in("name", chunk);
         if (profileRows) {
@@ -169,7 +169,7 @@ export async function GET(request: NextRequest) {
             const raw = (r.training as string) || "";
             const location = raw.split("/")[0].trim();
             trainingByName.set(r.name, location);
-            if (r.is_union) unionByName.set(r.name, true);
+            if (r.union_type) unionTypeByName.set(r.name, r.union_type as string);
           }
         }
       }
@@ -178,7 +178,7 @@ export async function GET(request: NextRequest) {
     // Attach training to result rows
     for (const r of resultRows) {
       (r as Record<string, unknown>).training = trainingByName.get(r.name as string) || "";
-      (r as Record<string, unknown>).is_union = unionByName.get(r.name as string) ?? false;
+      (r as Record<string, unknown>).union_type = unionTypeByName.get(r.name as string) ?? null;
     }
 
     // Group results by race_id

@@ -47,6 +47,11 @@ interface RaceRow {
   env_last_lap: string | null;
 }
 
+// racer_profiles.union_type 값을 안전하게 좁힌다 (pkru/gray/korru/null)
+export function toUnionType(v: unknown): "pkru" | "gray" | "korru" | null {
+  return v === "pkru" || v === "gray" || v === "korru" ? v : null;
+}
+
 interface RaceResultRow {
   back_no: number;
   name: string;
@@ -62,6 +67,7 @@ interface RaceResultRow {
   record_200m: string | null;
   speed_200m: number | null;
   training?: string;
+  union_type?: string | null; // joined from racer_profiles
 }
 
 interface OddsRow {
@@ -91,6 +97,7 @@ export function transformRaceResult(row: RaceResultRow): RaceDetailResult {
     record200m: row.record_200m ?? "",
     speed200m: row.speed_200m ?? 0,
     training: row.training ?? "",
+    unionType: toUnionType(row.union_type),
   };
 }
 
@@ -189,7 +196,7 @@ interface DCEntryRow {
   is_absent: boolean | null;
   name?: string; // joined from racer_ids
   training?: string; // joined from racer_profiles
-  is_union?: boolean; // joined from racer_profiles
+  union_type?: string | null; // joined from racer_profiles
 }
 
 export function transformDCEntry(row: DCEntryRow): DecisionCardEntry & { name: string; training: string } {
@@ -223,7 +230,7 @@ export function transformDCEntry(row: DCEntryRow): DecisionCardEntry & { name: s
     isAbsent: row.is_absent ?? false,
     name: row.name ?? "",
     training: row.training ?? "",
-    isUnion: row.is_union ?? false,
+    unionType: toUnionType(row.union_type),
   };
 }
 
@@ -291,7 +298,7 @@ interface RacerProfileRow {
   tactics: Record<string, unknown> | null;
   violations: Record<string, unknown> | null;
   indices: Record<string, unknown> | null;
-  is_union: boolean | null;
+  union_type: string | null;
 }
 
 export function transformRacerProfile(row: RacerProfileRow): RacerProfile {
@@ -336,7 +343,7 @@ export function transformRacerProfile(row: RacerProfileRow): RacerProfile {
       chase: 0,
       mark: 0,
     },
-    isUnion: row.is_union ?? false,
+    unionType: toUnionType(row.union_type),
   };
 }
 

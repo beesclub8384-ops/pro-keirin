@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     const raceIds = raceRows.map((r) => (r as { id: number }).id);
 
     // Fetch entries for these races (chunked to avoid query size limits)
-    let entryRows: Array<Record<string, unknown>> = [];
+    const entryRows: Array<Record<string, unknown>> = [];
     if (raceIds.length > 0) {
       for (let i = 0; i < raceIds.length; i += 200) {
         const chunk = raceIds.slice(i, i + 200);
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
     );
     const nameMap = new Map<string, string>();
     const trainingMap = new Map<string, string>();
-    const unionMap = new Map<string, boolean>();
+    const unionTypeMap = new Map<string, string>();
 
     if (racerIdSet.size > 0) {
       const racerIds = Array.from(racerIdSet);
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
         const chunk = racerIds.slice(i, i + 200);
         const { data: profileRows } = await supabase
           .from("racer_profiles")
-          .select("racer_id, training, is_union")
+          .select("racer_id, training, union_type")
           .eq("year", profileYear)
           .in("racer_id", chunk);
         if (profileRows) {
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
             const raw = (r.training as string) || "";
             const location = raw.split("/")[0].trim();
             trainingMap.set(r.racer_id, location);
-            if (r.is_union) unionMap.set(r.racer_id, true);
+            if (r.union_type) unionTypeMap.set(r.racer_id, r.union_type as string);
           }
         }
       }
@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
       ...e,
       name: nameMap.get(e.racer_id as string) || "",
       training: trainingMap.get(e.racer_id as string) || "",
-      is_union: unionMap.get(e.racer_id as string) ?? false,
+      union_type: unionTypeMap.get(e.racer_id as string) ?? null,
     }));
 
     const pages = assembleDCPages(
@@ -232,7 +232,7 @@ export async function GET(request: NextRequest) {
         is_absent: boolean | null;
         name?: string;
         training?: string;
-        is_union?: boolean;
+        union_type?: string | null;
       }>
     );
 

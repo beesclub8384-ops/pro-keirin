@@ -83,7 +83,7 @@ interface RacerResult {
   training: string;
   tactics: RacerTactics;
   violations: RacerViolations;
-  isUnion: boolean;
+  unionType: "pkru" | "gray" | "korru" | null;
   ranking?: RankingEntry;
 }
 
@@ -423,7 +423,7 @@ export default function RacerSearchPage() {
                   onClick={() => toggle(uid)}
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <CardTitle className="text-base">{group.name}<UnionBadge isUnion={racer.isUnion ?? false} /></CardTitle>
+                    <CardTitle className="text-base">{group.name}<UnionBadge unionType={racer.unionType} /></CardTitle>
                     <Badge variant="outline">{racer.gradeChange}</Badge>
                     {racer.ranking && (
                       <Badge variant="secondary">순위 {racer.ranking.rank}위</Badge>

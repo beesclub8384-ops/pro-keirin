@@ -41,6 +41,7 @@ export interface RaceDetailResult {
   record200m: string;
   speed200m: number;
   training: string;
+  unionType: "pkru" | "gray" | "korru" | null;
 }
 
 export interface RaceDetailEnvironment {
@@ -102,7 +103,7 @@ export interface DecisionCardEntry {
   performanceRank: string;
   isAbsent: boolean;
   training: string;
-  isUnion: boolean;
+  unionType: "pkru" | "gray" | "korru" | null;
 }
 
 export interface DecisionCardRace {
@@ -217,7 +218,7 @@ export interface RacerProfile {
     chase: number;
     mark: number;
   };
-  isUnion: boolean;
+  unionType: "pkru" | "gray" | "korru" | null;
 }
 
 // --- Ranking Types ---

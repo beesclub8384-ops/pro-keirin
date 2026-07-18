@@ -49,7 +49,7 @@ interface Entry {
   performanceRank: string;
   isAbsent?: boolean;
   training: string;
-  isUnion?: boolean;
+  unionType?: "pkru" | "gray" | "korru" | null;
 }
 
 interface DecisionRace {
@@ -297,7 +297,7 @@ function DecisionCardContent() {
                             <TableCell className="font-medium">
                               <span className="flex items-center gap-1">
                                 {entry.name}
-                                <UnionBadge isUnion={entry.isUnion ?? false} />
+                                <UnionBadge unionType={entry.unionType} />
                                 {entry.training && (
                                   <Link href={`/training/${encodeURIComponent(entry.training)}`} onClick={(e) => e.stopPropagation()}>
                                     <Badge variant="outline" className="text-xs cursor-pointer hover:bg-accent">{entry.training}</Badge>
