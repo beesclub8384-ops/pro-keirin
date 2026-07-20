@@ -96,3 +96,10 @@ android/build/
 android/local.properties
 
 .vercel
+
+# --- 선수 사진 (미사용 방침 / 용량) ---
+kcycle-photos/
+
+# --- 실행 로그 ---
+*.log
+race-sales-run.log
