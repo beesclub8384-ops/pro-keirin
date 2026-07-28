@@ -44,6 +44,8 @@ interface PhotoItem {
   error?: string;
 }
 
+const MAX_FREE_PHOTOS = 3;
+
 interface AnswerState {
   answerText: string;
   answerChoice: string;
@@ -63,6 +65,7 @@ export default function InterviewFormPage({
   const { token } = use(params);
   const [state, setState] = useState<LoadState>({ kind: "loading" });
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
+  const [freePhotos, setFreePhotos] = useState<PhotoItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -225,12 +228,82 @@ export default function InterviewFormPage({
     });
   }
 
+  // 질문과 무관한 자유 첨부 사진 (최대 MAX_FREE_PHOTOS 장)
+  async function addFreePhotos(files: FileList | null) {
+    if (!files) return;
+    const numericId = state.kind === "ready" ? state.data.request.id : null;
+    if (numericId === null) return;
+    const remaining = MAX_FREE_PHOTOS - freePhotos.length;
+    if (remaining <= 0) return;
+    const arr = Array.from(files).slice(0, remaining);
+    if (arr.length === 0) return;
+
+    // 로컬 미리보기 + uploading=true로 즉시 표시
+    const placeholders: PhotoItem[] = arr.map((file) => ({
+      url: "",
+      uploading: true,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    const startIdx = freePhotos.length;
+    setFreePhotos((prev) => [...prev, ...placeholders]);
+
+    // 각 파일 업로드 (기존 upload-photo API 재사용)
+    await Promise.all(
+      arr.map(async (file, i) => {
+        const slotIdx = startIdx + i;
+        try {
+          const fd = new FormData();
+          fd.append("file", file);
+          fd.append("requestId", String(numericId));
+          const res = await fetch("/api/interview/upload-photo", {
+            method: "POST",
+            body: fd,
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: "업로드 실패" }));
+            setFreePhotos((prev) =>
+              prev.map((p, idx) =>
+                idx === slotIdx
+                  ? { ...p, uploading: false, error: err.error ?? "업로드 실패" }
+                  : p,
+              ),
+            );
+            return;
+          }
+          const json = (await res.json()) as { url: string };
+          setFreePhotos((prev) =>
+            prev.map((p, idx) =>
+              idx === slotIdx ? { ...p, uploading: false, url: json.url } : p,
+            ),
+          );
+        } catch {
+          setFreePhotos((prev) =>
+            prev.map((p, idx) =>
+              idx === slotIdx
+                ? { ...p, uploading: false, error: "네트워크 오류" }
+                : p,
+            ),
+          );
+        }
+      }),
+    );
+  }
+
+  function removeFreePhoto(idx: number) {
+    setFreePhotos((prev) => {
+      const target = prev[idx];
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((_, i) => i !== idx);
+    });
+  }
+
   const canSubmit = useMemo(() => {
     if (state.kind !== "ready") return false;
     const anyUploading = Object.values(answers).some((a) =>
       a.photos.some((p) => p.uploading),
     );
-    if (anyUploading) return false;
+    const anyFreeUploading = freePhotos.some((p) => p.uploading);
+    if (anyUploading || anyFreeUploading) return false;
     return state.data.questions.every((q) => {
       const a = answers[q.code];
       if (!a) return false;
@@ -239,7 +312,7 @@ export default function InterviewFormPage({
       if (q.format === "choice_text") return a.answerChoice !== "";
       return false;
     });
-  }, [state, answers]);
+  }, [state, answers, freePhotos]);
 
   async function handleSubmit() {
     if (state.kind !== "ready") return;
@@ -260,10 +333,13 @@ export default function InterviewFormPage({
             .map((p) => p.url),
         };
       });
+      const freePhotoUrls = freePhotos
+        .filter((p) => p.url && !p.uploading && !p.error)
+        .map((p) => p.url);
       const res = await fetch(`/api/interview/form/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ responses }),
+        body: JSON.stringify({ responses, freePhotos: freePhotoUrls }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "제출 실패" }));
@@ -531,6 +607,74 @@ export default function InterviewFormPage({
             </Card>
           );
         })}
+      </div>
+
+      {/* Free photos (질문과 무관한 자유 첨부) */}
+      <div className="mt-6">
+        <Card className="overflow-hidden">
+          <CardContent className="px-5 py-6 sm:px-7 sm:py-7">
+            <div className="mb-1 flex items-center justify-between">
+              <h3 className="text-[15px] font-semibold text-foreground sm:text-base">
+                📷 사진 첨부 (선택사항)
+              </h3>
+              <span className="text-xs font-medium text-muted-foreground">
+                {freePhotos.length} / {MAX_FREE_PHOTOS}
+              </span>
+            </div>
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+              경주 사진, 훈련 사진 등 자유롭게 올려주세요
+            </p>
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              {freePhotos.map((p, i) => (
+                <div
+                  key={i}
+                  className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-border"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.previewUrl || p.url}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                  {p.uploading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                      <Loader2 className="h-5 w-5 animate-spin text-white" />
+                    </div>
+                  )}
+                  {p.error && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-red-500/70 px-1 text-[9px] leading-tight text-white">
+                      {p.error}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeFreePhoto(i)}
+                    className="absolute right-0.5 top-0.5 rounded-full bg-black/60 p-0.5 text-white"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+              {freePhotos.length < MAX_FREE_PHOTOS && (
+                <label className="flex h-24 w-24 shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border text-muted-foreground hover:border-brand hover:text-brand">
+                  <Camera className="h-6 w-6" />
+                  <span className="text-[10px] font-medium">사진 추가</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      addFreePhotos(e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Submit */}

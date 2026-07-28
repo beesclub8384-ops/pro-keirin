@@ -10,6 +10,7 @@ interface ResponseRow {
 function buildArticleMarkdown(
   playerName: string,
   responses: ResponseRow[],
+  freePhotos: string[] = [],
 ): { markdown: string; uniquePhotos: string[] } {
   const uniquePhotos: string[] = [];
   const seen = new Set<string>();
@@ -49,6 +50,19 @@ function buildArticleMarkdown(
     lines.push("");
   }
 
+  // 질문과 무관한 자유 첨부 사진 — 본문 하단에 별도 섹션으로 합류
+  const freeToAdd = freePhotos.filter((u) => u && !seen.has(u));
+  if (freeToAdd.length > 0) {
+    lines.push("### 첨부 사진");
+    for (const u of freeToAdd) {
+      seen.add(u);
+      uniquePhotos.push(u);
+      lines.push("");
+      lines.push(`[PHOTO_${uniquePhotos.length}]`);
+    }
+    lines.push("");
+  }
+
   return {
     markdown: lines.join("\n").trimEnd(),
     uniquePhotos,
@@ -67,7 +81,7 @@ export async function generateInterviewArticle(
 
   const { data: request, error: reqErr } = await sb
     .from("interview_requests")
-    .select("id, player_name, grade, region, status")
+    .select("id, player_name, grade, region, status, free_photos")
     .eq("id", requestId)
     .maybeSingle();
 
@@ -89,9 +103,15 @@ export async function generateInterviewArticle(
   }
 
   const playerName = request.player_name as string;
+  const freePhotos: string[] = Array.isArray(request.free_photos)
+    ? (request.free_photos as unknown[]).filter(
+        (u): u is string => typeof u === "string" && u.length > 0,
+      )
+    : [];
   const { markdown: articleRaw, uniquePhotos } = buildArticleMarkdown(
     playerName,
     responses as ResponseRow[],
+    freePhotos,
   );
 
   const headline = `${playerName} 인터뷰`;

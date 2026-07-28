@@ -100,7 +100,7 @@ export async function POST(
     return NextResponse.json({ error: "invalid token" }, { status: 400 });
   }
 
-  let body: { responses?: ResponseInput[] };
+  let body: { responses?: ResponseInput[]; freePhotos?: string[] };
   try {
     body = await req.json();
   } catch {
@@ -114,6 +114,13 @@ export async function POST(
       { status: 400 },
     );
   }
+
+  // 질문과 무관한 자유 첨부 사진 (선택, 최대 3장) — 문자열 URL만 허용
+  const freePhotos: string[] = Array.isArray(body.freePhotos)
+    ? body.freePhotos
+        .filter((u): u is string => typeof u === "string" && u.length > 0)
+        .slice(0, 3)
+    : [];
 
   const sb = createAdminClient();
 
@@ -160,7 +167,11 @@ export async function POST(
 
   const { error: updErr } = await sb
     .from("interview_requests")
-    .update({ status: "completed", completed_at: new Date().toISOString() })
+    .update({
+      status: "completed",
+      completed_at: new Date().toISOString(),
+      free_photos: freePhotos.length > 0 ? freePhotos : null,
+    })
     .eq("id", id);
 
   if (updErr) {
