@@ -106,3 +106,6 @@ race-sales-run.log
 
 # --- 필름 필터 시뮬레이션 산출물 (로컬 확인용) ---
 ai-photo-test/
+
+# --- 출주표 검증 스크립트 결과 (런타임 산출물) ---
+verify-output-*.csv
