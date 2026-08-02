@@ -255,6 +255,8 @@ export default function InterviewFormPage({
           const fd = new FormData();
           fd.append("file", file);
           fd.append("requestId", String(numericId));
+          // 자유 첨부 사진에만 빈티지 필름 필터 적용
+          fd.append("applyFilter", "true");
           const res = await fetch("/api/interview/upload-photo", {
             method: "POST",
             body: fd,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { applyFilmFilter, FILM_FILTER_OUTPUT } from "@/lib/film-filter";
 
 const BUCKET = "interview-photos";
 
@@ -37,6 +38,9 @@ export async function POST(req: Request) {
 
   const file = form.get("file");
   const requestIdRaw = form.get("requestId");
+  // applyFilter=true 일 때만 빈티지 필름 필터 적용 (자유 첨부 사진 전용).
+  // 값이 없으면 원본 그대로 업로드 (관리자 사진 등 보호).
+  const applyFilter = form.get("applyFilter") === "true";
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "file 필드가 필요합니다" }, { status: 400 });
   }
@@ -64,17 +68,31 @@ export async function POST(req: Request) {
 
   const sb = createAdminClient();
   const timestamp = Date.now();
-  const origName = file.name
-    ? sanitizeFilename(file.name)
-    : `photo.${extFromMime(file.type)}`;
-  const path = `interview/${requestId}/${timestamp}_${origName}`;
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  let uploadBuffer: Buffer = Buffer.from(await file.arrayBuffer());
+  let uploadType = file.type;
+  let uploadExt = extFromMime(file.type);
+
+  if (applyFilter) {
+    try {
+      uploadBuffer = await applyFilmFilter(uploadBuffer);
+      uploadType = FILM_FILTER_OUTPUT.contentType;
+      uploadExt = FILM_FILTER_OUTPUT.ext;
+    } catch (e) {
+      // 필터 실패 시 원본으로 폴백 (제출 자체는 막지 않는다)
+      console.error("[upload-photo] 필름 필터 적용 실패, 원본 업로드:", e);
+    }
+  }
+
+  // 파일명: 원본 확장자를 떼고 실제 업로드 포맷 확장자를 붙인다
+  const rawBase = file.name ? sanitizeFilename(file.name) : "photo";
+  const baseName = rawBase.replace(/\.[^.]+$/, "") || "photo";
+  const path = `interview/${requestId}/${timestamp}_${baseName}.${uploadExt}`;
 
   const { error: upErr } = await sb.storage
     .from(BUCKET)
-    .upload(path, buffer, {
-      contentType: file.type,
+    .upload(path, uploadBuffer, {
+      contentType: uploadType,
       upsert: false,
     });
 
