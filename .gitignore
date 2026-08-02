@@ -109,3 +109,4 @@ ai-photo-test/
 
 # --- 출주표 검증 스크립트 결과 (런타임 산출물) ---
 verify-output-*.csv
+verify-missing-*.csv

@@ -4,21 +4,30 @@
 // kcycle 실제 페이지의 경주 수와 대조해 "수집 누락 vs 코로나 축소"를 판정한다.
 //
 // 사용법:
-//   npx tsx scripts/verify-decision-card-coverage.ts                       # 2021 광명
-//   npx tsx scripts/verify-decision-card-coverage.ts --year 2020
+//   # [기본] in-day 모드 — 하루 안 경주가 잘렸는지 대조
+//   npx tsx scripts/verify-decision-card-coverage.ts --year 2021
 //   npx tsx scripts/verify-decision-card-coverage.ts --year 2021 --out verify-output-2021.csv
+//   # missing-days 모드 — DB에 통째로 빠진 날이 kcycle엔 있는지 역방향 검증
+//   npx tsx scripts/verify-decision-card-coverage.ts --mode missing-days --year 2021
+//   npx tsx scripts/verify-decision-card-coverage.ts --mode missing-days --year 2020
 //
-// 동작:
+// [in-day 모드] (기본)
 //   1. decision_card_pages 에서 대상연도 광명 페이지를 date 순 조회
 //   2. 각 날짜의 DB 경주 수(decision_card_races) / 선수 수(decision_card_entries) 집계
 //   3. 같은 회차/일차로 kcycle popup/txt 페이지 요청 (1초 간격)
 //   4. HTML 을 경주 헤더로 분할 → "선수 명단(배번/선수명) 행이 실제로 있는" 광명 경주만 카운트
 //      (⚠️ 단순 'N경주' 텍스트 존재로 판단하지 않는다)
 //   5. DB 경주 수 ≠ kcycle 경주 수인 날짜를 전부 출력하고 CSV 저장
+//   판정: 불일치 0일 → 코로나 축소 운영 확정 / 불일치 존재 → 수집 누락
 //
-// 판정:
-//   불일치 0일  → 코로나 축소 운영 확정, 데이터 정상
-//   불일치 존재 → 수집 누락 (CSV 의 누락 날짜 목록 확인)
+// [missing-days 모드] --mode missing-days
+//   1. round 1~60 × day 1~4 (240건)을 전수 probe
+//   2. ⚠️ kcycle 은 없는 회차 요청 시 404 대신 최신본을 반환 → <h2>에서
+//      연도·회차·일차를 파싱해 요청값과 모두 일치할 때만 "실존"으로 판정
+//   3. 실존인 경우에만 광명 경주 수(+선수 명단 행)까지 확인
+//   4. decision_card_pages 에 같은 year/round/day/venue='광명' 존재 여부 조회
+//   5. kcycle엔 있으나 DB엔 없는 날짜를 전부 출력하고 CSV 저장
+//   판정: K(누락)=0 → 코로나 휴장 확정 / K>0 → 누락 확정, 해당 회차 재수집
 // ============================================================
 
 import { config } from "dotenv";
@@ -69,7 +78,11 @@ function parseArg(name: string, def: string): string {
 
 const YEAR = parseInt(parseArg("--year", "2021"), 10);
 const VENUE = parseArg("--venue", "광명");
-const OUT = parseArg("--out", `verify-output-${YEAR}.csv`);
+const MODE = parseArg("--mode", "in-day"); // "in-day" | "missing-days"
+const OUT = parseArg(
+  "--out",
+  MODE === "missing-days" ? `verify-missing-${YEAR}.csv` : `verify-output-${YEAR}.csv`,
+);
 
 // ---------- kcycle fetch (재시도) ----------
 async function fetchRetry(url: string): Promise<string> {
@@ -88,11 +101,18 @@ async function fetchRetry(url: string): Promise<string> {
 }
 
 // ---------- kcycle 파싱 ----------
-// popup/txt 페이지의 <h2> 에서 회차/일차 검증 (kcycle 은 없는 회차 요청 시 최신을 반환)
-function validateRoundDay(html: string, round: number, day: number): boolean {
-  const m = html.match(/(\d+)회\s*(\d+)일차/);
-  if (!m) return false;
-  return parseInt(m[1], 10) === round && parseInt(m[2], 10) === day;
+// popup/txt 페이지의 <h2> "YYYY년 MM월 DD일 ... N회 M일차" 에서 연도·회차·일차 추출
+function parseH2(html: string): { year: number; round: number; day: number } | null {
+  const m = html.match(/(\d+)년\s*\d+월\s*\d+일[\s\S]*?(\d+)회\s*(\d+)일차/);
+  if (!m) return null;
+  return { year: parseInt(m[1], 10), round: parseInt(m[2], 10), day: parseInt(m[3], 10) };
+}
+
+// kcycle 은 없는 회차 요청 시 404 대신 최신본을 반환한다.
+// 연도까지 대조해 (다른 연도의 우연한 회차 일치까지) 폴백을 걸러낸다.
+function validateRoundDay(html: string, year: number, round: number, day: number): boolean {
+  const h2 = parseH2(html);
+  return !!h2 && h2.year === year && h2.round === round && h2.day === day;
 }
 
 // 경주 섹션 내 "배번(1-9) + 한글 선수명" 행 수를 센다
@@ -215,8 +235,8 @@ interface ResultRow {
   verdict: string;
 }
 
-async function main() {
-  console.log(`=== ${YEAR} ${VENUE} 출주표 수집 검증 시작 ===`);
+async function runInDay() {
+  console.log(`=== ${YEAR} ${VENUE} 출주표 수집 검증 (in-day) 시작 ===`);
 
   const pages = await fetchTargetPages();
   if (pages.length === 0) {
@@ -244,7 +264,7 @@ async function main() {
     try {
       const url = `https://www.kcycle.or.kr/race/card/decision/popup/txt/${YEAR}/${p.round}/${p.day}`;
       const html = await fetchRetry(url);
-      if (!validateRoundDay(html, p.round, p.day)) {
+      if (!validateRoundDay(html, YEAR, p.round, p.day)) {
         verdict = "검증실패(회차불일치)";
       } else {
         kcycleRaces = countVenueRaces(html, VENUE);
@@ -310,6 +330,135 @@ async function main() {
     console.log(`\n🚨 판정: 불일치 ${mismatched.length}일 → 수집 누락. CSV 의 '불일치' 행 확인`);
   } else {
     console.log(`\n⚠️ 판정: 불일치는 없으나 검증/요청 실패 ${failed.length}일 → 재실행 필요`);
+  }
+}
+
+// ---------- missing-days 모드 (역방향 검증) ----------
+interface MissingRow {
+  year: number;
+  round: number;
+  day: number;
+  kcycleExists: boolean;
+  kcycleRaces: number | null;
+  dbExists: boolean;
+  verdict: string;
+}
+
+const ROUND_MAX = 60;
+const DAY_MAX = 4;
+
+async function runMissingDays() {
+  console.log(`=== ${YEAR} ${VENUE} 누락일(missing-days) 검증 시작 ===`);
+
+  // DB에 존재하는 (round-day) 집합
+  const dbPages = await fetchTargetPages();
+  const dbSet = new Set(dbPages.map((p) => `${p.round}-${p.day}`));
+  console.log(`DB 광명 페이지: ${dbPages.length}일`);
+
+  const rows: MissingRow[] = [];
+  let probe = 0;
+  const totalProbe = ROUND_MAX * DAY_MAX;
+
+  for (let round = 1; round <= ROUND_MAX; round++) {
+    for (let day = 1; day <= DAY_MAX; day++) {
+      probe++;
+
+      let kcycleExists = false;
+      let kcycleRaces: number | null = null;
+      try {
+        const url = `https://www.kcycle.or.kr/race/card/decision/popup/txt/${YEAR}/${round}/${day}`;
+        const html = await fetchRetry(url);
+        // 연도·회차·일차가 모두 일치할 때만 실존으로 인정 (폴백 차단)
+        if (validateRoundDay(html, YEAR, round, day)) {
+          const races = countVenueRaces(html, VENUE);
+          // 헤더만 있고 명단이 비어있으면 실존 아님 (races=0)
+          if (races >= 1) {
+            kcycleExists = true;
+            kcycleRaces = races;
+          }
+        }
+      } catch {
+        // 요청 실패 → 실존 판정 불가(보수적으로 미실존 처리). DB 유무는 아래서 기록.
+      }
+
+      const dbExists = dbSet.has(`${round}-${day}`);
+      let verdict: string;
+      if (kcycleExists) {
+        verdict = dbExists ? "정상(양쪽 존재)" : "누락(kcycle有 DB無)";
+      } else {
+        verdict = dbExists ? "이상(DB有 kcycle無)" : "kcycle없음";
+      }
+
+      rows.push({ year: YEAR, round, day, kcycleExists, kcycleRaces, dbExists, verdict });
+
+      if (kcycleExists && !dbExists) {
+        console.log(`  🚨 ${YEAR}년 ${round}회 ${day}일차: kcycle ${kcycleRaces}경주 존재 / DB 없음`);
+      } else if (!kcycleExists && dbExists) {
+        console.log(`  ❓ ${YEAR}년 ${round}회 ${day}일차: DB엔 있으나 kcycle 미실존 (확인 필요)`);
+      }
+
+      if (probe % 40 === 0 || probe === totalProbe) {
+        console.log(`  진행 ${probe}/${totalProbe}`);
+      }
+      await delay(DELAY_MS);
+    }
+  }
+
+  // CSV 저장
+  const header = "year,round,day,kcycle_exists,kcycle_races,db_exists,판정";
+  const lines = rows.map((r) =>
+    [
+      r.year,
+      r.round,
+      r.day,
+      r.kcycleExists,
+      r.kcycleRaces ?? "",
+      r.dbExists,
+      r.verdict,
+    ].join(","),
+  );
+  const outPath = path.resolve(process.cwd(), OUT);
+  fs.writeFileSync(outPath, [header, ...lines].join("\n") + "\n", "utf-8");
+
+  // 요약
+  const exists = rows.filter((r) => r.kcycleExists);
+  const existsInDb = exists.filter((r) => r.dbExists);
+  const missing = exists.filter((r) => !r.dbExists);
+  const anomaly = rows.filter((r) => !r.kcycleExists && r.dbExists);
+
+  console.log(`\n[${YEAR} ${VENUE} 누락일 검증]`);
+  console.log(`probe 총 시도: ${rows.length}건 (round 1~${ROUND_MAX} × day 1~${DAY_MAX})`);
+  console.log(`kcycle에 실존: ${exists.length}건`);
+  console.log(`그중 DB에 있음: ${existsInDb.length}건`);
+  console.log(`그중 DB에 없음: ${missing.length}건  ← 이게 0이 아니면 수집 누락 확정`);
+  if (anomaly.length) console.log(`(참고) DB엔 있으나 kcycle 미실존: ${anomaly.length}건`);
+
+  console.log(`\n[DB에 없는 날짜 목록]`);
+  if (missing.length === 0) {
+    console.log(`  없음`);
+  } else {
+    for (const r of missing) {
+      console.log(`${r.year}년 ${r.round}회 ${r.day}일차 (${VENUE} ${r.kcycleRaces}경주)`);
+    }
+  }
+
+  console.log(`\nCSV 저장: ${outPath}`);
+  if (missing.length === 0) {
+    console.log(`\n✅ 판정: 누락 0건 → 코로나 휴장 확정. ${YEAR} 데이터 그대로 사용`);
+  } else {
+    console.log(`\n🚨 판정: 누락 ${missing.length}건 → 수집 누락 확정. 해당 회차 재수집 필요`);
+  }
+}
+
+// ---------- 디스패처 ----------
+async function main() {
+  if (MODE === "missing-days") {
+    await runMissingDays();
+  } else if (MODE === "in-day") {
+    await runInDay();
+  } else {
+    console.error(`ERROR: 알 수 없는 --mode: ${MODE} (in-day | missing-days)`);
+    process.exit(1);
   }
 }
 
