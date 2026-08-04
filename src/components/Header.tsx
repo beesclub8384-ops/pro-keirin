@@ -52,6 +52,7 @@ const navItems: NavItem[] = [
   { label: "선수 인터뷰", href: "/interview" },
   { label: "륜슐랭", href: "/interview/gyeongshullin" },
   { label: "커뮤니티", href: "/community" },
+  { label: "대납", href: "/vault" },
 ];
 
 function DesktopDropdown({ item }: { item: NavItem }) {
