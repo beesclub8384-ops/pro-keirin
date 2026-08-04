@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase";
 
 /**
- * 사무국장 전용 대납(daenap) API — 비밀번호 인증 후 조회/등록/사진 업로드.
+ * 사무국장 전용 대납(daenap) API — 비밀번호 인증 후 조회/등록/수정/삭제/사진 업로드.
  *
  * - 대납 데이터는 민감정보이므로 브라우저에서 Supabase에 직접 접근하지 않는다.
  *   반드시 이 라우트(service role key, RLS 우회)를 거친다.
  * - daenap-photos 버킷은 비공개(public: false)라 조회 시 서명 URL을 발급해 내려준다.
+ * - 수정/삭제로 참조가 끊긴 사진 파일은 버킷에서도 지운다(고아 파일 방지).
  * - 모든 요청은 POST { action, password, ...data } 형태.
  */
 
@@ -71,6 +73,8 @@ const PAGE_SIZE = 1000;
 interface VaultBody {
   action?: string;
   password?: string;
+  // update / delete 전용 — daenap.id (bigint)
+  id?: number | string;
   date?: string;
   recipient?: string;
   amount?: number | string;
@@ -162,6 +166,10 @@ export async function POST(req: Request) {
         return await listDaenap();
       case "create":
         return await createDaenap(body);
+      case "update":
+        return await updateDaenap(body);
+      case "delete":
+        return await deleteDaenap(body);
       case "upload":
         return await uploadPhoto(body);
       default:
@@ -270,8 +278,36 @@ function parsePhotoUrls(
   return { ok: true, value: paths };
 }
 
-/** 대납 1건 등록 */
-async function createDaenap(body: VaultBody) {
+/** daenap.id(bigint) 파싱 — 양의 정수만 통과시킨다 */
+function parseDaenapId(raw: unknown): number | null {
+  if (typeof raw === "number" && Number.isSafeInteger(raw) && raw > 0) return raw;
+  if (typeof raw === "string" && /^\d+$/.test(raw.trim())) {
+    const n = Number(raw.trim());
+    if (Number.isSafeInteger(n) && n > 0) return n;
+  }
+  return null;
+}
+
+/** 검증을 통과한 대납 입력값 — 그대로 insert/update에 넣는다 */
+interface DaenapFields {
+  date: string;
+  recipient: string;
+  amount: number;
+  description: string | null;
+  category: string;
+  sub_category: string | null;
+  photo_urls: string[];
+}
+
+/**
+ * 등록/수정 공통 입력 검증.
+ *
+ * create와 update가 각자 검증을 들고 있으면 한쪽만 고쳤을 때
+ * "등록은 막히는데 수정으로는 들어가는" 무음 실패가 생긴다. 반드시 여기 한 곳만 고칠 것.
+ */
+function validateDaenapFields(
+  body: VaultBody,
+): { ok: true; value: DaenapFields } | { ok: false; error: string } {
   const date = (body.date ?? "").trim();
   const recipient = (body.recipient ?? "").trim();
   const description = (body.description ?? "").trim();
@@ -279,54 +315,41 @@ async function createDaenap(body: VaultBody) {
   const subCategoryRaw = (body.sub_category ?? "").toString().trim();
 
   if (!isValidDateString(date)) {
-    return NextResponse.json(
-      { error: "날짜를 실제 존재하는 YYYY-MM-DD 형식으로 입력해주세요" },
-      { status: 400 },
-    );
+    return {
+      ok: false,
+      error: "날짜를 실제 존재하는 YYYY-MM-DD 형식으로 입력해주세요",
+    };
   }
   if (!recipient) {
-    return NextResponse.json(
-      { error: "누구에게 지급했는지 입력해주세요" },
-      { status: 400 },
-    );
+    return { ok: false, error: "누구에게 지급했는지 입력해주세요" };
   }
 
   const amount = Number(body.amount);
   if (!Number.isFinite(amount) || amount < 0) {
-    return NextResponse.json(
-      { error: "금액은 0 이상의 숫자로 입력해주세요" },
-      { status: 400 },
-    );
+    return { ok: false, error: "금액은 0 이상의 숫자로 입력해주세요" };
   }
 
   if (!CATEGORIES.includes(category as (typeof CATEGORIES)[number])) {
-    return NextResponse.json(
-      { error: "성격분류를 목록에서 선택해주세요" },
-      { status: 400 },
-    );
+    return { ok: false, error: "성격분류를 목록에서 선택해주세요" };
   }
 
   // 세부분류는 '임원 및 대의원 지출'일 때만 저장. 그 외에는 값이 와도 무시(null)한다.
   let subCategory: string | null = null;
   if (category === SUB_CATEGORY_PARENT && subCategoryRaw) {
     if (!SUB_CATEGORIES.includes(subCategoryRaw as (typeof SUB_CATEGORIES)[number])) {
-      return NextResponse.json(
-        { error: "세부분류를 목록에서 선택해주세요" },
-        { status: 400 },
-      );
+      return { ok: false, error: "세부분류를 목록에서 선택해주세요" };
     }
     subCategory = subCategoryRaw;
   }
 
   const photos = parsePhotoUrls(body.photo_urls);
   if (!photos.ok) {
-    return NextResponse.json({ error: photos.error }, { status: 400 });
+    return { ok: false, error: photos.error };
   }
 
-  const sb = createAdminClient();
-  const { data, error } = await sb
-    .from("daenap")
-    .insert({
+  return {
+    ok: true,
+    value: {
       date,
       recipient,
       amount,
@@ -336,7 +359,57 @@ async function createDaenap(body: VaultBody) {
       // photo_urls는 NOT NULL(default '{}')이라 null을 명시하면 삽입이 거부된다.
       // 사진이 없으면 빈 배열을 넣는다.
       photo_urls: photos.value,
-    })
+    },
+  };
+}
+
+/**
+ * 버킷에서 사진 파일을 지운다.
+ *
+ * 실패해도 예외를 던지지 않는다. DB 행은 이미 처리된 뒤라서
+ * 여기서 500을 내면 "삭제가 실패한 줄 알고 다시 눌렀는데 이미 없다"는 혼란만 준다.
+ * 남은 고아 파일은 조용히 로그로만 남긴다.
+ */
+async function removePhotoFiles(sb: SupabaseClient, paths: string[]) {
+  if (paths.length === 0) return;
+  const { error } = await sb.storage.from(BUCKET).remove(paths);
+  if (error) {
+    console.error("[vault] 사진 파일 삭제 실패:", error.message, paths);
+  }
+}
+
+/** 특정 대납의 현재 사진 경로를 읽는다. 행이 없으면 null */
+async function readPhotoPaths(
+  sb: SupabaseClient,
+  id: number,
+): Promise<{ found: boolean; paths: string[]; error?: string }> {
+  const { data, error } = await sb
+    .from("daenap")
+    .select("photo_urls")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) return { found: false, paths: [], error: error.message };
+  if (!data) return { found: false, paths: [] };
+
+  const raw = (data as { photo_urls: string[] | null }).photo_urls;
+  const paths = Array.isArray(raw)
+    ? raw.filter((p): p is string => typeof p === "string" && p.length > 0)
+    : [];
+  return { found: true, paths };
+}
+
+/** 대납 1건 등록 */
+async function createDaenap(body: VaultBody) {
+  const fields = validateDaenapFields(body);
+  if (!fields.ok) {
+    return NextResponse.json({ error: fields.error }, { status: 400 });
+  }
+
+  const sb = createAdminClient();
+  const { data, error } = await sb
+    .from("daenap")
+    .insert(fields.value)
     .select(SELECT_COLUMNS)
     .single();
 
@@ -348,6 +421,108 @@ async function createDaenap(body: VaultBody) {
   }
 
   return NextResponse.json({ item: data as unknown as DaenapRow });
+}
+
+/**
+ * 대납 1건 수정.
+ * 이번 수정으로 빠진 사진은 버킷에서도 지운다(고아 파일 방지).
+ */
+async function updateDaenap(body: VaultBody) {
+  const id = parseDaenapId(body.id);
+  if (id === null) {
+    return NextResponse.json(
+      { error: "수정할 대납을 지정하지 못했습니다" },
+      { status: 400 },
+    );
+  }
+
+  const fields = validateDaenapFields(body);
+  if (!fields.ok) {
+    return NextResponse.json({ error: fields.error }, { status: 400 });
+  }
+
+  const sb = createAdminClient();
+
+  // 수정 전 사진 경로를 미리 읽어둔다. update 후에는 어떤 사진이 빠졌는지 알 수 없다.
+  const before = await readPhotoPaths(sb, id);
+  if (before.error) {
+    return NextResponse.json(
+      { error: `대납을 불러오지 못했습니다: ${before.error}` },
+      { status: 500 },
+    );
+  }
+  if (!before.found) {
+    return NextResponse.json(
+      { error: "수정할 대납을 찾을 수 없습니다. 목록을 새로고침해주세요" },
+      { status: 404 },
+    );
+  }
+
+  const { data, error } = await sb
+    .from("daenap")
+    .update(fields.value)
+    .eq("id", id)
+    .select(SELECT_COLUMNS)
+    .single();
+
+  if (error) {
+    return NextResponse.json(
+      { error: `대납 수정에 실패했습니다: ${error.message}` },
+      { status: 500 },
+    );
+  }
+
+  // DB 수정이 성공한 뒤에만 파일을 지운다. 순서를 바꾸면 수정 실패 시 사진만 사라진다.
+  const keep = new Set(fields.value.photo_urls);
+  await removePhotoFiles(
+    sb,
+    before.paths.filter((p) => !keep.has(p)),
+  );
+
+  return NextResponse.json({ item: data as unknown as DaenapRow });
+}
+
+/**
+ * 대납 1건 삭제 — 첨부 사진 파일도 함께 지운다.
+ * 되돌릴 수 없으므로 확인은 화면(window.confirm)에서 이미 받은 뒤에 호출된다.
+ */
+async function deleteDaenap(body: VaultBody) {
+  const id = parseDaenapId(body.id);
+  if (id === null) {
+    return NextResponse.json(
+      { error: "삭제할 대납을 지정하지 못했습니다" },
+      { status: 400 },
+    );
+  }
+
+  const sb = createAdminClient();
+
+  // 행을 지우면 photo_urls도 같이 사라지므로 삭제 전에 경로를 확보해둔다.
+  const before = await readPhotoPaths(sb, id);
+  if (before.error) {
+    return NextResponse.json(
+      { error: `대납을 불러오지 못했습니다: ${before.error}` },
+      { status: 500 },
+    );
+  }
+  if (!before.found) {
+    return NextResponse.json(
+      { error: "삭제할 대납을 찾을 수 없습니다. 목록을 새로고침해주세요" },
+      { status: 404 },
+    );
+  }
+
+  const { error } = await sb.from("daenap").delete().eq("id", id);
+  if (error) {
+    return NextResponse.json(
+      { error: `대납 삭제에 실패했습니다: ${error.message}` },
+      { status: 500 },
+    );
+  }
+
+  await removePhotoFiles(sb, before.paths);
+
+  return NextResponse.json({ ok: true, id, deletedPhotos: before.paths.length });
 }
 
 /**

@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Camera,
+  Check,
   ImageOff,
   Lock,
   LockKeyhole,
+  Pencil,
   Plus,
   RefreshCw,
+  Trash2,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,6 +40,8 @@ import {
  * - Supabase에 직접 접근하지 않고 /api/vault(service role)를 통해서만 읽고 쓴다.
  * - 사진은 비공개 버킷(daenap-photos)에 저장되고, 목록에서는 서버가 발급한
  *   서명 URL(1시간)로만 표시된다.
+ * - 입력 폼 하나를 등록/수정 두 모드로 쓴다. editingId가 있으면 수정 모드.
+ *   두 모드가 헷갈리면 남의 대납을 덮어쓰게 되므로 배경색·제목·버튼으로 구분한다.
  */
 
 /** ⚠️ src/app/api/vault/route.ts 의 CATEGORIES 와 반드시 동일하게 유지할 것 */
@@ -207,6 +212,19 @@ export default function VaultPage() {
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formCardRef = useRef<HTMLDivElement>(null);
+
+  // --- 수정 모드 ---
+  /** 수정 중인 대납 id. null이면 신규 등록 모드 */
+  const [editingId, setEditingId] = useState<string | number | null>(null);
+  /** 수정 중인 대납에 이미 저장돼 있는 사진 (경로 + 서명 URL) */
+  const [existingPhotos, setExistingPhotos] = useState<DaenapPhoto[]>([]);
+  /** 삭제 요청 중인 대납 id */
+  const [deletingId, setDeletingId] = useState<string | number | null>(null);
+
+  /** 새로 고른 사진 + 이미 저장된 사진 = MAX_PHOTOS 를 넘을 수 없다 */
+  const totalPhotoCount = existingPhotos.length + photos.length;
+  const isEditing = editingId !== null;
 
   // --- 사진 크게 보기 ---
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -275,15 +293,88 @@ export default function VaultPage() {
     }
   }
 
-  /** 잠그기 — 비밀번호와 조회한 데이터를 메모리에서 비운다 */
-  function handleLock() {
+  /** 폼을 비우고 신규 등록 모드로 되돌린다 */
+  function resetForm() {
     revokePhotos(photos);
     setPhotos([]);
+    setExistingPhotos([]);
+    setEditingId(null);
+    // 날짜는 오늘로 리셋 — 연속 입력 편의
+    setDate(todayString());
+    setRecipient("");
+    setAmount("");
+    setDescription("");
+    setCategory("");
+    setSubCategory("");
+    setFormError("");
+  }
+
+  /** 잠그기 — 비밀번호와 조회한 데이터를 메모리에서 비운다 */
+  function handleLock() {
+    resetForm();
     setPassword(null);
     setItems([]);
     setLightboxUrl(null);
+    setFormSuccess("");
+  }
+
+  /** 목록의 대납 1건을 위쪽 폼에 채워 넣고 수정 모드로 전환한다 */
+  function startEdit(item: DaenapItem) {
+    revokePhotos(photos);
+    setPhotos([]);
+    setExistingPhotos(item.photos ?? []);
+    setEditingId(item.id);
+    setDate(item.date);
+    setRecipient(item.recipient ?? "");
+    setAmount(item.amount === null ? "" : String(item.amount));
+    setDescription(item.description ?? "");
+    setCategory(item.category ?? "");
+    setSubCategory(item.sub_category ?? "");
     setFormError("");
     setFormSuccess("");
+    // 폼은 목록보다 위에 있어서 그냥 두면 화면 밖이다 (특히 폰)
+    formCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /** 수정 취소 — 폼을 비우고 등록 모드로 복귀 */
+  function cancelEdit() {
+    resetForm();
+    setFormSuccess("");
+  }
+
+  /** 이미 저장된 사진 1장을 수정 대상에서 뺀다 (실제 파일 삭제는 '수정 완료' 시점) */
+  function removeExistingPhoto(path: string) {
+    setExistingPhotos((prev) => prev.filter((p) => p.path !== path));
+  }
+
+  /** 대납 삭제 — 되돌릴 수 없으므로 반드시 확인을 받는다 */
+  async function handleDelete(item: DaenapItem) {
+    if (!password) return;
+    if (!window.confirm("이 대납을 삭제할까요? 사진도 함께 삭제됩니다.")) return;
+
+    setDeletingId(item.id);
+    setFormError("");
+    setListError("");
+    try {
+      const res = await fetch("/api/vault", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", password, id: item.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setListError(json?.error ?? "삭제에 실패했습니다");
+        return;
+      }
+      // 지운 대납을 수정 중이었다면 폼도 등록 모드로 되돌린다
+      if (editingId === item.id) resetForm();
+      setFormSuccess("삭제했습니다");
+      await loadList(password);
+    } catch {
+      setListError("서버에 연결하지 못했습니다");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   /** 파일 선택 — 남은 장수만큼만 받아 리사이즈 후 대기 목록에 넣는다 */
@@ -294,7 +385,8 @@ export default function VaultPage() {
     if (selected.length === 0) return;
 
     setFormError("");
-    const remaining = MAX_PHOTOS - photos.length;
+    // 이미 저장된 사진(수정 모드)도 장수에 포함한다
+    const remaining = MAX_PHOTOS - totalPhotoCount;
     if (remaining <= 0) {
       setFormError(`사진은 최대 ${MAX_PHOTOS}장까지 첨부할 수 있습니다`);
       return;
@@ -350,7 +442,10 @@ export default function VaultPage() {
     });
   }
 
-  /** 대납 저장 — 사진을 먼저 업로드해 경로를 받고, 그 경로들과 함께 등록한다 */
+  /**
+   * 대납 저장 — 새로 고른 사진을 먼저 업로드해 경로를 받고, 그 경로들과 함께 등록/수정한다.
+   * 수정 모드에서는 남겨둔 기존 사진 경로 + 새로 올린 경로를 합쳐서 보낸다.
+   */
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!password) return;
@@ -392,38 +487,38 @@ export default function VaultPage() {
         setUploading(false);
       }
 
-      // 2) 대납 등록
+      // 2) 대납 등록 / 수정
+      //    수정 모드면 남겨둔 기존 사진이 앞, 새로 올린 사진이 뒤
+      const photoPaths = [
+        ...existingPhotos.map((p) => p.path),
+        ...uploadedPaths,
+      ];
+      const editing = editingId !== null;
       const res = await fetch("/api/vault", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "create",
+          action: editing ? "update" : "create",
           password,
+          ...(editing ? { id: editingId } : {}),
           date,
           recipient: recipient.trim(),
           amount: Number(amount),
           description: description.trim(),
           category,
           sub_category: category === SUB_CATEGORY_PARENT ? subCategory : null,
-          photo_urls: uploadedPaths,
+          photo_urls: photoPaths,
         }),
       });
       const json = await res.json();
       if (!res.ok) {
-        setFormError(json?.error ?? "저장에 실패했습니다");
+        setFormError(json?.error ?? (editing ? "수정에 실패했습니다" : "저장에 실패했습니다"));
         return;
       }
 
-      // 폼 초기화 (날짜는 오늘로 리셋 — 연속 입력 편의)
-      revokePhotos(photos);
-      setPhotos([]);
-      setDate(todayString());
-      setRecipient("");
-      setAmount("");
-      setDescription("");
-      setCategory("");
-      setSubCategory("");
-      setFormSuccess("저장했습니다");
+      // 폼 초기화 + 등록 모드로 복귀
+      resetForm();
+      setFormSuccess(editing ? "수정했습니다" : "저장했습니다");
       await loadList(password);
     } catch {
       setFormError("서버에 연결하지 못했습니다");
@@ -506,10 +601,35 @@ export default function VaultPage() {
         </Button>
       </div>
 
-      {/* 입력 폼 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">새 대납 등록</CardTitle>
+      {/* 입력 폼 — editingId가 있으면 수정 모드 (배경색/제목/버튼으로 구분) */}
+      <Card
+        ref={formCardRef}
+        className={
+          isEditing ? "border-amber-400 bg-amber-50/70 ring-1 ring-amber-300" : undefined
+        }
+      >
+        <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
+          <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+            {isEditing ? "대납 수정" : "새 대납 등록"}
+            {isEditing && (
+              <span className="rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white">
+                수정 중
+              </span>
+            )}
+          </CardTitle>
+          {isEditing && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 shrink-0"
+              onClick={cancelEdit}
+              disabled={saving}
+            >
+              <X className="size-4" />
+              취소
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -610,7 +730,7 @@ export default function VaultPage() {
               <span className="text-sm font-medium">
                 사진 (영수증/송금캡쳐){" "}
                 <span className="font-normal text-muted-foreground">
-                  {photos.length}/{MAX_PHOTOS}
+                  {totalPhotoCount}/{MAX_PHOTOS}
                 </span>
               </span>
 
@@ -629,15 +749,51 @@ export default function VaultPage() {
                 size="lg"
                 className="h-12 w-full text-base"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={photos.length >= MAX_PHOTOS || photoBusy || saving}
+                disabled={totalPhotoCount >= MAX_PHOTOS || photoBusy || saving}
               >
                 <Camera className="size-4" />
                 {photoBusy
                   ? "사진 준비 중..."
-                  : photos.length >= MAX_PHOTOS
+                  : totalPhotoCount >= MAX_PHOTOS
                     ? `사진 ${MAX_PHOTOS}장 첨부됨`
                     : "사진 추가"}
               </Button>
+
+              {/* 수정 모드에서 이미 저장돼 있는 사진 — X를 누르면 이번 수정에서 빠진다 */}
+              {existingPhotos.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {existingPhotos.map((photo) => (
+                    <div key={photo.path} className="relative">
+                      {photo.signedUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={photo.signedUrl}
+                          alt="기존 첨부 사진"
+                          className="h-24 w-24 rounded-md border object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-md border bg-muted px-1 text-center">
+                          <ImageOff className="size-5 text-muted-foreground" />
+                          <span className="text-[10px] leading-tight text-muted-foreground">
+                            불러오지 못함
+                          </span>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeExistingPhoto(photo.path)}
+                        aria-label="기존 사진 삭제"
+                        className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full border bg-white text-foreground shadow hover:bg-muted"
+                      >
+                        <X className="size-4" />
+                      </button>
+                      <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 text-[10px] text-white">
+                        기존
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {photos.length > 0 && (
                 <div className="flex flex-wrap gap-3">
@@ -681,9 +837,30 @@ export default function VaultPage() {
             )}
 
             <Button type="submit" size="lg" className="h-12 w-full text-base" disabled={saving || photoBusy}>
-              <Plus className="size-4" />
-              {uploading ? "사진 업로드 중..." : saving ? "저장 중..." : "저장"}
+              {isEditing ? <Check className="size-4" /> : <Plus className="size-4" />}
+              {uploading
+                ? "사진 업로드 중..."
+                : saving
+                  ? isEditing
+                    ? "수정 중..."
+                    : "저장 중..."
+                  : isEditing
+                    ? "수정 완료"
+                    : "저장"}
             </Button>
+
+            {isEditing && (
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="h-12 w-full text-base"
+                onClick={cancelEdit}
+                disabled={saving}
+              >
+                취소하고 새 대납 등록으로
+              </Button>
+            )}
           </form>
         </CardContent>
       </Card>
@@ -723,11 +900,15 @@ export default function VaultPage() {
                   <TableHead>명목</TableHead>
                   <TableHead>성격</TableHead>
                   <TableHead>사진</TableHead>
+                  <TableHead className="text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow
+                    key={item.id}
+                    className={editingId === item.id ? "bg-amber-50" : undefined}
+                  >
                     <TableCell>{item.date}</TableCell>
                     <TableCell>{item.recipient ?? "-"}</TableCell>
                     <TableCell className="text-right tabular-nums">
@@ -773,6 +954,37 @@ export default function VaultPage() {
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      {/* 폰에서 누르기 쉽도록 40px 정사각 아이콘 버튼 */}
+                      <div className="flex justify-end gap-1.5">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="size-10"
+                          aria-label={`${item.date} ${item.recipient ?? ""} 대납 수정`}
+                          onClick={() => startEdit(item)}
+                          disabled={saving || deletingId !== null}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="size-10 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          aria-label={`${item.date} ${item.recipient ?? ""} 대납 삭제`}
+                          onClick={() => handleDelete(item)}
+                          disabled={saving || deletingId !== null}
+                        >
+                          {deletingId === item.id ? (
+                            <RefreshCw className="size-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="size-4" />
+                          )}
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
