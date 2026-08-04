@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 
 /**
- * 사무국장 전용 대납(daenap) API — 비밀번호 인증 후 조회/등록.
+ * 사무국장 전용 대납(daenap) API — 비밀번호 인증 후 조회/등록/사진 업로드.
  *
  * - 대납 데이터는 민감정보이므로 브라우저에서 Supabase에 직접 접근하지 않는다.
  *   반드시 이 라우트(service role key, RLS 우회)를 거친다.
+ * - daenap-photos 버킷은 비공개(public: false)라 조회 시 서명 URL을 발급해 내려준다.
  * - 모든 요청은 POST { action, password, ...data } 형태.
  */
 
@@ -36,6 +37,34 @@ const SUB_CATEGORY_PARENT = "임원 및 대의원 지출";
 
 const SUB_CATEGORIES = ["교통비", "식대", "숙박비", "음료·다과"] as const;
 
+/** 대납 사진 비공개 버킷 */
+const BUCKET = "daenap-photos";
+
+/** 대납 1건당 사진 최대 장수 */
+const MAX_PHOTOS = 2;
+
+/** 서명 URL 유효기간 (초) — 1시간 */
+const SIGNED_URL_TTL = 60 * 60;
+
+/** 버킷에 설정된 허용 MIME과 동일하게 유지할 것 */
+const ALLOWED_MIME = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+] as const;
+
+/**
+ * 업로드 1장당 원본 크기 상한 (3MB).
+ * 버킷 자체 상한은 10MB지만, base64로 실어 보내면 용량이 약 1.33배로 늘고
+ * Vercel 서버리스 함수의 요청 본문 상한(4.5MB)에 먼저 걸린다.
+ * 그 경우 이 핸들러에 도달하지도 못한 채 정체불명의 413이 뜨므로,
+ * 그보다 낮은 값에서 우리가 먼저 한국어 400으로 막는다.
+ * (화면에서 긴 변 1600px로 리사이즈하므로 실제로는 보통 1MB 미만이다.)
+ */
+const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
+
 /** PostgREST 기본 limit(1000) 회피용 페이지 크기 */
 const PAGE_SIZE = 1000;
 
@@ -48,6 +77,10 @@ interface VaultBody {
   description?: string;
   category?: string;
   sub_category?: string | null;
+  photo_urls?: unknown;
+  // upload 전용
+  contentType?: string;
+  data?: string;
 }
 
 interface DaenapRow {
@@ -58,12 +91,20 @@ interface DaenapRow {
   description: string | null;
   category: string | null;
   sub_category: string | null;
-  photo_url: string | null;
+  photo_urls: string[] | null;
   created_at: string | null;
 }
 
+/** 목록 응답에 실어 보내는 사진 한 장 */
+interface DaenapPhoto {
+  /** Storage 경로 — 저장/재발급용 */
+  path: string;
+  /** 서명 URL — 화면 표시용. 발급 실패 시 null */
+  signedUrl: string | null;
+}
+
 const SELECT_COLUMNS =
-  "id, date, recipient, amount, description, category, sub_category, photo_url, created_at";
+  "id, date, recipient, amount, description, category, sub_category, photo_urls, created_at";
 
 /**
  * YYYY-MM-DD 이면서 실제로 존재하는 날짜인지 확인한다.
@@ -79,6 +120,15 @@ function isValidDateString(value: string): boolean {
     dt.getUTCMonth() === m - 1 &&
     dt.getUTCDate() === d
   );
+}
+
+function extFromMime(mime: string): string {
+  if (mime === "image/jpeg") return "jpg";
+  if (mime === "image/png") return "png";
+  if (mime === "image/webp") return "webp";
+  if (mime === "image/heic") return "heic";
+  if (mime === "image/heif") return "heif";
+  return "bin";
 }
 
 export async function POST(req: Request) {
@@ -112,6 +162,8 @@ export async function POST(req: Request) {
         return await listDaenap();
       case "create":
         return await createDaenap(body);
+      case "upload":
+        return await uploadPhoto(body);
       default:
         return NextResponse.json(
           { error: `알 수 없는 action 입니다: ${body.action ?? "(없음)"}` },
@@ -127,7 +179,10 @@ export async function POST(req: Request) {
   }
 }
 
-/** daenap 전체를 날짜 내림차순으로 조회 (1000행 제한 회피용 페이지네이션) */
+/**
+ * daenap 전체를 날짜 내림차순으로 조회 (1000행 제한 회피용 페이지네이션).
+ * 각 행의 photo_urls(Storage 경로)는 서명 URL로 변환해 photos 필드로 함께 내려준다.
+ */
 async function listDaenap() {
   const sb = createAdminClient();
   const rows: DaenapRow[] = [];
@@ -154,7 +209,65 @@ async function listDaenap() {
     offset += PAGE_SIZE;
   }
 
-  return NextResponse.json({ items: rows, count: rows.length });
+  // 비공개 버킷이라 서명 URL이 없으면 브라우저에서 이미지가 보이지 않는다.
+  // 전체 경로를 한 번에 모아 배치로 발급한다.
+  const allPaths = [
+    ...new Set(
+      rows.flatMap((r) =>
+        Array.isArray(r.photo_urls)
+          ? r.photo_urls.filter((p): p is string => typeof p === "string" && p.length > 0)
+          : [],
+      ),
+    ),
+  ];
+
+  const signedByPath = new Map<string, string>();
+  if (allPaths.length > 0) {
+    const { data: signed, error: signErr } = await sb.storage
+      .from(BUCKET)
+      .createSignedUrls(allPaths, SIGNED_URL_TTL);
+    // 서명 URL 발급 실패가 목록 조회 전체를 막지는 않게 한다.
+    // (사진만 안 보이고 대납 내역은 정상 표시)
+    if (!signErr && signed) {
+      for (const s of signed) {
+        if (s.path && s.signedUrl) signedByPath.set(s.path, s.signedUrl);
+      }
+    }
+  }
+
+  const items = rows.map((row) => {
+    const paths = Array.isArray(row.photo_urls)
+      ? row.photo_urls.filter((p): p is string => typeof p === "string" && p.length > 0)
+      : [];
+    const photos: DaenapPhoto[] = paths.map((p) => ({
+      path: p,
+      signedUrl: signedByPath.get(p) ?? null,
+    }));
+    return { ...row, photos };
+  });
+
+  return NextResponse.json({ items, count: items.length });
+}
+
+/** photo_urls 입력값 검증 — 문자열 배열, 최대 MAX_PHOTOS개 */
+function parsePhotoUrls(
+  raw: unknown,
+): { ok: true; value: string[] } | { ok: false; error: string } {
+  if (raw === undefined || raw === null) return { ok: true, value: [] };
+  if (!Array.isArray(raw)) {
+    return { ok: false, error: "사진 목록 형식이 올바르지 않습니다" };
+  }
+  const paths: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== "string" || !item.trim()) {
+      return { ok: false, error: "사진 경로 형식이 올바르지 않습니다" };
+    }
+    paths.push(item.trim());
+  }
+  if (paths.length > MAX_PHOTOS) {
+    return { ok: false, error: `사진은 최대 ${MAX_PHOTOS}장까지 첨부할 수 있습니다` };
+  }
+  return { ok: true, value: paths };
 }
 
 /** 대납 1건 등록 */
@@ -205,6 +318,11 @@ async function createDaenap(body: VaultBody) {
     subCategory = subCategoryRaw;
   }
 
+  const photos = parsePhotoUrls(body.photo_urls);
+  if (!photos.ok) {
+    return NextResponse.json({ error: photos.error }, { status: 400 });
+  }
+
   const sb = createAdminClient();
   const { data, error } = await sb
     .from("daenap")
@@ -215,6 +333,9 @@ async function createDaenap(body: VaultBody) {
       description: description || null,
       category,
       sub_category: subCategory,
+      // photo_urls는 NOT NULL(default '{}')이라 null을 명시하면 삽입이 거부된다.
+      // 사진이 없으면 빈 배열을 넣는다.
+      photo_urls: photos.value,
     })
     .select(SELECT_COLUMNS)
     .single();
@@ -227,4 +348,73 @@ async function createDaenap(body: VaultBody) {
   }
 
   return NextResponse.json({ item: data as unknown as DaenapRow });
+}
+
+/**
+ * 사진 1장을 daenap-photos 버킷에 업로드하고 Storage 경로를 돌려준다.
+ * 경로는 {연도}/{타임스탬프}-{랜덤}.{확장자} 형식.
+ */
+async function uploadPhoto(body: VaultBody) {
+  const contentType = (body.contentType ?? "").trim().toLowerCase();
+  const base64 = typeof body.data === "string" ? body.data : "";
+
+  if (!ALLOWED_MIME.includes(contentType as (typeof ALLOWED_MIME)[number])) {
+    return NextResponse.json(
+      { error: "JPG, PNG, WEBP, HEIC 이미지만 첨부할 수 있습니다" },
+      { status: 400 },
+    );
+  }
+  if (!base64) {
+    return NextResponse.json(
+      { error: "사진 데이터가 비어 있습니다" },
+      { status: 400 },
+    );
+  }
+
+  let buffer: Buffer;
+  try {
+    // data URL 접두사가 붙어 와도 받아들인다
+    const commaIdx = base64.indexOf(",");
+    const pure = base64.startsWith("data:") && commaIdx >= 0 ? base64.slice(commaIdx + 1) : base64;
+    buffer = Buffer.from(pure, "base64");
+  } catch {
+    return NextResponse.json(
+      { error: "사진 데이터를 읽지 못했습니다" },
+      { status: 400 },
+    );
+  }
+
+  if (buffer.length === 0) {
+    return NextResponse.json(
+      { error: "사진 데이터를 읽지 못했습니다" },
+      { status: 400 },
+    );
+  }
+  if (buffer.length > MAX_UPLOAD_BYTES) {
+    return NextResponse.json(
+      {
+        error: `사진 용량이 너무 큽니다 (${Math.round(MAX_UPLOAD_BYTES / 1024 / 1024)}MB 이하). 다시 촬영하거나 크기를 줄여주세요`,
+      },
+      { status: 400 },
+    );
+  }
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const random = Math.random().toString(36).slice(2, 10);
+  const path = `${year}/${now.getTime()}-${random}.${extFromMime(contentType)}`;
+
+  const sb = createAdminClient();
+  const { error: upErr } = await sb.storage
+    .from(BUCKET)
+    .upload(path, buffer, { contentType, upsert: false });
+
+  if (upErr) {
+    return NextResponse.json(
+      { error: `사진 업로드에 실패했습니다: ${upErr.message}` },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ path });
 }
