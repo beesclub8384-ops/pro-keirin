@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Loader2, Plus, ChefHat } from "lucide-react";
+import { Loader2, Plus, ChefHat, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,13 @@ export default function GyeongshullinAdminPage() {
           <p className="mt-1 text-xs text-muted-foreground">
             공개됨 {publishedCount}건 · 임시저장 {draftCount}건
           </p>
+          <Link
+            href="/interview/gyeongshullin/admin/requests"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs font-medium text-brand hover:bg-brand/10 transition-colors"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            맛집 요청 관리
+          </Link>
         </div>
         <Link href="/interview/gyeongshullin/admin/new">
           <Button size="sm" className="gap-1.5">
