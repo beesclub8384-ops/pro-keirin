@@ -132,6 +132,27 @@ async function resolveChangwonDates(
   return result;
 }
 
+/**
+ * 인터뷰 영역은 본관과 격리한다.
+ * 기사 본문 마크다운에 본관 경로가 들어와도 클릭 가능한 링크를 만들지 않는다.
+ * (외부 사이트 링크는 기존대로 허용)
+ */
+const isBlockedInternalLink = (href?: string): boolean => {
+  if (!href) return true; // href 없으면 링크화하지 않음
+  try {
+    // 상대경로 처리를 위해 base 지정
+    const url = new URL(href, "https://pro-keirin.vercel.app");
+    const isOwnHost =
+      url.hostname === "pro-keirin.vercel.app" ||
+      url.hostname === "localhost" ||
+      href.startsWith("/"); // 상대경로는 자체 호스트로 간주
+    if (!isOwnHost) return false; // 외부 사이트는 허용 (기존 동작 유지)
+    return !url.pathname.startsWith("/interview"); // 자체 호스트인데 인터뷰 밖이면 차단
+  } catch {
+    return true; // 파싱 불가한 href는 안전하게 차단
+  }
+};
+
 /** 블록 내부용 — Q/A 감지 로직 없이 단순 마크다운 렌더 (색상은 부모 div에서 상속) */
 const blockMdComponents: Components = {
   p: (props) => (
@@ -150,16 +171,20 @@ const blockMdComponents: Components = {
     />
   ),
   strong: (props) => <strong className="font-bold">{props.children}</strong>,
-  a: (props) => (
-    <a
-      href={props.href}
-      className="text-brand hover:underline"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {props.children}
-    </a>
-  ),
+  a: (props) =>
+    isBlockedInternalLink(props.href) ? (
+      // 본관 경로·판별 불가 href는 링크 없이 글자만 표시
+      <span>{props.children}</span>
+    ) : (
+      <a
+        href={props.href}
+        className="text-brand hover:underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {props.children}
+      </a>
+    ),
 };
 
 /** 📊 분석 노트용 컴포넌트 — 작고 밀도 있는 스타일 */
