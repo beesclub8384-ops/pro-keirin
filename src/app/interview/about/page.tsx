@@ -82,44 +82,81 @@ const BETTING_TYPES = [
   {
     name: "단승",
     stars: 1,
+    probability: "1/7",
     short: "1등 맞추기",
     desc: "7명 중 1등을 맞추는 가장 단순한 방식!",
   },
   {
     name: "연승",
     stars: 1,
+    probability: "2/7",
     short: "1~2등 안에 들면 OK",
     desc: "내가 고른 선수가 1등 또는 2등이면 적중.",
   },
   {
     name: "복승",
     stars: 2,
+    probability: "1/21",
     short: "1,2등 2명 맞추기 (순서 무관)",
     desc: "",
   },
   {
     name: "쌍승",
     stars: 3,
+    probability: "1/42",
     short: "1,2등 순서까지 맞추기",
     desc: "",
   },
   {
     name: "삼복승",
-    stars: 3,
+    stars: 2,
+    probability: "1/35",
     short: "1,2,3등 3명 맞추기 (순서 무관)",
-    desc: "",
+    desc: "3명을 고르지만 순서가 없어서, 순서까지 맞춰야 하는 쌍승보다 적중확률이 오히려 높습니다.",
   },
   {
     name: "쌍복승",
     stars: 4,
+    probability: "1/105",
     short: "1~3등 중 1등 1명(정확히), 2,3등(순서 무관) 2명 맞추기",
     desc: "",
   },
   {
     name: "삼쌍승",
     stars: 5,
+    probability: "1/210",
     short: "1,2,3등 순서까지 정확히!",
     desc: "가장 어렵지만 배당이 가장 높습니다. 로또급!",
+  },
+];
+
+const GRADES = [
+  {
+    name: "특선 (S급)",
+    desc: "최상위 등급. 가장 강한 선수들.",
+    ranks: ["SS", "S1", "S2", "S3"],
+    card: "bg-amber-100 border-amber-300",
+    title: "text-amber-700",
+    text: "text-amber-600",
+    badge: "bg-amber-200 text-amber-800",
+  },
+  {
+    name: "우수 (A급)",
+    desc: "중상위 등급. 특선 승급을 노리는 선수들.",
+    ranks: ["A1", "A2", "A3"],
+    card: "bg-blue-50 border-blue-200",
+    title: "text-blue-700",
+    text: "text-blue-600",
+    badge: "bg-blue-100 text-blue-800",
+  },
+  {
+    name: "선발 (B급)",
+    desc: "기본 등급. 보통 신인 선수들이 데뷔하는 곳.",
+    ranks: ["B1", "B2", "B3"],
+    card: "bg-green-50 border-green-200",
+    title: "text-green-700",
+    text: "text-green-600",
+    badge: "bg-green-100 text-green-800",
   },
 ];
 
@@ -237,28 +274,34 @@ export default function InterviewAboutPage() {
         {/* 섹션 4: 등급 시스템 */}
         <Section>
           <SectionTitle>등급 시스템</SectionTitle>
-          <div className="flex flex-col items-center gap-2 mb-4">
-            <div className="w-[40%] rounded-lg bg-amber-100 border border-amber-300 px-4 py-3 text-center">
-              <p className="text-sm font-bold text-amber-700">특선</p>
-              <p className="text-[11px] text-amber-600 mt-0.5">
-                최상위 등급. 가장 강한 선수들.
-              </p>
-            </div>
-            <div className="w-[60%] rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-center">
-              <p className="text-sm font-bold text-blue-700">우수</p>
-              <p className="text-[11px] text-blue-600 mt-0.5">
-                중상위 등급. 특선 승급을 노리는 선수들.
-              </p>
-            </div>
-            <div className="w-[80%] rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-center">
-              <p className="text-sm font-bold text-green-700">선발</p>
-              <p className="text-[11px] text-green-600 mt-0.5">
-                기본 등급. 보통 신인 선수들이 데뷔하는 곳.
-              </p>
-            </div>
+          <div className="flex flex-col gap-2 mb-4">
+            {GRADES.map((g) => (
+              <div
+                key={g.name}
+                className={`w-full rounded-lg border px-4 py-3 text-center ${g.card}`}
+              >
+                <p className={`text-sm font-bold ${g.title}`}>{g.name}</p>
+                <p className={`text-[11px] mt-0.5 ${g.text}`}>{g.desc}</p>
+                <div className="mt-2 flex flex-wrap justify-center gap-1">
+                  {g.ranks.map((r) => (
+                    <span
+                      key={r}
+                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${g.badge}`}
+                    >
+                      {r}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
           <p className="text-xs text-center text-foreground/60">
-            등급은 반기(6개월)마다 성적에 따라 변동됩니다.
+            등급은 반기(6개월)마다 등급심사를 통해 조정되며, 같은 등급 안의
+            급반(예: S1↔S2)은 매회차 변경될 수 있습니다.
+          </p>
+          <p className="text-xs text-center text-foreground/60 mt-1.5">
+            3회 연속 1·2위를 기록하면 특별승급, 2회 연속 6·7위를 기록하면
+            특별강급됩니다. (기준은 규정 개정에 따라 변경될 수 있습니다)
           </p>
         </Section>
 
@@ -279,6 +322,9 @@ export default function InterviewAboutPage() {
                     {b.name}
                   </span>
                   <StarRating count={b.stars} />
+                  <span className="ml-auto shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-foreground/60">
+                    적중확률 {b.probability}
+                  </span>
                 </div>
                 <p className="text-xs font-medium text-foreground/80">
                   {b.short}
