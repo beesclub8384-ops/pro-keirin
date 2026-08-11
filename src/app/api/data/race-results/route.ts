@@ -40,7 +40,13 @@ export async function GET(request: NextRequest) {
     if (!round) {
       // Paginate to get ALL races for this year (can exceed 1000)
       const races = await fetchAllRows(
-        supabase.from("races").select("round, day").eq("year", yearNum).eq("venue", venue)
+        // 고유키 정렬 필수 — 없으면 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
+        supabase
+          .from("races")
+          .select("round, day")
+          .eq("year", yearNum)
+          .eq("venue", venue)
+          .order("id", { ascending: true })
       );
 
       const totalRaces = races.length;

@@ -106,6 +106,9 @@ export async function GET(request: NextRequest) {
             .from("decision_card_entries")
             .select("*")
             .in("dc_race_id", chunk)
+            // 고유키 정렬 필수 — 없으면 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
+            // assembleDCPages 는 이 순서를 그대로 출전 순서로 쓴다 (id = 적재 순 = 배번 순)
+            .order("id", { ascending: true })
         );
         entryRows.push(...chunkEntries);
       }

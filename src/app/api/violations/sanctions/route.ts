@@ -21,7 +21,10 @@ export async function GET(request: NextRequest) {
       .from("judge_sanctions")
       .select("*", { count: "exact" })
       .eq("venue", venue)
-      .order("no", { ascending: false });
+      // no 는 고유하지 않다(1,874행 / 920개 값) → 표시 순서용 no 를 앞에 두고 고유키를 뒤에 덧붙인다.
+      // 없으면 페이지를 넘길 때 같은 행이 두 번 나오거나 빠진다 (CLAUDE.md 규칙 3)
+      .order("no", { ascending: false })
+      .order("id", { ascending: false });
 
     if (year) query = query.eq("race_year", parseInt(year));
     if (sanctionType) query = query.eq("sanction_type", sanctionType);

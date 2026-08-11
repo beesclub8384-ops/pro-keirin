@@ -53,6 +53,8 @@ export async function GET(request: NextRequest) {
             .gte("year", 2003)
             .lte("year", 2025)
             .gt("race_count", 0)
+            // 고유키 정렬 필수 — 없으면 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
+            .order("id", { ascending: true })
             .range(offset, offset + 999);
           if (!batch || batch.length === 0) break;
           allRows.push(...batch);

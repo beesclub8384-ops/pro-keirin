@@ -9,7 +9,8 @@ async function fetchAllRows(): Promise<any[]> {
   let offset = 0;
 
   while (true) {
-    const url = `${SUPABASE_URL}/rest/v1/race_sales?select=year,grade,s_합계&order=year&offset=${offset}&limit=${PAGE_SIZE}`;
+    // order 에 고유키(id) 필수 — year 만으로는 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
+    const url = `${SUPABASE_URL}/rest/v1/race_sales?select=year,grade,s_합계&order=year,id&offset=${offset}&limit=${PAGE_SIZE}`;
     const res = await fetch(url, {
       headers: {
         apikey: SUPABASE_KEY,

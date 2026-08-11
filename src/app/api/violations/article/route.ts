@@ -36,6 +36,9 @@ export async function GET(request: NextRequest) {
     if (judgment) query = query.eq("judgment", judgment);
     if (violationType) query = query.eq("violation_type", violationType);
 
+    // 고유키 정렬 필수 — 없으면 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
+    query = query.order("id", { ascending: true });
+
     const allViolations = await fetchAllRows(query);
 
     // Get race info for year filtering and display

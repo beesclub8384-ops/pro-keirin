@@ -61,7 +61,9 @@ export async function GET() {
           .select("name, birth_year, year")
           .not("birth_year", "is", null)
           .gte("year", 2023)
+          // year desc 가 "최신 연도 우선" 로직의 기준이므로 앞에 두고, 고유키는 뒤에 덧붙인다
           .order("year", { ascending: false })
+          .order("id", { ascending: true })
           .range(from, from + 999);
         if (error) throw error;
         if (!data || data.length === 0) break;
@@ -86,7 +88,9 @@ export async function GET() {
           .from("racer_profiles")
           .select("name, union_type, year")
           .not("union_type", "is", null)
+          // year desc 가 "최신 연도 우선" 로직의 기준이므로 앞에 두고, 고유키는 뒤에 덧붙인다
           .order("year", { ascending: false })
+          .order("id", { ascending: true })
           .range(from, from + 999);
         if (error) throw error;
         if (!data || data.length === 0) break;
