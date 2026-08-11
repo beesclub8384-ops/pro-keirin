@@ -54,25 +54,29 @@ const RACE_STEPS = [
 const TACTICS = [
   {
     name: "선행",
-    desc: "처음부터 앞서 달리는 전법. 지구력과 페이스가 핵심.",
+    desc: "처음부터 맨 앞에서 바람을 정면으로 맞으며 끌고 가는 자력 전법. 뒤따르는 선수보다 체력 소모가 훨씬 큰데도 버텨내는 지구력이 핵심입니다.",
+    watch: "관전 포인트: 한 경주에 선행형이 여럿이면 서로 먼저 나가려는 초반 소모전이 벌어지고, 한 명뿐이면 그 선수가 경주의 속도를 쥡니다.",
     color: "bg-red-50 border-red-200",
     badge: "text-red-600 bg-red-100",
   },
   {
     name: "젖히기",
-    desc: "마지막 주회 2코너에서 추월 시도.",
+    desc: "레이스 후반, 주로 마지막 바퀴에 힘으로 선행 선수를 타고 넘는 자력 전법. 뒤처져 있다가도 한 방에 역전할 수 있어 경륜의 극적인 장면을 만듭니다.",
+    watch: "관전 포인트: 젖히기가 성공하려면 선행 선수가 지쳐 있어야 합니다. 초반 페이스가 빠른 경주일수록 젖히기 선수에게 기회가 옵니다.",
     color: "bg-orange-50 border-orange-200",
     badge: "text-orange-600 bg-orange-100",
   },
   {
     name: "추입",
-    desc: "뒤에서 따라가다 마지막 직선구간에서 추월 시도.",
+    desc: "앞 선수 뒤에서 풍압을 피해 체력을 아끼며 따라가다, 마지막 직선주로에서 순간 스퍼트로 역전하는 전법. 인내심과 순발력이 모두 필요합니다.",
+    watch: "관전 포인트: 추입형은 혼자서는 못 갑니다. 누구 뒤를 따라가느냐, 즉 앞 선수의 힘이 곧 추입형의 성적을 좌우합니다.",
     color: "bg-blue-50 border-blue-200",
     badge: "text-blue-600 bg-blue-100",
   },
   {
     name: "마크",
-    desc: "특정 선수 뒤에 붙어서 따라가며 뒤를 견제함.",
+    desc: "강한 자력형 선수 바로 뒤에 붙어 풍압을 피하면서, 뒤에서 올라오는 선수를 견제해 앞 선수를 보호하는 전법. 경륜 팀플레이(연대)의 핵심입니다.",
+    watch: "관전 포인트: 마크 선수가 누구 뒤에 자리 잡는지가 경주 전체의 그림을 결정합니다. 출주표에서 같은 훈련지 선수를 확인해 보세요.",
     color: "bg-green-50 border-green-200",
     badge: "text-green-600 bg-green-100",
   },
@@ -279,7 +283,7 @@ export default function InterviewAboutPage() {
         {/* 섹션 3: 전법 */}
         <Section>
           <SectionTitle>전법을 알면 10배 재밌어요</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {TACTICS.map((t) => (
               <div
                 key={t.name}
@@ -293,8 +297,22 @@ export default function InterviewAboutPage() {
                 <p className="text-xs text-foreground/70 leading-relaxed">
                   {t.desc}
                 </p>
+                <p className="mt-2 rounded-md bg-white/80 px-3 py-2 text-xs font-medium text-foreground/80 leading-relaxed">
+                  {t.watch}
+                </p>
               </div>
             ))}
+          </div>
+          <div className="mt-3 rounded-lg border border-border bg-muted/40 px-4 py-3.5">
+            <p className="text-sm font-bold text-foreground mb-1.5">
+              경륜을 보는 가장 기본 프레임: 자력형 vs 마크형
+            </p>
+            <p className="text-xs text-foreground/70 leading-relaxed">
+              선행·젖히기·추입처럼 스스로 승부를 거는 선수를 자력형, 자력형
+              뒤에서 협력하며 기회를 노리는 선수를 마크형이라고 부릅니다. 한
+              경주에서 누가 자력형이고 누가 누구를 따라가는지만 파악해도 경주의
+              절반은 읽은 셈입니다.
+            </p>
           </div>
         </Section>
 
