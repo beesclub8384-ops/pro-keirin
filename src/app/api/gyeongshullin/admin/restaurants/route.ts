@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 import {
   extractRegion,
   rowToRestaurant,
   type GyeongshullinRow,
 } from "@/lib/gyeongshullin";
 
-export async function GET() {
+export async function GET(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const sb = createAdminClient();
   const { data, error } = await sb
     .from("gyeongshullin_restaurants")
@@ -20,6 +24,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   let body: {
     name?: string;
     address?: string;

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { generateGyeongshullinReview } from "@/lib/gyeongshullin-generator";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 export async function POST(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let body: {
     restaurantName?: string;
     address?: string;

@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 /**
  * 관리자: 요청 삭제
  */
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
   const numId = Number(id);
   if (!Number.isFinite(numId)) {

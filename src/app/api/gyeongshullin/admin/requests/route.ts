@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 /**
  * 관리자: 맛집 폼 요청 목록 조회 및 생성
  */
 
-export async function GET() {
+export async function GET(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const sb = createAdminClient();
   const { data, error } = await sb
     .from("gyeongshullin_requests")
@@ -35,6 +40,10 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let body: {
     playerName?: string;
     grade?: string;

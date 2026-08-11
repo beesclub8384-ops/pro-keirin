@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 import {
   extractRegion,
   rowToRestaurant,
@@ -12,7 +13,10 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(_req: Request, { params }: RouteParams) {
+export async function GET(req: Request, { params }: RouteParams) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await params;
   const numId = Number(id);
   if (!Number.isFinite(numId)) {
@@ -31,6 +35,9 @@ export async function GET(_req: Request, { params }: RouteParams) {
 }
 
 export async function PATCH(req: Request, { params }: RouteParams) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await params;
   const numId = Number(id);
   if (!Number.isFinite(numId)) {
@@ -97,7 +104,10 @@ export async function PATCH(req: Request, { params }: RouteParams) {
   return NextResponse.json(rowToRestaurant(data as GyeongshullinRow));
 }
 
-export async function DELETE(_req: Request, { params }: RouteParams) {
+export async function DELETE(req: Request, { params }: RouteParams) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await params;
   const numId = Number(id);
   if (!Number.isFinite(numId)) {
