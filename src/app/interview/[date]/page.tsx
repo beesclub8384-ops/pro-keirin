@@ -197,6 +197,20 @@ const analysisComponents: Components = {
   strong: (props) => (
     <strong className="font-semibold text-foreground">{props.children}</strong>
   ),
+  a: (props) =>
+    isBlockedInternalLink(props.href) ? (
+      // 본관 경로·판별 불가 href는 링크 없이 글자만 표시
+      <span>{props.children}</span>
+    ) : (
+      <a
+        href={props.href}
+        className="text-brand hover:underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {props.children}
+      </a>
+    ),
 };
 
 /** 상세 페이지 로딩 스켈레톤 (회색 박스 펄스) */
