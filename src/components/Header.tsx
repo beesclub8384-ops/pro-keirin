@@ -53,6 +53,7 @@ const navItems: NavItem[] = [
   { label: "륜슐랭", href: "/interview/gyeongshullin" },
   { label: "커뮤니티", href: "/community" },
   { label: "대납", href: "/vault" },
+  { label: "출주횟수분석", href: "/analysis/starts-per-racer" },
 ];
 
 function DesktopDropdown({ item }: { item: NavItem }) {
@@ -164,9 +165,10 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation — 헤더가 sticky라 메뉴가 화면보다 길어지면
+          아래 항목을 탭할 수 없어 컨테이너에 자체 스크롤을 준다 */}
       {isMenuOpen && (
-        <div className="lg:hidden border-t bg-white">
+        <div className="lg:hidden border-t bg-white max-h-[calc(100dvh-6rem)] sm:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain">
           <nav className="flex flex-col px-4 py-2">
             {navItems.map((item) =>
               item.children ? (
