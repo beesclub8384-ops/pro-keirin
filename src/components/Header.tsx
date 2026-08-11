@@ -146,8 +146,6 @@ export default function Header() {
           <Button variant="ghost" size="icon">
             <Search className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm">로그인</Button>
-          <Button size="sm">회원가입</Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -216,10 +214,6 @@ export default function Header() {
                 </Link>
               )
             )}
-            <div className="flex gap-2 py-3">
-              <Button variant="outline" size="sm" className="flex-1">로그인</Button>
-              <Button size="sm" className="flex-1">회원가입</Button>
-            </div>
           </nav>
         </div>
       )}
