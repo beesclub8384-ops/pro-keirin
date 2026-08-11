@@ -79,20 +79,44 @@ git pull origin master && git add -A && git commit -m "feat/fix/refactor: 작업
 
 반드시 파일을 직접 수정하고, 수정 전후 diff를 보여줘. 수정 완료 후 해당 파일을 cat으로 보여줘.
 
-3. Supabase 전체 데이터 조회 시 페이지네이션 필수
+3. Supabase 전체 데이터 조회 시 페이지네이션 필수 (+ 고유키 정렬 필수)
 
-// ❌ 잘못된 방법 — 1000행에서 잘림
+// ❌ 잘못된 방법 1 — 1000행에서 잘림
 await supabase.from('race_results').select('*')
 
-// ✅ 올바른 방법
-let all = [], from = 0
+// ❌ 잘못된 방법 2 — 정렬 없는 페이지네이션. 행이 중복·누락된다 (에러 안 남)
+await supabase.from('race_results').select('*').range(from, from + 999)
+
+// ✅ 올바른 방법 — 고유키 기준 정렬 필수
+let from = 0
+const all = []
 while (true) {
-  const { data } = await supabase.from('race_results').select('*').range(from, from + 999)
+  const { data } = await supabase
+    .from('race_results')
+    .select('*')
+    .order('id', { ascending: true })   // ← 고유키. 없으면 행이 중복·누락된다
+    .range(from, from + 999)
   if (!data?.length) break
-  all = [...all, ...data]
+  all.push(...data)
   if (data.length < 1000) break
   from += 1000
 }
+
+// ⚠️ 정렬 기준이 고유하지 않으면 소용없다
+.order('year')                    // ✗ 같은 year 안에서 순서 미보장 → 여전히 중복·누락
+.order('year').order('racer_id')  // ✓ 조합이 고유하면 OK
+
+왜 필요한가 (2026-08-11 실측):
+PostgREST 의 .range() 는 SQL OFFSET/LIMIT 으로 번역되는데, ORDER BY 가 없으면
+Postgres 는 행 순서를 보장하지 않는다. 특히 synchronize_seqscans 가 켜져 있으면
+Seq Scan 시작 지점이 매번 달라진다.
+decision_card_entries 7,454행을 무정렬로 두 번 조회한 결과:
+  1회차 → 고유 id 5,720 (중복 1,734)
+  2회차 → 고유 id 6,263 (중복 1,191)   ← 두 회차의 행 집합이 서로 다름
+가져온 행 수는 7,454 로 양쪽 다 "정상"이라 건수 검증으로도 안 걸린다.
+.order('id') 를 넣으면 7,454행 / 고유 7,454 / 중복 0, 재실행해도 동일.
+→ /racers 가용율이 선수 480명분 틀린 값을 내던 원인. 전형적인 무음 실패다.
+재현 도구: scripts/diag-availability.ts (테이블·필터만 바꿔 재사용 가능)
 
 4. kcycle 응답 검증 필수
 
