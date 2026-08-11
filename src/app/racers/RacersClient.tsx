@@ -177,7 +177,7 @@ export default function RacersClient({ racers, asOfDate, dupNames }: Props) {
         </p>
         {asOfDate && (
           <p className="mt-0.5 text-xs text-white/90" style={OUTSIDE_TEXT_STYLE}>
-            광명 출전 기준 · {asOfDate}
+            전 경기장 출전 기준 · {asOfDate}
             {dupNames.length > 0 ? ` · 동명이인 ${dupNames.length}명 합산` : ""}
           </p>
         )}
