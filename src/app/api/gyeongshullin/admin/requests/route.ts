@@ -46,7 +46,6 @@ export async function POST(req: Request) {
 
   let body: {
     playerName?: string;
-    grade?: string;
     region?: string;
   };
   try {
@@ -91,7 +90,7 @@ export async function POST(req: Request) {
     .insert({
       player_name: playerName,
       racer_id: racerId,
-      grade: body.grade?.trim() || null,
+      grade: null,
       region: region || null,
       status: "sent", // 생성 즉시 발송 가능한 상태로
       sent_at: new Date().toISOString(),

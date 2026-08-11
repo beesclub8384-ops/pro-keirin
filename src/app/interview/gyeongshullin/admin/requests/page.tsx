@@ -74,7 +74,6 @@ export default function GyeongshullinRequestsAdmin() {
 
   // 신규 요청 폼
   const [newName, setNewName] = useState("");
-  const [newGrade, setNewGrade] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -129,7 +128,6 @@ export default function GyeongshullinRequestsAdmin() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           playerName: newName.trim(),
-          grade: newGrade.trim() || undefined,
         }),
       });
       const json = await res.json();
@@ -138,7 +136,6 @@ export default function GyeongshullinRequestsAdmin() {
         return;
       }
       setNewName("");
-      setNewGrade("");
       setShowNew(false);
       await fetchRequests();
     } catch {
@@ -226,18 +223,6 @@ export default function GyeongshullinRequestsAdmin() {
               <p className="mt-1 text-[11px] text-muted-foreground">
                 조합원 명단에서 자동으로 팀을 조회합니다
               </p>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold text-foreground">
-                기수 (선택)
-              </label>
-              <input
-                type="text"
-                value={newGrade}
-                onChange={(e) => setNewGrade(e.target.value)}
-                placeholder="예: 25기"
-                className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
             </div>
             {createError && (
               <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
