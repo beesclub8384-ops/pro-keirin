@@ -64,6 +64,23 @@ function getFormUrl(token: string): string {
   return `${window.location.origin}/interview/gyeongshullin/form/${token}`;
 }
 
+function buildKakaoMessage(playerName: string, token: string): string {
+  const url = getFormUrl(token);
+  return `${playerName} 선수, 안녕하세요.
+사무국장 노태양입니다.
+
+'륜슐랭'이라는 프로젝트를 시작했습니다.
+조합원 선수들의 진짜 맛집을 모아서 7randoms 앱에서 팬들에게 소개하는 큐레이션이에요.
+
+바쁘시겠지만 가장 좋아하는 맛집 한 곳만 추천 부탁드립니다.
+
+${url}
+
+가게 이름, 주소, 메뉴 정도만 남겨주시면 나머지는 제가 정리하겠습니다.
+
+편하실 때 참여해 주세요. 감사합니다.`;
+}
+
 export default function GyeongshullinRequestsAdmin() {
   const [requests, setRequests] = useState<AdminRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,15 +162,15 @@ export default function GyeongshullinRequestsAdmin() {
     }
   }
 
-  async function copyUrl(r: AdminRequest) {
-    const url = getFormUrl(r.formToken);
+  async function copyMessage(r: AdminRequest) {
+    const message = buildKakaoMessage(r.playerName, r.formToken);
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(message);
       setCopiedId(r.id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      // 클립보드 접근 실패 시 프롬프트로 대체
-      window.prompt("아래 URL을 복사해주세요:", url);
+      // 클립보드 접근 실패 시 프롬프트로 대체 (전체 메시지 표시)
+      window.prompt("아래 메시지를 복사해주세요:", message);
     }
   }
 
@@ -333,7 +350,7 @@ export default function GyeongshullinRequestsAdmin() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => copyUrl(r)}
+                      onClick={() => copyMessage(r)}
                       className="flex-1 gap-1.5"
                     >
                       {isCopied ? (
@@ -344,7 +361,7 @@ export default function GyeongshullinRequestsAdmin() {
                       ) : (
                         <>
                           <Copy className="h-3.5 w-3.5" />
-                          URL 복사
+                          카톡 메시지 복사
                         </>
                       )}
                     </Button>
