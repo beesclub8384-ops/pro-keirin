@@ -102,6 +102,16 @@ export default function GyeongshullinPage() {
         </p>
       </div>
 
+      {/* 조합원 CTA — 맛집 제출 버튼 */}
+      <div className="mb-4">
+        <Link
+          href="/interview/gyeongshullin/submit"
+          className="flex items-center justify-center gap-2 rounded-lg border border-brand/30 bg-brand/5 px-4 py-3 text-sm font-medium text-brand transition-colors hover:bg-brand/10"
+        >
+          + 조합원이라면, 추천하고 싶은 맛집이 있으신가요?
+        </Link>
+      </div>
+
       <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
         {(
           [
