@@ -362,12 +362,10 @@ export default function InterviewAboutPage() {
             * 산출 기준은 국민체육진흥공단 공식 규정을 따르며, 규정 개정에 따라
             변경될 수 있습니다.
           </p>
-          <Link
-            href="/data/decision-card"
-            className="mt-4 flex w-full items-center justify-center rounded-lg bg-brand px-4 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-          >
-            실제 출주표에서 확인해보기 →
-          </Link>
+          <p className="mt-1.5 text-[11px] text-center text-foreground/50 leading-relaxed">
+            실제 출주표는 7randoms 웹사이트(pro-keirin.vercel.app)의 출주표
+            메뉴에서 볼 수 있어요.
+          </p>
         </Section>
 
         {/* 섹션 6: 승식 가이드 */}
