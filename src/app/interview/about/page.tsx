@@ -42,7 +42,7 @@ const RACE_STEPS = [
   {
     num: "3",
     title: "잔여 2바퀴 유도원 퇴피",
-    desc: "유도원이 빠지고 본격적인 경주가 시작됩니다.",
+    desc: "유도원이 빠지고 본격적인 경주가 시작됩니다. (퇴피 시점은 규정 개정에 따라 달라질 수 있습니다)",
   },
   {
     num: "4",
@@ -72,7 +72,7 @@ const TACTICS = [
   },
   {
     name: "마크",
-    desc: "특정 선수 뒤에 붙어서 따라가며 뒤를 견재함.",
+    desc: "특정 선수 뒤에 붙어서 따라가며 뒤를 견제함.",
     color: "bg-green-50 border-green-200",
     badge: "text-green-600 bg-green-100",
   },
@@ -126,8 +126,8 @@ const BETTING_TYPES = [
 const GLOSSARY = [
   { term: "유도원", def: "경주 초반 속도를 올려주는 역할. 잔여 2바퀴에서 퇴피합니다." },
   { term: "착순", def: "결승선 통과 순서. 1착, 2착, 3착 등으로 표기합니다." },
-  { term: "착차", def: "선수 간 도착 시간 차이. 타이어 1개 차이를 '1차신'이라 합니다." },
-  { term: "낙차", def: "경주 중 넘어지는 사고. 낙차 시 해당 선수는 실격 또는 순위 변동될 수 있습니다." },
+  { term: "착차", def: "결승선 통과 시 선수 간 거리 차이. 자전거 한 대 길이 차이를 '1차신', 그보다 작은 타이어 폭 정도의 차이를 '타이어차'라고 합니다." },
+  { term: "낙차", def: "경주 중 넘어지는 사고. 넘어진 선수도 자전거와 몸에 이상이 없으면 다시 타고 경주를 완주해야 하며, 다른 선수를 낙차시킨 가해 선수는 실격될 수 있습니다." },
   { term: "회차", def: "경주가 열리는 단위 기간. 보통 금~일 3일간 진행됩니다." },
   { term: "일차", def: "회차 내 몇째 날인지. 1일차(금), 2일차(토), 3일차(일)." },
   { term: "경주번호", def: "하루에 열리는 여러 경주의 순서 번호. 보통 하루 5~14경주까지 진행." },
@@ -176,7 +176,12 @@ export default function InterviewAboutPage() {
           <ul className="space-y-2 text-sm text-foreground/70">
             <li className="flex gap-2">
               <span className="shrink-0 text-brand">•</span>
-              7명의 선수가 약 333m 트랙을 5바퀴 달리며 우열을 가립니다.
+              <div>
+                7명의 선수가 약 333m 트랙을 5바퀴 달리며 우열을 가립니다.
+                <p className="mt-1 text-xs text-muted-foreground">
+                  * 주회 수 등 경주 방식은 규정 개정에 따라 변경될 수 있습니다. (과거에는 6바퀴로 진행)
+                </p>
+              </div>
             </li>
             <li className="flex gap-2">
               <span className="shrink-0 text-brand">•</span>
