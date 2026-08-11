@@ -160,6 +160,33 @@ const GRADES = [
   },
 ];
 
+const CARD_METRICS = [
+  {
+    name: "평균득점",
+    short: "선수 기량의 기본 지표",
+    desc: "등급·급반별 기준점수(선발 B3 84점 ~ 특선 SS 102점)에서 경주 순위에 따라 점수를 더하고 빼서 계산됩니다. 같은 급 안에서 득점이 높다면 그 급에서 강한 선수라는 뜻입니다.",
+    tip: "주의: 3·4착이 많은 꾸준한 선수는 실력보다 득점이 높게, 1착 아니면 하위권인 기복형 선수는 낮게 나올 수 있어 득점만 믿으면 안 됩니다.",
+  },
+  {
+    name: "승률·연대율·삼연대율",
+    short: "1착률 / 1~2착률 / 1~3착률",
+    desc: "승률은 1착 비율, 연대율은 1·2착 비율, 삼연대율은 1~3착 비율입니다.",
+    tip: "팁: 사려는 승식에 맞는 지표를 보세요. 쌍승·복승이면 연대율, 삼복승이면 삼연대율이 핵심입니다.",
+  },
+  {
+    name: "기어배수",
+    short: "가속형이냐, 유지형이냐",
+    desc: "앞 대기어 톱니 수를 뒤 소기어 톱니 수로 나눈 값(2.75~3.93)으로, 실전에서는 3.85, 3.92, 3.93이 가장 많이 쓰입니다. 높을수록 속도를 내기까지는 오래 걸리지만 한번 올린 속도를 유지하기 좋습니다.",
+    tip: "팁: 평소와 다른 기어배수를 신고했다면 작전 변화의 신호일 수 있습니다. 전법과 함께 보세요.",
+  },
+  {
+    name: "승부수 (전법)",
+    short: "이 선수는 어떻게 이기는 선수인가",
+    desc: "선행·젖히기·추입·마크 중 그 선수가 주로 쓰는 승부 방식입니다. 위 전법 섹션에서 본 것처럼, 같은 득점이라도 전법에 따라 경주에서의 역할이 완전히 달라집니다.",
+    tip: "팁: 한 경주에 선행형이 여럿이면 초반 소모전이, 없으면 눈치싸움이 벌어지기 쉽습니다.",
+  },
+];
+
 const GLOSSARY = [
   { term: "유도원", def: "경주 초반 속도를 올려주는 역할. 잔여 2바퀴에서 퇴피합니다." },
   { term: "착순", def: "결승선 통과 순서. 1착, 2착, 3착 등으로 표기합니다." },
@@ -305,7 +332,45 @@ export default function InterviewAboutPage() {
           </p>
         </Section>
 
-        {/* 섹션 5: 승식 가이드 */}
+        {/* 섹션 5: 출주표 읽는 법 */}
+        <Section>
+          <SectionTitle>출주표, 이렇게 읽어요</SectionTitle>
+          <p className="text-sm leading-relaxed text-foreground/80 mb-4">
+            출주표는 선수의 이력서입니다. 이 네 가지만 읽을 줄 알면 경주가 다르게
+            보입니다.
+          </p>
+          <div className="space-y-3">
+            {CARD_METRICS.map((m) => (
+              <div
+                key={m.name}
+                className="rounded-lg border border-border bg-slate-50 p-4"
+              >
+                <p className="text-sm font-bold text-foreground">{m.name}</p>
+                <p className="text-xs font-medium text-brand mt-0.5">
+                  {m.short}
+                </p>
+                <p className="text-xs text-foreground/70 mt-2 leading-relaxed">
+                  {m.desc}
+                </p>
+                <p className="mt-2 rounded-md border border-border bg-white px-3 py-2 text-xs font-medium text-foreground/80 leading-relaxed">
+                  {m.tip}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] text-center text-foreground/50 leading-relaxed">
+            * 산출 기준은 국민체육진흥공단 공식 규정을 따르며, 규정 개정에 따라
+            변경될 수 있습니다.
+          </p>
+          <Link
+            href="/data/decision-card"
+            className="mt-4 flex w-full items-center justify-center rounded-lg bg-brand px-4 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          >
+            실제 출주표에서 확인해보기 →
+          </Link>
+        </Section>
+
+        {/* 섹션 6: 승식 가이드 */}
         <Section>
           <SectionTitle>승식 가이드</SectionTitle>
           <div className="space-y-2.5">
@@ -339,7 +404,7 @@ export default function InterviewAboutPage() {
           </div>
         </Section>
 
-        {/* 섹션 6: 용어 사전 */}
+        {/* 섹션 7: 용어 사전 */}
         <Section>
           <SectionTitle>경륜 용어 사전</SectionTitle>
           <div className="divide-y divide-border rounded-lg border border-border overflow-hidden">
@@ -373,7 +438,7 @@ export default function InterviewAboutPage() {
           </div>
         </Section>
 
-        {/* 섹션 7: 어디서 볼 수 있나요? */}
+        {/* 섹션 8: 어디서 볼 수 있나요? */}
         <Section>
           <SectionTitle>어디서 볼 수 있나요?</SectionTitle>
           <div className="space-y-3">
