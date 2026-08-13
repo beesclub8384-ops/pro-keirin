@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { pickArticleBody } from "@/lib/article-body";
 
+// 팬용 목록/상세가 공유하는 응답 — 60초 캐시로 Supabase 부하를 막는다.
+// 이 60초는 백스톱일 뿐이고, 관리자가 기사를 저장/발행/삭제하면
+// admin/articles/[articleId] 라우트가 revalidatePath 로 즉시 무효화한다.
 export const revalidate = 60;
 
 function toKSTDate(iso: string | null): string {
@@ -85,15 +89,17 @@ export async function GET() {
       grade: a.grade,
       region: a.region,
       headline: (a.headline as string | null) ?? "",
-      article: (a.article_edited as string | null) ?? (a.article_raw as string | null) ?? "",
+      article: pickArticleBody(
+        a.article_edited as string | null,
+        a.article_raw as string | null,
+      ),
       photos,
       docLink: null,
     };
   });
 
-  return NextResponse.json(result, {
-    headers: {
-      "Cache-Control": "s-maxage=60, stale-while-revalidate=300",
-    },
-  });
+  // Cache-Control 을 직접 지정하지 않는다 — 위의 revalidate 가 걸린 라우트에서는
+  // Next 가 응답 헤더를 public, max-age=0, must-revalidate 로 덮어써서 무시된다.
+  // (기존의 s-maxage=60, stale-while-revalidate=300 은 실제로 적용된 적이 없는 죽은 설정이었다)
+  return NextResponse.json(result);
 }

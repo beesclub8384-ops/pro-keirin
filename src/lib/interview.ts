@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase";
+import { pickArticleBody } from "@/lib/article-body";
 
 export interface InterviewArticle {
   date: string;
@@ -103,7 +104,7 @@ async function enrichArticles(
       grade: a.grade ?? "",
       region: a.region ?? "",
       headline: a.headline ?? "",
-      article: a.article_edited ?? a.article_raw ?? "",
+      article: pickArticleBody(a.article_edited, a.article_raw),
       docLink: "",
       photos: uniquePhotos,
     };
