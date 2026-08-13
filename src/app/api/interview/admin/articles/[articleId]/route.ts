@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase";
 import { verifyAdminAuth } from "@/lib/admin-auth";
 
@@ -7,6 +8,20 @@ type Params = { params: Promise<{ articleId: string }> };
 function parseId(raw: string): number | null {
   const n = Number(raw);
   return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * 기사를 건드린 뒤 공개 화면 캐시를 즉시 무효화한다.
+ *
+ * 이게 없으면 /api/interview/published 의 revalidate=60 캐시가 스스로 만료될 때까지
+ * 팬 화면에 옛 본문이 계속 나간다 (실측: Age 250초까지 X-Vercel-Cache: STALE).
+ * 저장했는데 반영이 안 되는 것처럼 보이던 원인이라 저장 성공 직후에만 호출한다.
+ */
+function revalidatePublicInterview() {
+  // 팬 화면이 실제로 읽는 데이터 소스 (목록·상세가 이 응답 하나를 공유한다)
+  revalidatePath("/api/interview/published");
+  revalidatePath("/interview");
+  revalidatePath("/interview/[date]", "page");
 }
 
 export async function GET(req: Request, { params }: Params) {
@@ -99,6 +114,7 @@ export async function PUT(req: Request, { params }: Params) {
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePublicInterview();
   return NextResponse.json({ success: true });
 }
 
@@ -146,6 +162,8 @@ export async function PATCH(req: Request, { params }: Params) {
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // 상태 변경(발행/발행취소/반려)도 팬 화면 목록을 바꾸므로 함께 무효화
+  revalidatePublicInterview();
   return NextResponse.json({ success: true });
 }
 
@@ -166,5 +184,7 @@ export async function DELETE(req: Request, { params }: Params) {
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // 삭제된 기사가 캐시에 남아 계속 노출되지 않도록
+  revalidatePublicInterview();
   return NextResponse.json({ success: true });
 }

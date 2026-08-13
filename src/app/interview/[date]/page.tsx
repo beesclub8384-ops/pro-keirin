@@ -256,7 +256,23 @@ function InterviewDateSkeleton() {
   );
 }
 
-const swrOpts = { revalidateOnFocus: false, dedupingInterval: 60000 } as const;
+/**
+ * 상세 페이지는 캐시보다 신선도 우선 — 관리자가 방금 고친 기사가 바로 보여야 한다.
+ * 하루치 기사 몇 건이라 진입/복귀마다 재검증해도 부하가 작다.
+ * dedupingInterval 을 남겨두면 60초 안에 다시 들어왔을 때 mount 재검증이 통째로
+ * 무시되므로 revalidateOnMount 만 켜서는 효과가 없다 (2초는 이중 마운트 방어용).
+ */
+const articleSwrOpts = {
+  revalidateOnMount: true,
+  revalidateOnFocus: true,
+  dedupingInterval: 2000,
+} as const;
+
+/** 창원 경주일 맵은 확정 일정이라 거의 안 바뀐다 — 기존 캐시 유지 */
+const dateMapSwrOpts = {
+  revalidateOnFocus: false,
+  dedupingInterval: 60000,
+} as const;
 
 export default function InterviewDatePage({
   params,
@@ -271,7 +287,7 @@ export default function InterviewDatePage({
   const { data: allArticles, error: articlesError, mutate } = useSWR(
     ["interview-by-date", date],
     () => fetchArticlesByDate(date),
-    swrOpts,
+    articleSwrOpts,
   );
 
   const filtered = allArticles
@@ -284,7 +300,7 @@ export default function InterviewDatePage({
   const { data: dateMapData, error: dateMapError } = useSWR(
     filtered ? ["interview-changwon-dates", date, player ?? ""] : null,
     () => resolveChangwonDates(filtered as InterviewArticle[]),
-    swrOpts,
+    dateMapSwrOpts,
   );
 
   // 로드 실패 → 에러 메시지 + 다시 시도 (무음 실패 방지)
