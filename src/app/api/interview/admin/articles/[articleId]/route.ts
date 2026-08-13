@@ -10,6 +10,44 @@ function parseId(raw: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+/**
+ * 발행 시 기사 날짜(published_at)를 정한다.
+ *
+ * 기사 날짜는 "발행 버튼을 누른 시각"이 아니라 "선수가 첫 답변을 남긴 시각"이다.
+ * 화면 표시 날짜와 달력 빨간 점이 모두 published_at 을 보기 때문에, 재발행할 때마다
+ * now() 로 덮으면 기사가 달력에서 통째로 다른 날짜로 옮겨간다.
+ *
+ * @returns 새로 넣을 값. null 이면 기존 값을 그대로 둔다.
+ */
+async function resolvePublishedAt(
+  sb: AdminClient,
+  articleId: number,
+): Promise<string | null> {
+  const { data: article } = await sb
+    .from("interview_articles")
+    .select("request_id, published_at")
+    .eq("id", articleId)
+    .maybeSingle();
+  if (!article) return null;
+  // 이미 확정된 날짜는 건드리지 않는다 — 발행취소 후 재발행해도 유지돼야 한다
+  if (article.published_at) return null;
+
+  const { data: firstResponse } = await sb
+    .from("interview_responses")
+    .select("created_at")
+    .eq("request_id", article.request_id)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  // 답변 기록이 없는 기사(수동 작성 등)는 현재 시각으로 폴백
+  return (
+    (firstResponse?.created_at as string | null) ?? new Date().toISOString()
+  );
+}
+
 /**
  * 기사를 건드린 뒤 공개 화면 캐시를 즉시 무효화한다.
  *
@@ -144,6 +182,8 @@ export async function PATCH(req: Request, { params }: Params) {
     );
   }
 
+  const sb = createAdminClient();
+
   const update: Record<string, unknown> = {
     status,
     updated_at: new Date().toISOString(),
@@ -152,10 +192,11 @@ export async function PATCH(req: Request, { params }: Params) {
     update.reject_reason = body.rejectReason ?? null;
   }
   if (status === "published") {
-    update.published_at = new Date().toISOString();
+    // 비어 있을 때만 첫 답변일로 채운다. 이미 있으면 손대지 않는다.
+    const publishedAt = await resolvePublishedAt(sb, id);
+    if (publishedAt) update.published_at = publishedAt;
   }
 
-  const sb = createAdminClient();
   const { error } = await sb
     .from("interview_articles")
     .update(update)

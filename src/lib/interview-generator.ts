@@ -93,7 +93,7 @@ export async function generateInterviewArticle(
 
   const { data: responses, error: respErr } = await sb
     .from("interview_responses")
-    .select("question_text, answer_text, answer_choice, photo_urls")
+    .select("question_text, answer_text, answer_choice, photo_urls, created_at")
     .eq("request_id", requestId)
     .order("id", { ascending: true });
 
@@ -116,6 +116,17 @@ export async function generateInterviewArticle(
 
   const headline = `${playerName} 인터뷰`;
 
+  // 기사 날짜는 "발행한 시각"이 아니라 "선수가 첫 답변을 남긴 시각"으로 고정한다.
+  // 화면 표시 날짜와 달력 빨간 점이 모두 published_at 을 보므로 생성 시점에 확정해두고,
+  // 이후 발행/재발행에서는 이 값을 유지한다 (admin/articles/[articleId] PATCH 참고).
+  const firstAnswerAt = (responses as Array<{ created_at?: string | null }>)
+    .map((r) => r.created_at ?? null)
+    .filter((v): v is string => Boolean(v))
+    .reduce<string | null>(
+      (min, cur) => (min === null || Date.parse(cur) < Date.parse(min) ? cur : min),
+      null,
+    );
+
   const { data: inserted, error: insErr } = await sb
     .from("interview_articles")
     .insert({
@@ -127,6 +138,7 @@ export async function generateInterviewArticle(
       headline,
       photos: uniquePhotos.length > 0 ? uniquePhotos : null,
       status: "review",
+      published_at: firstAnswerAt,
     })
     .select("id")
     .single();
