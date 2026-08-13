@@ -1,20 +1,50 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { createAdminClient } from "@/lib/supabase";
-import { applyFilmFilter, FILM_FILTER_OUTPUT } from "@/lib/film-filter";
+import { applyFilmFilter } from "@/lib/film-filter";
 
 const BUCKET = "interview-photos";
+
+// 업로드는 포맷과 무관하게 항상 JPEG 로 정규화해서 저장한다.
+// 아이폰 사진은 확장자가 .jpg 여도 실제 내용이 HEIC 인 경우가 있는데,
+// 브라우저는 HEIC 를 표시하지 못해 alt 텍스트만 보인다.
+const JPEG_QUALITY = 92;
 
 function sanitizeFilename(name: string): string {
   const base = name.replace(/[^a-zA-Z0-9._-]/g, "_");
   return base.length > 60 ? base.slice(-60) : base;
 }
 
-function extFromMime(mime: string): string {
-  if (mime === "image/jpeg") return "jpg";
-  if (mime === "image/png") return "png";
-  if (mime === "image/webp") return "webp";
-  if (mime === "image/gif") return "gif";
-  return "bin";
+/** ISO-BMFF(ftyp) 컨테이너인지 — HEIC/HEIF/AVIF 계열이 여기 해당 */
+function isIsoBmff(buf: Buffer): boolean {
+  return buf.length > 12 && buf.subarray(4, 8).toString("latin1") === "ftyp";
+}
+
+/**
+ * 어떤 입력이든 브라우저가 표시 가능한 JPEG Buffer 로 변환한다.
+ *
+ * 1차: sharp — HEIC 포함 대부분을 처리하고 EXIF 회전(.rotate())까지 반영한다.
+ * 2차: sharp 빌드에 HEVC 디코더가 없으면 ftyp 컨테이너에 한해 heic-convert(순수 JS)로 폴백.
+ *      sharp 의 HEIF 지원 여부가 플랫폼(로컬 win32 / Vercel linux)마다 다를 수 있어 둔 안전망이다.
+ */
+async function normalizeToJpeg(input: Buffer): Promise<Buffer> {
+  try {
+    return await sharp(input, { failOn: "none" })
+      .rotate()
+      .flatten({ background: { r: 255, g: 255, b: 255 } })
+      .jpeg({ quality: JPEG_QUALITY })
+      .toBuffer();
+  } catch (e) {
+    if (!isIsoBmff(input)) throw e;
+    const heicConvert = (await import("heic-convert")).default;
+    const converted = await heicConvert({
+      buffer: new Uint8Array(input),
+      format: "JPEG",
+      quality: JPEG_QUALITY / 100,
+    });
+    // heic-convert 출력은 EXIF 가 없으므로 회전 보정은 이미 픽셀에 반영된 상태다
+    return Buffer.from(converted);
+  }
 }
 
 export async function POST(req: Request) {
@@ -52,7 +82,9 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!file.type.startsWith("image/")) {
+  // 아이폰 HEIC 는 브라우저가 type 을 빈 문자열로 보내는 경우가 있어 빈 값은 통과시킨다.
+  // 실제 이미지 여부는 아래 normalizeToJpeg 의 디코딩으로 판별한다 (MIME 문자열보다 신뢰도가 높다).
+  if (file.type && !file.type.startsWith("image/")) {
     return NextResponse.json(
       { error: "이미지 파일만 업로드 가능합니다" },
       { status: 400 },
@@ -69,30 +101,41 @@ export async function POST(req: Request) {
   const sb = createAdminClient();
   const timestamp = Date.now();
 
-  let uploadBuffer: Buffer = Buffer.from(await file.arrayBuffer());
-  let uploadType = file.type;
-  let uploadExt = extFromMime(file.type);
+  // 1) 항상 JPEG 로 정규화. 실패하면 저장하지 않는다 —
+  //    표시 불가능한 원본(HEIC 등)을 그대로 넣으면 화면에 alt 텍스트만 남는 무음 실패가 된다.
+  let uploadBuffer: Buffer;
+  try {
+    uploadBuffer = await normalizeToJpeg(Buffer.from(await file.arrayBuffer()));
+  } catch (e) {
+    console.error("[upload-photo] JPEG 변환 실패:", e);
+    return NextResponse.json(
+      { error: "이미지를 변환하지 못했습니다. 다른 사진으로 시도해주세요" },
+      { status: 422 },
+    );
+  }
 
+  // 2) 필터는 실패해도 정규화된 JPEG 로 계속 진행 (제출 자체는 막지 않는다)
   if (applyFilter) {
     try {
       uploadBuffer = await applyFilmFilter(uploadBuffer);
-      uploadType = FILM_FILTER_OUTPUT.contentType;
-      uploadExt = FILM_FILTER_OUTPUT.ext;
     } catch (e) {
-      // 필터 실패 시 원본으로 폴백 (제출 자체는 막지 않는다)
-      console.error("[upload-photo] 필름 필터 적용 실패, 원본 업로드:", e);
+      console.error("[upload-photo] 필름 필터 적용 실패, 무보정 JPEG 업로드:", e);
     }
   }
 
-  // 파일명: 원본 확장자를 떼고 실제 업로드 포맷 확장자를 붙인다
+  // 파일명: 원본 확장자를 떼고 실제 업로드 포맷(.jpg)을 붙인다
   const rawBase = file.name ? sanitizeFilename(file.name) : "photo";
   const baseName = rawBase.replace(/\.[^.]+$/, "") || "photo";
-  const path = `interview/${requestId}/${timestamp}_${baseName}.${uploadExt}`;
+  const path = `interview/${requestId}/${timestamp}_${baseName}.jpg`;
+
+  // ⚠️ Buffer 를 그대로 넘기면 Vercel 런타임에서 본문이 UTF-8 문자열로 강제 변환돼
+  //    바이트가 훼손된다(0xFF → EF BF BD). Blob 으로 감싸면 multipart 경로를 타서 안전하다.
+  const body = new Blob([new Uint8Array(uploadBuffer)], { type: "image/jpeg" });
 
   const { error: upErr } = await sb.storage
     .from(BUCKET)
-    .upload(path, uploadBuffer, {
-      contentType: uploadType,
+    .upload(path, body, {
+      contentType: "image/jpeg",
       upsert: false,
     });
 
