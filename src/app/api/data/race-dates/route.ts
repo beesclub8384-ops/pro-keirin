@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
         .from("race_schedule")
         .select("date, round, day, label")
         .eq("year", yearNum)
+        // date 는 날짜순 표시가 의도된 정렬이라 앞에 두고, 고유키는 뒤에 덧붙인다
         .order("date", { ascending: true })
+        .order("id", { ascending: true }),
+      { orderedBy: "date,id" },
     );
 
     const dates = (data as Array<{ date: string; round: number; day: number; label: string | null }>).map(

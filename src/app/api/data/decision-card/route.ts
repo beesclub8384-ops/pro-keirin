@@ -92,6 +92,10 @@ export async function GET(request: NextRequest) {
         .from("decision_card_races")
         .select("id, page_id, race_no, start_time, laps, race_type")
         .in("page_id", pageIds)
+        // 고유키 정렬 필수 — 없으면 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
+        // assembleDCPages 는 이 순서를 그대로 경주 순서로 쓴다 (id = 적재 순 = 경주번호 순)
+        .order("id", { ascending: true }),
+      { orderedBy: "id" },
     );
 
     const raceIds = raceRows.map((r) => (r as { id: number }).id);
@@ -108,7 +112,8 @@ export async function GET(request: NextRequest) {
             .in("dc_race_id", chunk)
             // 고유키 정렬 필수 — 없으면 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
             // assembleDCPages 는 이 순서를 그대로 출전 순서로 쓴다 (id = 적재 순 = 배번 순)
-            .order("id", { ascending: true })
+            .order("id", { ascending: true }),
+          { orderedBy: "id" },
         );
         entryRows.push(...chunkEntries);
       }

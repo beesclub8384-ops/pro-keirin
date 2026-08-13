@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     // 고유키 정렬 필수 — 없으면 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
     query = query.order("id", { ascending: true });
 
-    const allViolations = await fetchAllRows(query);
+    const allViolations = await fetchAllRows(query, { orderedBy: "id" });
 
     // Get race info for year filtering and display
     const raceIds = [...new Set(allViolations.map((v: Record<string, unknown>) => v.race_id as number))];

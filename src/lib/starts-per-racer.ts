@@ -54,7 +54,8 @@ export async function getYearlyStarts(): Promise<YearlyStarts[]> {
       .select("year, start_count, start_days")
       // 페이지 경계에서 행이 누락/중복되지 않도록 고유키 기준 정렬
       .order("year", { ascending: true })
-      .order("racer_id", { ascending: true })
+      .order("racer_id", { ascending: true }),
+    { orderedBy: "year,racer_id" }, // racer_yearly_starts PK = (racer_id, year)
   );
 
   const byYear = new Map<number, { n: number; starts: number; days: number }>();

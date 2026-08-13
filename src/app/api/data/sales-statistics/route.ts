@@ -4,7 +4,11 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const PAGE_SIZE = 1000;
 
-async function fetchAllRows(): Promise<any[]> {
+// ⚠️ src/lib/supabase.ts 의 공용 fetchAllRows 와는 별개 구현이다.
+// 공용 헬퍼는 supabase-js 쿼리 빌더를 받지만, 이쪽은 PostgREST URL 을 직접 조립해
+// fetch 로 호출한다(service_role 키 사용). 통합하면 변경 폭이 커져 그대로 둔다.
+// 정렬은 아래 URL 의 order=year,id 로 이미 고유키까지 지정돼 있다.
+async function fetchAllSalesRows(): Promise<any[]> {
   const all: any[] = [];
   let offset = 0;
 
@@ -31,7 +35,7 @@ async function fetchAllRows(): Promise<any[]> {
 
 export async function GET() {
   try {
-    const rows = await fetchAllRows();
+    const rows = await fetchAllSalesRows();
 
     // 연도별 집계
     const yearMap = new Map<

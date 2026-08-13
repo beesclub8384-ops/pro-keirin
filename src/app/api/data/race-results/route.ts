@@ -46,7 +46,8 @@ export async function GET(request: NextRequest) {
           .select("round, day")
           .eq("year", yearNum)
           .eq("venue", venue)
-          .order("id", { ascending: true })
+          .order("id", { ascending: true }),
+        { orderedBy: "id" },
       );
 
       const totalRaces = races.length;

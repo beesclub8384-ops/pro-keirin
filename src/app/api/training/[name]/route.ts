@@ -30,6 +30,9 @@ export async function GET(
         .select("racer_id, name, grade_change, win_rate, top2_rate, top3_rate, year, training")
         .eq("year", latestYear)
         .ilike("training", `${decoded} /%`)
+        // 고유키 정렬 필수 — 없으면 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
+        .order("id", { ascending: true }),
+      { orderedBy: "id" },
     );
 
     // "대전" 처럼 슬래시 없이 정확히 일치하는 경우도 포함
@@ -39,6 +42,9 @@ export async function GET(
         .select("racer_id, name, grade_change, win_rate, top2_rate, top3_rate, year, training")
         .eq("year", latestYear)
         .eq("training", decoded)
+        // 고유키 정렬 필수 — 없으면 페이지 경계에서 행이 중복·누락된다 (CLAUDE.md 규칙 3)
+        .order("id", { ascending: true }),
+      { orderedBy: "id" },
     );
 
     // 중복 제거 후 합침

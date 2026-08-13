@@ -106,6 +106,11 @@ while (true) {
 .order('year')                    // ✗ 같은 year 안에서 순서 미보장 → 여전히 중복·누락
 .order('year').order('racer_id')  // ✓ 조합이 고유하면 OK
 
+src/ 에서는 직접 루프를 쓰지 말고 공용 헬퍼 fetchAllRows(query, { orderedBy }) 를 쓸 것.
+두 번째 인자로 정렬 키를 선언해야 컴파일된다. 정렬은 호출자가 .order() 로 직접 걸고,
+orderedBy 는 "그 키로 정렬해두었다"는 선언이다 (헬퍼가 대신 정렬해주지 않는다).
+  await fetchAllRows(sb.from('races').select('*').order('id'), { orderedBy: 'id' })
+
 왜 필요한가 (2026-08-11 실측):
 PostgREST 의 .range() 는 SQL OFFSET/LIMIT 으로 번역되는데, ORDER BY 가 없으면
 Postgres 는 행 순서를 보장하지 않는다. 특히 synchronize_seqscans 가 켜져 있으면
