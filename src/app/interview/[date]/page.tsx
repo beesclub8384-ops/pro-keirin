@@ -5,7 +5,7 @@ import useSWR from "swr";
 import Link from "next/link";
 import { ChevronLeft, MapPin, Play, RefreshCw } from "lucide-react";
 import {
-  extractRaceInfo,
+  extractAllRaceInfo,
   buildRaceVideoUrl,
   type RaceInfo,
 } from "@/lib/race-video";
@@ -115,10 +115,12 @@ async function resolveChangwonDates(
       replacePhotoTags(stripLeadingHeadline(article.article), article.photos),
     );
     for (const block of blocks) {
-      const info = extractRaceInfo(block.question);
-      if (!info || info.venue !== "창원") continue;
-      if (info.month !== null && info.dayOfMonth !== null) continue;
-      needed.add(dateKey(info));
+      // 한 질문에 경주가 여러 개일 수 있다 (예: "31회 1일차 광명 04경주, 31회 2일차 광명 05경주")
+      for (const info of extractAllRaceInfo(block.question)) {
+        if (info.venue !== "창원") continue;
+        if (info.month !== null && info.dayOfMonth !== null) continue;
+        needed.add(dateKey(info));
+      }
     }
   }
   const result = new Map<string, string>();
@@ -414,17 +416,20 @@ export default function InterviewDatePage({
                   {/* Q&A blocks */}
                   <article className="space-y-4">
                     {blocks.map((block, bi) => {
-                      const info = extractRaceInfo(block.question);
-                      const fallback =
-                        info && info.venue === "창원"
-                          ? dateMap.get(dateKey(info)) ?? null
-                          : null;
-                      const fullUrl = info
-                        ? buildRaceVideoUrl(info, fallback, "F")
-                        : null;
-                      const halfUrl = info
-                        ? buildRaceVideoUrl(info, fallback, "M")
-                        : null;
+                      // 한 질문에 경주가 여러 개면 경주마다 영상 카드를 만든다
+                      const videos = extractAllRaceInfo(block.question).map(
+                        (info) => {
+                          const fallback =
+                            info.venue === "창원"
+                              ? dateMap.get(dateKey(info)) ?? null
+                              : null;
+                          return {
+                            info,
+                            fullUrl: buildRaceVideoUrl(info, fallback, "F"),
+                            halfUrl: buildRaceVideoUrl(info, fallback, "M"),
+                          };
+                        },
+                      );
 
                       return (
                         <div
@@ -449,45 +454,50 @@ export default function InterviewDatePage({
                               </Markdown>
                             </div>
                           )}
-                          {info && fullUrl && (
-                            <div className="not-prose mt-4 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3">
-                              <div className="mb-3 flex items-center gap-3">
-                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white">
-                                  <Play className="h-4 w-4 fill-white" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="text-xs font-medium text-muted-foreground">
-                                    해당 경주 영상
+                          {videos.map(({ info, fullUrl, halfUrl }, vi) =>
+                            fullUrl ? (
+                              <div
+                                key={vi}
+                                className="not-prose mt-4 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3"
+                              >
+                                <div className="mb-3 flex items-center gap-3">
+                                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white">
+                                    <Play className="h-4 w-4 fill-white" />
                                   </div>
-                                  <div className="truncate text-sm font-semibold text-foreground">
-                                    {info.venue} {info.round}회 {info.day}일차{" "}
-                                    {info.raceNo}경주
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-xs font-medium text-muted-foreground">
+                                      해당 경주 영상
+                                    </div>
+                                    <div className="truncate text-sm font-semibold text-foreground">
+                                      {info.venue} {info.round}회 {info.day}
+                                      일차 {info.raceNo}경주
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="flex gap-2">
-                                <a
-                                  href={fullUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand/90"
-                                >
-                                  <Play className="h-3.5 w-3.5 fill-white" />
-                                  전체재생
-                                </a>
-                                {halfUrl && (
+                                <div className="flex gap-2">
                                   <a
-                                    href={halfUrl}
+                                    href={fullUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-brand/40 bg-white px-3 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand/10"
+                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand/90"
                                   >
-                                    <Play className="h-3.5 w-3.5" />
-                                    유도원 퇴피후
+                                    <Play className="h-3.5 w-3.5 fill-white" />
+                                    전체재생
                                   </a>
-                                )}
+                                  {halfUrl && (
+                                    <a
+                                      href={halfUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-brand/40 bg-white px-3 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand/10"
+                                    >
+                                      <Play className="h-3.5 w-3.5" />
+                                      유도원 퇴피후
+                                    </a>
+                                  )}
+                                </div>
                               </div>
-                            </div>
+                            ) : null,
                           )}
                         </div>
                       );
