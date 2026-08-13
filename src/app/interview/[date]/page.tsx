@@ -24,6 +24,15 @@ function stripLeadingHeadline(article: string): string {
   return article.replace(/^#\s+.+\n+/, "");
 }
 
+/**
+ * "### 첨부 사진" 헤딩만 제거 — 사진([PHOTO_N])은 그대로 둔다.
+ * 기존 기사 본문에 남아 있는 헤딩까지 화면에서 가리기 위한 렌더 단계 방어선이다.
+ * (생성 단계에서는 interview-generator 가 애초에 헤딩을 넣지 않는다)
+ */
+function stripPhotoSectionHeading(article: string): string {
+  return article.replace(/^###\s*첨부\s*사진\s*$/gm, "");
+}
+
 /** [PHOTO_1]~[PHOTO_N]을 photos 배열의 실제 이미지 마크다운으로 치환 */
 function replacePhotoTags(article: string, photos?: string[]): string {
   return article.replace(/\[PHOTO_(\d+)\]/g, (match, num) => {
@@ -33,6 +42,17 @@ function replacePhotoTags(article: string, photos?: string[]): string {
     }
     return "";
   });
+}
+
+/**
+ * 렌더링 전처리 파이프라인 — 헤드라인 제거 → 첨부 사진 헤딩 제거 → [PHOTO_N] 치환.
+ * 본문을 읽는 곳이 두 군데(날짜맵 사전 스캔 / 실제 렌더)라 하나로 묶어 어긋나지 않게 한다.
+ */
+function prepareArticleBody(article: string, photos?: string[]): string {
+  return replacePhotoTags(
+    stripPhotoSectionHeading(stripLeadingHeadline(article)),
+    photos,
+  );
 }
 
 /** 📊 분석 노트 섹션을 본문에서 분리 */
@@ -112,7 +132,7 @@ async function resolveChangwonDates(
   const needed = new Set<string>();
   for (const article of articles) {
     const blocks = parseQABlocks(
-      replacePhotoTags(stripLeadingHeadline(article.article), article.photos),
+      prepareArticleBody(article.article, article.photos),
     );
     for (const block of blocks) {
       // 한 질문에 경주가 여러 개일 수 있다 (예: "31회 1일차 광명 04경주, 31회 2일차 광명 05경주")
@@ -400,8 +420,8 @@ export default function InterviewDatePage({
       ) : (
         <div className="space-y-10">
           {articles.map((article, i) => {
-            const processed = replacePhotoTags(
-              stripLeadingHeadline(article.article),
+            const processed = prepareArticleBody(
+              article.article,
               article.photos,
             );
             const { main, analysis } = splitAnalysisNote(processed);

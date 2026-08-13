@@ -50,10 +50,10 @@ function buildArticleMarkdown(
     lines.push("");
   }
 
-  // 질문과 무관한 자유 첨부 사진 — 본문 하단에 별도 섹션으로 합류
+  // 질문과 무관한 자유 첨부 사진 — 본문 하단에 사진만 이어붙인다.
+  // "### 첨부 사진" 같은 제목은 넣지 않는다 (기사 흐름을 끊고 화면에서 군더더기로 보인다)
   const freeToAdd = freePhotos.filter((u) => u && !seen.has(u));
   if (freeToAdd.length > 0) {
-    lines.push("### 첨부 사진");
     for (const u of freeToAdd) {
       seen.add(u);
       uniquePhotos.push(u);
