@@ -22,6 +22,7 @@ import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { pickArticleBody } from "@/lib/article-body";
 
 interface Article {
   id: number;
@@ -75,6 +76,59 @@ function collectPhotos(article: Article, responses: ResponseRow[]): string[] {
   return urls;
 }
 
+interface SpellItem {
+  wrong: string;
+  correct: string;
+  type: string;
+}
+
+/** 자동 적용을 허용할 최소 길이. 1글자 치환("되"→"돼")은 본문 전역을 망가뜨린다. */
+const MIN_AUTO_REPLACE_LEN = 2;
+
+interface CorrectionPlan {
+  /** 교정을 모두 반영한 본문 */
+  corrected: string;
+  /** 실제로 반영되는 항목 (+ 본문에서 몇 군데 바뀌는지) */
+  applicable: Array<SpellItem & { hits: number }>;
+  /** 자동 적용에서 빠진 항목 + 이유 */
+  skipped: Array<SpellItem & { reason: string }>;
+}
+
+/**
+ * 검사 결과를 본문에 적용한 결과를 계산한다 (순수 함수 — 상태를 바꾸지 않는다).
+ *
+ * spellcheck API 는 교정된 전문이 아니라 {wrong, correct} 쌍만 돌려주므로
+ * 치환은 여기서 한다. 모델에게 전문을 다시 받아쓰면 마크다운 구조나 [PHOTO_n]
+ * 태그가 조용히 바뀔 수 있어서, 지목된 표현만 바꾸는 이 방식이 안전하다.
+ */
+function planCorrections(source: string, items: SpellItem[]): CorrectionPlan {
+  let corrected = source;
+  const applicable: CorrectionPlan["applicable"] = [];
+  const skipped: CorrectionPlan["skipped"] = [];
+
+  for (const item of items) {
+    const wrong = item.wrong ?? "";
+    const correct = item.correct ?? "";
+    if (!wrong || wrong === correct) {
+      skipped.push({ ...item, reason: "바뀌는 내용 없음" });
+      continue;
+    }
+    if (wrong.length < MIN_AUTO_REPLACE_LEN) {
+      skipped.push({ ...item, reason: "너무 짧아 직접 수정 필요" });
+      continue;
+    }
+    const hits = corrected.split(wrong).length - 1;
+    if (hits === 0) {
+      skipped.push({ ...item, reason: "본문에서 찾지 못함" });
+      continue;
+    }
+    corrected = corrected.split(wrong).join(correct);
+    applicable.push({ ...item, hits });
+  }
+
+  return { corrected, applicable, skipped };
+}
+
 const STATUS_STYLE: Record<Article["status"], string> = {
   draft: "bg-slate-100 text-slate-600 border-slate-200",
   review: "bg-yellow-100 text-yellow-700 border-yellow-200",
@@ -113,15 +167,29 @@ export default function InterviewAdminDetailPage({
   const [rejectReason, setRejectReason] = useState("");
 
   const [spellChecking, setSpellChecking] = useState(false);
-  const [spellResults, setSpellResults] = useState<
-    Array<{ wrong: string; correct: string; type: string }> | null
-  >(null);
+  const [spellResults, setSpellResults] = useState<SpellItem[] | null>(null);
   const [spellError, setSpellError] = useState<string | null>(null);
+  /** 일괄 적용 직전 본문 — 되돌리기용. null 이면 아직 적용 안 한 상태 */
+  const [bodyBeforeSpell, setBodyBeforeSpell] = useState<string | null>(null);
+  /**
+   * 적용 시점의 계산 결과를 그대로 얼려둔다.
+   * 적용 후에는 본문에서 오타가 사라져 아래 미리보기 계산이 전부
+   * "본문에서 찾지 못함"으로 뒤집히므로, 결과 표시는 이 스냅샷을 쓴다.
+   */
+  const [appliedPlan, setAppliedPlan] = useState<CorrectionPlan | null>(null);
+
+  // 검사 결과를 현재 본문에 적용하면 어떻게 되는지 미리 계산.
+  // body 가 바뀌면(관리자가 직접 고치면) 다시 계산돼 목록이 최신 상태를 따라간다.
+  const spellPlan = spellResults ? planCorrections(body, spellResults) : null;
+  // 적용 전에는 실시간 계산, 적용 후에는 스냅샷을 보여준다
+  const viewPlan = appliedPlan ?? spellPlan;
 
   async function handleSpellCheck() {
     setSpellChecking(true);
     setSpellResults(null);
     setSpellError(null);
+    setBodyBeforeSpell(null);
+    setAppliedPlan(null);
     try {
       const res = await fetch("/api/interview/admin/spellcheck", {
         method: "POST",
@@ -136,6 +204,22 @@ export default function InterviewAdminDetailPage({
     } finally {
       setSpellChecking(false);
     }
+  }
+
+  /** 적용 가능한 교정을 본문에 한 번에 반영. 저장 전이라 DB에는 아직 안 들어간다. */
+  function applyAllCorrections() {
+    if (!spellPlan || spellPlan.applicable.length === 0) return;
+    setBodyBeforeSpell(body);
+    setAppliedPlan(spellPlan);
+    setBody(spellPlan.corrected);
+  }
+
+  /** 일괄 적용 직전 본문으로 되돌린다 */
+  function undoCorrections() {
+    if (bodyBeforeSpell === null) return;
+    setBody(bodyBeforeSpell);
+    setBodyBeforeSpell(null);
+    setAppliedPlan(null);
   }
 
   useEffect(() => {
@@ -154,7 +238,10 @@ export default function InterviewAdminDetailPage({
         const json = (await res.json()) as LoadData;
         setData(json);
         setHeadline(json.article.headline ?? "");
-        setBody(json.article.articleEdited ?? json.article.articleRaw ?? "");
+        // 공개 페이지와 같은 규칙으로 골라야 에디터에 뜬 본문 = 화면에 나가는 본문이 된다
+        setBody(
+          pickArticleBody(json.article.articleEdited, json.article.articleRaw),
+        );
         setLoading(false);
       } catch {
         if (!cancelled) {
@@ -418,7 +505,7 @@ export default function InterviewAdminDetailPage({
               {spellError && (
                 <p className="mt-2 text-xs text-red-500">{spellError}</p>
               )}
-              {spellResults !== null && (
+              {spellResults !== null && viewPlan !== null && (
                 <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-xs font-semibold text-amber-800">
@@ -428,37 +515,96 @@ export default function InterviewAdminDetailPage({
                     </span>
                     <button
                       type="button"
-                      onClick={() => setSpellResults(null)}
+                      onClick={() => {
+                        setSpellResults(null);
+                        setBodyBeforeSpell(null);
+                        setAppliedPlan(null);
+                      }}
                       className="text-xs text-amber-600 hover:text-amber-800"
                     >
                       닫기
                     </button>
                   </div>
-                  {spellResults.length > 0 && (
-                    <>
-                      <p className="mb-2 text-[11px] text-amber-700">
-                        AI가 발견한 후보입니다. 본문에서 직접 수정해주세요.
+
+                  {viewPlan.applicable.length > 0 && (
+                    <div className="mb-3 space-y-1.5">
+                      {viewPlan.applicable.map((r, i) => (
+                        <div
+                          key={`ok-${i}`}
+                          className="flex items-baseline gap-2 text-xs"
+                        >
+                          <span className="line-through text-red-600">
+                            {r.wrong}
+                          </span>
+                          <span className="text-amber-800">→</span>
+                          <span className="font-medium text-emerald-700">
+                            {r.correct}
+                          </span>
+                          <span className="rounded bg-amber-200/60 px-1.5 py-0.5 text-[10px] text-amber-700">
+                            {r.type}
+                          </span>
+                          {r.hits > 1 && (
+                            <span className="text-[10px] text-amber-600">
+                              {r.hits}곳
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {viewPlan.skipped.length > 0 && (
+                    <div className="mb-3 space-y-1.5 border-t border-amber-200 pt-2">
+                      <p className="text-[11px] font-medium text-amber-700">
+                        자동 적용 제외 — 본문에서 직접 수정해주세요
                       </p>
-                      <div className="space-y-1.5">
-                        {spellResults.map((r, i) => (
-                          <div
-                            key={i}
-                            className="flex items-baseline gap-2 text-xs"
-                          >
-                            <span className="line-through text-red-600">
-                              {r.wrong}
-                            </span>
-                            <span className="text-amber-800">→</span>
-                            <span className="font-medium text-emerald-700">
-                              {r.correct}
-                            </span>
-                            <span className="rounded bg-amber-200/60 px-1.5 py-0.5 text-[10px] text-amber-700">
-                              {r.type}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </>
+                      {viewPlan.skipped.map((r, i) => (
+                        <div
+                          key={`skip-${i}`}
+                          className="flex items-baseline gap-2 text-xs opacity-70"
+                        >
+                          <span className="line-through text-red-600">
+                            {r.wrong}
+                          </span>
+                          <span className="text-amber-800">→</span>
+                          <span className="font-medium text-emerald-700">
+                            {r.correct}
+                          </span>
+                          <span className="text-[10px] text-amber-600">
+                            ({r.reason})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {bodyBeforeSpell !== null ? (
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800">
+                        <Check className="h-4 w-4 flex-shrink-0" />
+                        {viewPlan.applicable.length}건 적용됨 — 아직 저장 전입니다.
+                        [저장]을 눌러야 DB에 반영됩니다
+                      </span>
+                      <button
+                        type="button"
+                        onClick={undoCorrections}
+                        className="inline-flex flex-shrink-0 items-center gap-1 rounded-md border border-emerald-300 bg-white px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        되돌리기
+                      </button>
+                    </div>
+                  ) : (
+                    viewPlan.applicable.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={applyAllCorrections}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-700 transition-colors"
+                      >
+                        <Check className="h-4 w-4" />
+                        이대로 적용 ({viewPlan.applicable.length}건)
+                      </button>
+                    )
                   )}
                 </div>
               )}
