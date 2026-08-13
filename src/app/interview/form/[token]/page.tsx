@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Loader2, CheckCircle2, AlertCircle, Camera, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -68,6 +69,8 @@ export default function InterviewFormPage({
   const [freePhotos, setFreePhotos] = useState<PhotoItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // 공개 동의 — 체크 전에는 제출 불가
+  const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -299,7 +302,9 @@ export default function InterviewFormPage({
     });
   }
 
-  const canSubmit = useMemo(() => {
+  // 답변·사진 업로드가 모두 끝났는지 (동의 여부는 아래에서 따로 합친다 —
+  // 미체크가 유일한 blocker 일 때만 동의 안내를 띄우기 위해 분리해 둔다)
+  const answersComplete = useMemo(() => {
     if (state.kind !== "ready") return false;
     const anyUploading = Object.values(answers).some((a) =>
       a.photos.some((p) => p.uploading),
@@ -316,8 +321,11 @@ export default function InterviewFormPage({
     });
   }, [state, answers, freePhotos]);
 
+  const canSubmit = answersComplete && agreed;
+
   async function handleSubmit() {
     if (state.kind !== "ready") return;
+    if (!agreed) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -681,6 +689,38 @@ export default function InterviewFormPage({
 
       {/* Submit */}
       <div className="sticky bottom-4 mt-8">
+        {/* 공개 동의 — 체크해야 제출 버튼이 활성화된다 */}
+        <div className="mb-2 rounded-xl border border-border bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
+          <div className="flex items-start gap-2.5">
+            <input
+              id="consent-publish"
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-brand"
+            />
+            {/* label 은 문구만 감싼다 — 링크까지 감싸면 링크 클릭이 체크박스를 토글한다 */}
+            <p className="text-xs leading-relaxed text-foreground/80">
+              <label htmlFor="consent-publish" className="cursor-pointer">
+                제출한 이름, 답변 내용, 첨부 사진이 7RANDOMS 앱에 인터뷰 기사로
+                공개되는 것에 동의합니다.
+              </label>{" "}
+              <Link
+                href="/interview/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-brand underline underline-offset-2"
+              >
+                (개인정보처리방침)
+              </Link>
+            </p>
+          </div>
+          {answersComplete && !agreed && (
+            <p className="mt-2 text-xs font-medium text-red-500">
+              공개 동의에 체크해야 제출할 수 있습니다
+            </p>
+          )}
+        </div>
         {submitError && (
           <p className="mb-2 text-center text-sm text-red-500">{submitError}</p>
         )}
