@@ -53,6 +53,7 @@ const navItems: NavItem[] = [
   { label: "륜슐랭", href: "/interview/gyeongshullin" },
   { label: "커뮤니티", href: "/community" },
   { label: "대납", href: "/vault" },
+  { label: "문서함", href: "/records" },
   { label: "출주횟수분석", href: "/analysis/starts-per-racer" },
 ];
 
