@@ -7,6 +7,7 @@ import { ChevronLeft, MapPin, Play, RefreshCw } from "lucide-react";
 import {
   extractAllRaceInfo,
   buildRaceVideoUrl,
+  needsRaceDate,
   type RaceInfo,
 } from "@/lib/race-video";
 import Markdown from "react-markdown";
@@ -119,14 +120,19 @@ function parseQABlocks(text: string): QABlock[] {
   return blocks;
 }
 
-const dateKey = (info: Pick<RaceInfo, "year" | "round" | "day">) =>
-  `${info.year}-${info.round}-${info.day}`;
+/**
+ * ⚠️ venue를 키에 반드시 포함할 것. 3개장이 같은 (year, round, day)를 쓰기 때문에
+ * venue가 빠지면 창원 경주가 부산 날짜를 물고 와 엉뚱한 영상이 걸린다.
+ */
+const dateKey = (info: Pick<RaceInfo, "venue" | "year" | "round" | "day">) =>
+  `${info.venue}-${info.year}-${info.round}-${info.day}`;
 
 /**
- * Q. 단락 사전 스캔 — 본문에 날짜가 빠진 창원 경주만 (year, round, day) 키로 모아
- * decision_card_pages에서 일괄 조회. URL 빌드 시 fallbackDate로 주입한다.
+ * Q. 단락 사전 스캔 — 본문에 날짜가 빠진 창원·부산 경주를
+ * (venue, year, round, day) 키로 모아 일괄 조회. URL 빌드 시 fallbackDate로 주입한다.
+ * (광명은 kcycle popup을 쓰므로 날짜가 필요 없다 — needsRaceDate 참조)
  */
-async function resolveChangwonDates(
+async function resolveRaceDates(
   articles: InterviewArticle[],
 ): Promise<Map<string, string>> {
   const needed = new Set<string>();
@@ -137,7 +143,7 @@ async function resolveChangwonDates(
     for (const block of blocks) {
       // 한 질문에 경주가 여러 개일 수 있다 (예: "31회 1일차 광명 04경주, 31회 2일차 광명 05경주")
       for (const info of extractAllRaceInfo(block.question)) {
-        if (info.venue !== "창원") continue;
+        if (!needsRaceDate(info.venue)) continue;
         if (info.month !== null && info.dayOfMonth !== null) continue;
         needed.add(dateKey(info));
       }
@@ -146,8 +152,13 @@ async function resolveChangwonDates(
   const result = new Map<string, string>();
   await Promise.all(
     Array.from(needed).map(async (key) => {
-      const [y, r, d] = key.split("-").map(Number);
-      const date = await lookupRaceDate(y, r, d);
+      const [venue, y, r, d] = key.split("-");
+      const date = await lookupRaceDate(
+        Number(y),
+        Number(r),
+        Number(d),
+        venue as RaceInfo["venue"],
+      );
       if (date) result.set(key, date);
     }),
   );
@@ -318,8 +329,8 @@ export default function InterviewDatePage({
 
   // 창원 경주(본문 날짜 누락) 영상 URL 보정용 날짜맵 — 기사 로드 후 조회
   const { data: dateMapData, error: dateMapError } = useSWR(
-    filtered ? ["interview-changwon-dates", date, player ?? ""] : null,
-    () => resolveChangwonDates(filtered as InterviewArticle[]),
+    filtered ? ["interview-race-dates", date, player ?? ""] : null,
+    () => resolveRaceDates(filtered as InterviewArticle[]),
     dateMapSwrOpts,
   );
 
@@ -455,10 +466,10 @@ export default function InterviewDatePage({
                       // 한 질문에 경주가 여러 개면 경주마다 영상 카드를 만든다
                       const videos = extractAllRaceInfo(block.question).map(
                         (info) => {
-                          const fallback =
-                            info.venue === "창원"
-                              ? dateMap.get(dateKey(info)) ?? null
-                              : null;
+                          // 창원·부산은 날짜가 있어야 URL이 만들어진다
+                          const fallback = needsRaceDate(info.venue)
+                            ? dateMap.get(dateKey(info)) ?? null
+                            : null;
                           return {
                             info,
                             fullUrl: buildRaceVideoUrl(info, fallback, "F"),

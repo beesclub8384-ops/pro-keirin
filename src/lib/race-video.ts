@@ -166,12 +166,25 @@ export function extractRaceInfo(text: string): RaceInfo | null {
   return extractAllRaceInfo(text)[0] ?? null;
 }
 
+/** 날짜(월·일)가 있어야 URL을 만들 수 있는 경기장 — 자체 VOD 서버 직링크를 쓴다 */
+const DATE_REQUIRED_VENUES = new Set<RaceVenue>(["창원", "부산"]);
+
+/** 경기장별 날짜 필요 여부. 호출자가 미리 날짜를 조회해야 하는지 판단할 때 쓴다. */
+export function needsRaceDate(venue: RaceVenue): boolean {
+  return DATE_REQUIRED_VENUES.has(venue);
+}
+
 /**
  * 파싱된 경주 정보를 영상 URL로 빌드.
  * - 광명: kcycle popup URL — variant "F"=전체재생, "M"=유도원 퇴피후. 날짜 불필요
- * - 창원: lepopark VOD URL — 날짜 필수. info에 월/일이 없으면 fallbackDate("YYYY-MM-DD") 에서 채움.
- *   파일명 prefix는 variant로만 결정: "F"=f, "M"=s (요일/일차 무관, kcycle 응답으로 검증).
- * - 부산: 미지원 (null)
+ * - 창원: lepopark VOD URL — 날짜 필수. 파일명 prefix는 variant로만 결정: "F"=f, "M"=s
+ *   (요일/일차 무관, kcycle 응답으로 검증)
+ * - 부산: 스포원 VOD URL — 날짜 필수. prefix "F"=없음, "M"=m
+ *   (2026-08-23 실측: 부산 30회 1일차 02경주(2026-08-21) → 300102.mp4 36MB / m300102.mp4 17MB)
+ *
+ * 창원·부산은 kcycle popup이 영상을 항상 중계하지 않아 원본 서버로 직접 건다.
+ * 날짜는 info의 월/일을 우선 쓰고, 없으면 fallbackDate("YYYY-MM-DD")에서 채운다.
+ * 둘 다 없으면 null — 틀린 날짜로 링크를 거는 것보다 링크를 안 거는 편이 안전하다.
  */
 export function buildRaceVideoUrl(
   info: RaceInfo,
@@ -184,7 +197,7 @@ export function buildRaceVideoUrl(
     return `https://www.kcycle.or.kr/broadcast/popup/race/${info.year}/${info.round}/${info.day}/001/${raceNoPadded}/${variant}`;
   }
 
-  if (info.venue === "창원") {
+  if (DATE_REQUIRED_VENUES.has(info.venue)) {
     let month = info.month;
     let dayOfMonth = info.dayOfMonth;
     if ((month === null || dayOfMonth === null) && fallbackDate) {
@@ -195,12 +208,20 @@ export function buildRaceVideoUrl(
       }
     }
     if (month === null || dayOfMonth === null) return null;
-    const prefix = variant === "F" ? "f" : "s";
+
     const mm = String(month).padStart(2, "0");
     const dd = String(dayOfMonth).padStart(2, "0");
     const roundPadded = String(info.round).padStart(2, "0");
     const dayPadded = String(info.day).padStart(2, "0");
-    return `https://vod.lepopark.or.kr/${info.year}/${mm}-${dd}/${prefix}${roundPadded}${dayPadded}_${raceNoPadded}.mp4`;
+
+    if (info.venue === "창원") {
+      const prefix = variant === "F" ? "f" : "s";
+      return `https://vod.lepopark.or.kr/${info.year}/${mm}-${dd}/${prefix}${roundPadded}${dayPadded}_${raceNoPadded}.mp4`;
+    }
+
+    // 부산 — 회차/일차/경주번호가 구분자 없이 붙는다 (창원의 _ 없음)
+    const prefix = variant === "F" ? "" : "m";
+    return `https://vod.spo1.or.kr/bcr/${info.year}/${info.year}-${mm}-${dd}/${prefix}${roundPadded}${dayPadded}${raceNoPadded}.mp4`;
   }
 
   return null;
