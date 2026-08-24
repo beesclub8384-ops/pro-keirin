@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-5-20250929",
-        max_tokens: 2048,
+        max_tokens: 8192,
         system: SYSTEM_PROMPT,
         messages: [
           {
@@ -69,6 +69,7 @@ export async function POST(req: Request) {
 
     const json = (await res.json()) as {
       content: Array<{ type: string; text?: string }>;
+      stop_reason?: string | null;
     };
 
     const rawText = json.content
@@ -77,9 +78,28 @@ export async function POST(req: Request) {
       .join("")
       .trim();
 
+    // 응답이 max_tokens에서 잘리면 JSON 배열이 닫히지 않는다 → 무음 실패 대신 에러
+    if (json.stop_reason === "max_tokens") {
+      console.error("[spellcheck] truncated. rawText tail:", rawText.slice(-300));
+      return NextResponse.json(
+        {
+          error:
+            "응답이 잘렸습니다(max_tokens). 본문을 나눠서 검사하거나 관리자에게 알려주세요.",
+        },
+        { status: 500 },
+      );
+    }
+
     const jsonMatch = rawText.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
-      return NextResponse.json({ items: [] });
+      console.error(
+        "[spellcheck] no JSON array in response. rawText:",
+        rawText.slice(0, 500),
+      );
+      return NextResponse.json(
+        { error: "맞춤법 결과 형식 오류(JSON 배열 없음). 서버 로그 확인 필요." },
+        { status: 500 },
+      );
     }
 
     const items = JSON.parse(jsonMatch[0]) as Array<{
@@ -87,6 +107,8 @@ export async function POST(req: Request) {
       correct: string;
       type: string;
     }>;
+
+    console.log(`[spellcheck] ok: ${items.length} items, ${text.length} chars`);
 
     return NextResponse.json({ items });
   } catch (err) {
