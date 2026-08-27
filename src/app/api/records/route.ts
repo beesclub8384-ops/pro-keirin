@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createAdminClient } from "@/lib/supabase";
+import { createAdminClient, fetchAllRows } from "@/lib/supabase";
 
 /**
  * 노동조합 문서 자료실(/records) API — 비밀번호 인증 후 업로드 URL 발급 / 문서 등록.
@@ -17,7 +17,15 @@ import { createAdminClient } from "@/lib/supabase";
  *   그래서 서버는 서명 업로드 URL만 발급하고(sign-upload), 실제 바이트는
  *   브라우저 → Supabase Storage로 직접 올린다. service role 키는 여전히 서버에만 있다.
  *
- * 이번 단계는 "올리기"만 구현한다. 목록/검색/열람은 다음 단계.
+ * action 목록:
+ *   auth          비밀번호만 확인
+ *   list          문서 전체를 최신순으로 반환 (첨부는 서명 URL로 변환해 함께)
+ *   sign-upload   첨부 1개를 올릴 서명 업로드 URL 발급
+ *   sign-download 첨부 1개의 서명 URL 재발급 (원본 한글 이름으로 내려받기)
+ *   discard       저장되지 못한 첨부 정리
+ *   create        문서 1건 등록
+ *
+ * 수정/삭제는 다음 단계.
  */
 
 /** ⚠️ src/app/records/page.tsx 의 CATEGORIES 와 반드시 동일하게 유지할 것 */
@@ -78,12 +86,32 @@ const MAX_FILENAME_LEN = 150;
 /** 첨부 존재 확인용 서명 URL의 짧은 유효기간 (초) */
 const VERIFY_TTL = 60;
 
+/**
+ * 목록에서 첨부를 열 때 쓰는 서명 URL 유효기간 (초). /vault 와 같은 1시간.
+ * 버킷이 비공개라 서명 URL 없이는 첨부를 열 수 없다.
+ */
+const SIGNED_URL_TTL = 60 * 60;
+
+/**
+ * 열람 요청으로 들어온 경로 검증용 — PATH_PATTERN(발급용)보다 느슨하다.
+ *
+ * PATH_PATTERN 은 "지금 새로 발급하는" 경로 형식이라, 한글 파일명 수정 이전에 저장된
+ * 옛 형식({연도}/{타임스탬프}-{랜덤}__{원본이름}.{확장자})은 통과하지 못한다.
+ * 그 기준으로 열람까지 막으면 이미 올라간 첨부를 영영 열 수 없다.
+ * 열람에서 막아야 할 것은 버킷 밖으로 나가는 경로뿐이다(경로 탈출/절대경로).
+ */
+const READ_PATH_PATTERN = /^\d{4}\/[^/\\]{1,200}$/;
+
 interface RecordsBody {
   action?: string;
   password?: string;
   // sign-upload 전용
   filename?: string;
   size?: number | string;
+  // sign-download 전용
+  path?: string;
+  /** 내려받을 때 쓸 파일명(원본 한글 이름). 없으면 브라우저에서 열기만 한다 */
+  name?: string;
   // create 전용
   category?: string;
   title?: string;
@@ -106,6 +134,16 @@ interface RecordRow {
   file_paths: string[] | null;
   file_names: string[] | null;
   created_at: string | null;
+}
+
+/** 목록 응답에 실어 보내는 첨부 1개 */
+interface RecordFile {
+  /** Storage 경로 — 내려받기 재발급용 */
+  path: string;
+  /** 원본 파일명(한글 그대로) */
+  name: string;
+  /** 열람용 서명 URL. 발급 실패 시 null (첨부만 못 열고 목록은 정상 표시) */
+  signedUrl: string | null;
 }
 
 const SELECT_COLUMNS =
@@ -195,8 +233,12 @@ export async function POST(req: Request) {
       case "auth":
         // 비밀번호만 확인한다. 위 관문을 통과했다는 것 자체가 성공.
         return NextResponse.json({ ok: true });
+      case "list":
+        return await listRecords();
       case "sign-upload":
         return await signUpload(body);
+      case "sign-download":
+        return await signDownload(body);
       case "discard":
         return await discardFiles(body);
       case "create":
@@ -214,6 +256,122 @@ export async function POST(req: Request) {
       { status: 500 },
     );
   }
+}
+
+/**
+ * 문서 전체를 최신순으로 조회한다.
+ *
+ * ⚠️ 정렬을 created_at 하나로 두면 안 된다. 같은 시각에 저장된 행이 있으면 순서가
+ *    보장되지 않아 페이지 경계에서 행이 중복·누락된다 (에러도 안 나고 건수도 맞아
+ *    검증에 안 걸리는 무음 실패). 고유키 id 를 뒤에 덧붙여 정렬을 고유하게 만든다.
+ *    — CLAUDE.md 규칙 3
+ *
+ * 첨부는 비공개 버킷이라 경로만으로는 열 수 없다. 문서 전체의 경로를 한 번에 모아
+ * 서명 URL을 배치 발급하고, file_names 와 순서를 맞춰 files 배열로 내려준다.
+ */
+async function listRecords() {
+  const sb = createAdminClient();
+
+  const rows = await fetchAllRows<RecordRow>(
+    sb
+      .from("records")
+      .select(SELECT_COLUMNS)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false }),
+    { orderedBy: "created_at,id" },
+  );
+
+  // 경로별로 한 번씩만 발급한다 (Set 으로 중복 제거)
+  const allPaths = [
+    ...new Set(
+      rows.flatMap((r) =>
+        Array.isArray(r.file_paths)
+          ? r.file_paths.filter(
+              (p): p is string => typeof p === "string" && p.length > 0,
+            )
+          : [],
+      ),
+    ),
+  ];
+
+  const signedByPath = new Map<string, string>();
+  if (allPaths.length > 0) {
+    const { data: signed, error: signErr } = await sb.storage
+      .from(BUCKET)
+      .createSignedUrls(allPaths, SIGNED_URL_TTL);
+    // 서명 실패가 목록 조회 전체를 막지는 않게 한다.
+    // (첨부만 못 열고 문서 정보는 정상적으로 보인다)
+    if (signErr || !signed) {
+      console.error("[records] 첨부 서명 URL 발급 실패:", signErr?.message);
+    } else {
+      for (const s of signed) {
+        if (s.path && s.signedUrl) signedByPath.set(s.path, s.signedUrl);
+      }
+    }
+  }
+
+  const items = rows.map((row) => {
+    const paths = Array.isArray(row.file_paths)
+      ? row.file_paths.filter(
+          (p): p is string => typeof p === "string" && p.length > 0,
+        )
+      : [];
+    const names = Array.isArray(row.file_names) ? row.file_names : [];
+    const files: RecordFile[] = paths.map((p, i) => ({
+      path: p,
+      // 이름 배열이 짧거나 비어 있어도(file_names 추가 이전에 저장된 행) 화면이
+      // 깨지지 않게 채운다. 경로에는 원본 이름이 없어 되살릴 방법이 없다.
+      name:
+        typeof names[i] === "string" && names[i].trim()
+          ? names[i]
+          : `첨부 ${i + 1}`,
+      signedUrl: signedByPath.get(p) ?? null,
+    }));
+    return { ...row, files };
+  });
+
+  return NextResponse.json({ items, count: items.length });
+}
+
+/**
+ * 첨부 1개의 서명 URL을 새로 발급한다.
+ *
+ * 목록에도 서명 URL이 실려 오지만 1시간이면 만료된다. 화면을 오래 열어둔 뒤
+ * 첨부를 누르면 아무 일도 일어나지 않는 꼴이 되므로, 내려받기는 누를 때마다
+ * 여기서 새로 발급받는다.
+ *
+ * name 을 받아 Content-Disposition 에 실어 보내는 것이 핵심이다. Storage 키는
+ * ASCII 전용이라(2026/1787...-a1b2c3d4.pdf) 그냥 내려받으면 그 이름으로 저장된다.
+ * 원본 한글 이름을 되살리는 방법은 이것뿐이다.
+ */
+async function signDownload(body: RecordsBody) {
+  const path = (body.path ?? "").toString().trim();
+  if (!path || !READ_PATH_PATTERN.test(path)) {
+    return NextResponse.json(
+      { error: "첨부 경로가 올바르지 않습니다" },
+      { status: 400 },
+    );
+  }
+
+  const rawName = (body.name ?? "").toString().trim();
+  // 이름이 없으면 download: true — 열기 대신 내려받되 이름은 Storage 키를 따른다
+  const download = rawName ? safeDisplayName(rawName) : true;
+
+  const sb = createAdminClient();
+  const { data, error } = await sb.storage
+    .from(BUCKET)
+    .createSignedUrl(path, SIGNED_URL_TTL, { download });
+
+  if (error || !data?.signedUrl) {
+    return NextResponse.json(
+      {
+        error: `첨부를 여는 데 실패했습니다: ${error?.message ?? "파일을 찾을 수 없습니다"}`,
+      },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({ signedUrl: data.signedUrl });
 }
 
 /**
