@@ -60,11 +60,20 @@ const ALLOWED_EXT = [
 ] as const;
 
 /**
- * sign-upload가 발급하는 경로 형식.
+ * sign-upload가 발급하는 경로 형식. 예) 2026/1755600000000-a1b2c3d4.pdf
  * create로 들어온 file_paths가 이 형식인지 확인해, 남의 경로나 엉뚱한 문자열이
- * DB에 들어가는 것을 막는다. 예) 2026/1755600000000-a1b2c3__회의록.pdf
+ * DB에 들어가는 것을 막는다.
+ *
+ * ⚠️ 경로에는 ASCII만 넣는다. Supabase Storage 오브젝트 키는 비ASCII 문자를 거부하며
+ *    ("Invalid key: 2026/...-...__제2대_제1회_정기대의원회_회의록.pdf") 한글 파일명이
+ *    통째로 튕겼다. 그래서 원본 이름을 경로에서 빼고, records.file_names 에 따로 보관한다.
  */
-const PATH_PATTERN = /^\d{4}\/\d{10,}-[a-z0-9]{6,10}__[^/]{1,120}$/;
+const PATH_PATTERN = new RegExp(
+  `^\\d{4}/\\d{10,}-[a-z0-9]{6,10}\\.(?:${ALLOWED_EXT.join("|")})$`,
+);
+
+/** 원본 파일명 보관 길이 상한 (확장자 포함). page.tsx 표시용이라 넉넉하게 잡는다 */
+const MAX_FILENAME_LEN = 150;
 
 /** 첨부 존재 확인용 서명 URL의 짧은 유효기간 (초) */
 const VERIFY_TTL = 60;
@@ -83,6 +92,7 @@ interface RecordsBody {
   doc_number?: string | null;
   memo?: string | null;
   file_paths?: unknown;
+  file_names?: unknown;
 }
 
 interface RecordRow {
@@ -94,11 +104,12 @@ interface RecordRow {
   doc_number: string | null;
   memo: string | null;
   file_paths: string[] | null;
+  file_names: string[] | null;
   created_at: string | null;
 }
 
 const SELECT_COLUMNS =
-  "id, category, title, doc_date, counterpart, doc_number, memo, file_paths, created_at";
+  "id, category, title, doc_date, counterpart, doc_number, memo, file_paths, file_names, created_at";
 
 /**
  * YYYY-MM-DD 이면서 실제로 존재하는 날짜인지 확인한다.
@@ -124,22 +135,34 @@ function extOf(filename: string): string {
 }
 
 /**
- * 원본 파일명을 Storage 키에 넣어도 안전한 형태로 다듬는다.
+ * 원본 파일명을 DB(records.file_names)에 보관할 표시용 이름으로 다듬는다.
  *
- * records 테이블에는 파일명 컬럼이 없고 경로(file_paths)만 있다. 경로에 원본 이름을
- * 남겨두지 않으면 다음 단계(열람)에서 "무슨 파일인지" 표시할 방법이 사라진다.
- * 그래서 고유 접두사 뒤에 다듬은 원본 이름을 붙여 보관한다.
+ * ⚠️ 이 값은 Storage 경로에 들어가지 않는다. 경로는 ASCII 전용이고(PATH_PATTERN),
+ *    여기서는 반대로 한글을 그대로 살리는 것이 목적이다. 태양님이 올리는 문서는
+ *    대부분 한글 파일명이라 원본 이름을 잃으면 목록에서 무슨 파일인지 알 수 없다.
+ *
+ * 다듬는 것은 표시를 망가뜨리는 문자뿐이다:
+ *  - 경로 구분자(/ \) → _  (파일명이 경로처럼 보이는 것을 막는다)
+ *  - 제어문자 → 제거
+ *  - 연속 공백 → 하나로, 앞뒤 공백 제거
+ *  - 확장자는 보존한 채 길이만 MAX_FILENAME_LEN 으로 자른다
  */
-function safeBaseName(filename: string): string {
-  const dot = filename.lastIndexOf(".");
-  const base = dot > 0 ? filename.slice(0, dot) : filename;
-  const cleaned = base
+function safeDisplayName(filename: string): string {
+  const cleaned = filename
     .replace(/[\\/]/g, "_")
-    // 한글·영숫자·일부 기호만 남긴다. 공백/특수문자는 _ 로
-    .replace(/[^0-9A-Za-z가-힣ㄱ-ㅎㅏ-ㅣ._()-]+/g, "_")
-    .replace(/_{2,}/g, "_")
-    .replace(/^[._]+|[._]+$/g, "");
-  return (cleaned || "문서").slice(0, 60);
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) return "문서";
+  if (cleaned.length <= MAX_FILENAME_LEN) return cleaned;
+
+  // 길이를 줄이더라도 확장자는 남긴다 (".pdf"가 잘리면 목록에서 종류를 알 수 없다)
+  const dot = cleaned.lastIndexOf(".");
+  if (dot <= 0 || cleaned.length - dot > 12) {
+    return cleaned.slice(0, MAX_FILENAME_LEN);
+  }
+  const ext = cleaned.slice(dot);
+  return cleaned.slice(0, MAX_FILENAME_LEN - ext.length) + ext;
 }
 
 export async function POST(req: Request) {
@@ -195,7 +218,10 @@ export async function POST(req: Request) {
 
 /**
  * 첨부 1개를 올릴 서명 업로드 URL을 발급한다.
- * 경로는 {연도}/{타임스탬프}-{랜덤}__{원본이름}.{확장자} 형식이며, 유효기간은 2시간(Supabase 고정).
+ * 경로는 {연도}/{타임스탬프}-{랜덤}.{확장자} 형식(ASCII 전용)이며, 유효기간은 2시간(Supabase 고정).
+ *
+ * 원본 파일명은 경로에 넣지 않고, 다듬은 값을 응답의 name 으로 돌려준다.
+ * 화면은 그 name 을 모아 create 의 file_names 로 보내고, 서버가 file_paths 와 1:1로 저장한다.
  */
 async function signUpload(body: RecordsBody) {
   const filename = (body.filename ?? "").toString().trim();
@@ -237,7 +263,9 @@ async function signUpload(body: RecordsBody) {
   // padEnd로 길이를 8자로 고정한다. toString(36)이 짧게 나오는 드문 경우에
   // 경로가 PATH_PATTERN을 벗어나면 업로드는 성공하고 저장만 거부되는 꼴이 된다.
   const random = Math.random().toString(36).slice(2, 10).padEnd(8, "0");
-  const path = `${now.getFullYear()}/${now.getTime()}-${random}__${safeBaseName(filename)}.${ext}`;
+  // ⚠️ 경로에 원본 파일명을 넣지 않는다. Storage 키는 ASCII만 허용해서
+  //    한글 파일명이 들어가면 "Invalid key"로 업로드 자체가 거부된다.
+  const path = `${now.getFullYear()}/${now.getTime()}-${random}.${ext}`;
 
   const sb = createAdminClient();
   const { data, error } = await sb.storage
@@ -255,6 +283,8 @@ async function signUpload(body: RecordsBody) {
     path: data.path,
     token: data.token,
     signedUrl: data.signedUrl,
+    // 원본 파일명(한글 그대로). 화면이 그대로 되돌려 보내면 file_names 로 저장된다.
+    name: safeDisplayName(filename),
   });
 }
 
@@ -286,6 +316,47 @@ function parseFilePaths(
   return { ok: true, value: paths };
 }
 
+/**
+ * file_names 입력값 검증 — file_paths 와 개수가 정확히 같아야 한다.
+ *
+ * 경로에는 원본 이름이 없으므로(ASCII 전용), 이름 배열이 어긋나면 목록에서 다른 파일의
+ * 이름이 붙는다. 에러 없이 틀린 결과가 나오는 전형적인 무음 실패라 여기서 개수를 맞춰 막는다.
+ * (DB에도 같은 취지의 CHECK 제약이 있다 — records_file_names_len_chk)
+ *
+ * 이름이 아예 안 오면(구버전 화면 등) 경로에서 확장자만 뽑아 "첨부 1.pdf" 로 채운다.
+ * 저장을 거부하는 것보다 낫다 — 파일은 이미 버킷에 올라간 뒤다.
+ */
+function parseFileNames(
+  raw: unknown,
+  paths: string[],
+): { ok: true; value: string[] } | { ok: false; error: string } {
+  if (raw === undefined || raw === null) {
+    return {
+      ok: true,
+      value: paths.map((p, i) => {
+        const ext = extOf(p);
+        return ext ? `첨부 ${i + 1}.${ext}` : `첨부 ${i + 1}`;
+      }),
+    };
+  }
+  if (!Array.isArray(raw)) {
+    return { ok: false, error: "첨부 이름 형식이 올바르지 않습니다" };
+  }
+  if (raw.length !== paths.length) {
+    return { ok: false, error: "첨부 이름과 첨부 개수가 맞지 않습니다" };
+  }
+
+  const names: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== "string") {
+      return { ok: false, error: "첨부 이름 형식이 올바르지 않습니다" };
+    }
+    // 화면에서 온 값도 서버에서 다시 다듬는다 (화면을 거치지 않은 요청도 있으므로)
+    names.push(safeDisplayName(item));
+  }
+  return { ok: true, value: names };
+}
+
 /** 검증을 통과한 문서 입력값 — 그대로 insert에 넣는다 */
 interface RecordFields {
   category: string;
@@ -295,6 +366,8 @@ interface RecordFields {
   doc_number: string | null;
   memo: string | null;
   file_paths: string[];
+  /** file_paths 와 순서 1:1 대응하는 원본 파일명 */
+  file_names: string[];
 }
 
 function validateRecordFields(
@@ -329,6 +402,11 @@ function validateRecordFields(
     return { ok: false, error: files.error };
   }
 
+  const names = parseFileNames(body.file_names, files.value);
+  if (!names.ok) {
+    return { ok: false, error: names.error };
+  }
+
   return {
     ok: true,
     value: {
@@ -338,8 +416,9 @@ function validateRecordFields(
       counterpart: counterpart || null,
       doc_number: docNumber || null,
       memo: memo || null,
-      // file_paths는 NOT NULL(default '{}')이라 null을 명시하면 삽입이 거부된다.
+      // file_paths / file_names 는 NOT NULL(default '{}')이라 null을 명시하면 삽입이 거부된다.
       file_paths: files.value,
+      file_names: names.value,
     },
   };
 }

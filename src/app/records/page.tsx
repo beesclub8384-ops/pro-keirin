@@ -239,6 +239,9 @@ export default function RecordsPage() {
 
     setSaving(true);
     const uploadedPaths: string[] = [];
+    // 원본 파일명(한글 그대로). uploadedPaths 와 순서 1:1 — Storage 경로는 ASCII만 허용해서
+    // 경로에 원본 이름을 담을 수 없다. 이름은 records.file_names 로 따로 저장한다.
+    const uploadedNames: string[] = [];
     try {
       // 1) 첨부 업로드 → Storage 경로 확보
       if (files.length > 0) {
@@ -280,6 +283,12 @@ export default function RecordsPage() {
           }
 
           uploadedPaths.push(signJson.path);
+          // 서버가 다듬어 돌려준 이름을 쓴다. 응답이 없으면(구버전 서버) 원본 이름 그대로.
+          uploadedNames.push(
+            typeof signJson.name === "string" && signJson.name
+              ? signJson.name
+              : pending.file.name,
+          );
           setProgress({ done: index + 1, total: files.length });
         }
       }
@@ -298,6 +307,7 @@ export default function RecordsPage() {
           doc_number: docNumber.trim(),
           memo: memo.trim(),
           file_paths: uploadedPaths,
+          file_names: uploadedNames,
         }),
       });
       const json = await res.json();
