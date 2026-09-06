@@ -9,6 +9,7 @@ import {
   buildRaceVideoUrl,
   needsRaceDate,
   type RaceInfo,
+  type FallbackDate,
 } from "@/lib/race-video";
 import Markdown from "react-markdown";
 import type { Components } from "react-markdown";
@@ -129,6 +130,20 @@ const dateKey = (info: Pick<RaceInfo, "venue" | "year" | "round" | "day">) =>
   `${info.venue}-${info.year}-${info.round}-${info.day}`;
 
 /**
+ * 기사 날짜("YYYY-MM-DD")를 연도 폴백 값으로 바꾼다.
+ * 본문에 "2026년"이 없는 경주 언급에 기사 발행 연도를 채워 넣는 용도.
+ *
+ * ⚠️ 사전 스캔(resolveRaceDates)과 실제 렌더가 **반드시 같은 값**을 써야 한다.
+ *   한쪽에만 폴백을 주면 dateMap 의 키 연도가 어긋나 조회가 조용히 빗나가고,
+ *   창원·부산 영상이 날짜를 못 찾아 링크가 사라진다.
+ */
+function articleFallbackDate(date: string): FallbackDate | undefined {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!m) return undefined;
+  return { year: Number(m[1]), month: Number(m[2]) };
+}
+
+/**
  * Q. 단락 사전 스캔 — 본문에 날짜가 빠진 창원·부산 경주를
  * (venue, year, round, day) 키로 모아 일괄 조회. URL 빌드 시 fallbackDate로 주입한다.
  * (광명은 kcycle popup을 쓰므로 날짜가 필요 없다 — needsRaceDate 참조)
@@ -141,9 +156,11 @@ async function resolveRaceDates(
     const blocks = parseQABlocks(
       prepareArticleBody(article.article, article.photos),
     );
+    // 렌더 쪽과 동일한 폴백 — 어긋나면 아래 dateKey 가 빗나간다
+    const fallback = articleFallbackDate(article.date);
     for (const block of blocks) {
       // 한 질문에 경주가 여러 개일 수 있다 (예: "31회 1일차 광명 04경주, 31회 2일차 광명 05경주")
-      for (const info of extractAllRaceInfo(block.question)) {
+      for (const info of extractAllRaceInfo(block.question, fallback)) {
         if (!needsRaceDate(info.venue)) continue;
         if (info.month !== null && info.dayOfMonth !== null) continue;
         needed.add(dateKey(info));
@@ -479,6 +496,8 @@ export default function InterviewDatePage({
             const blocks = parseQABlocks(main);
             // 이 기사 전용 렌더러 — 사진 클릭 시 이 기사의 photos 안에서만 인덱스를 찾는다
             const articlePhotos = article.photos ?? [];
+            // 사전 스캔(resolveRaceDates)과 반드시 같은 값이어야 한다
+            const raceFallback = articleFallbackDate(article.date);
             const mdComponents = makeBlockMdComponents(
               articlePhotos,
               (index) => setLightbox({ photos: articlePhotos, index }),
@@ -510,19 +529,20 @@ export default function InterviewDatePage({
                   <article className="space-y-4">
                     {blocks.map((block, bi) => {
                       // 한 질문에 경주가 여러 개면 경주마다 영상 카드를 만든다
-                      const videos = extractAllRaceInfo(block.question).map(
-                        (info) => {
-                          // 창원·부산은 날짜가 있어야 URL이 만들어진다
-                          const fallback = needsRaceDate(info.venue)
-                            ? dateMap.get(dateKey(info)) ?? null
-                            : null;
-                          return {
-                            info,
-                            fullUrl: buildRaceVideoUrl(info, fallback, "F"),
-                            halfUrl: buildRaceVideoUrl(info, fallback, "M"),
-                          };
-                        },
-                      );
+                      const videos = extractAllRaceInfo(
+                        block.question,
+                        raceFallback,
+                      ).map((info) => {
+                        // 창원·부산은 날짜가 있어야 URL이 만들어진다
+                        const fallback = needsRaceDate(info.venue)
+                          ? dateMap.get(dateKey(info)) ?? null
+                          : null;
+                        return {
+                          info,
+                          fullUrl: buildRaceVideoUrl(info, fallback, "F"),
+                          halfUrl: buildRaceVideoUrl(info, fallback, "M"),
+                        };
+                      });
 
                       return (
                         <div

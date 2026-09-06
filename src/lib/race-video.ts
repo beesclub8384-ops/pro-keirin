@@ -16,12 +16,23 @@ export interface RaceVideoInfo extends RaceInfo {
   url: string;
 }
 
+/**
+ * 본문에 연도가 없을 때 쓸 기준 날짜 — 보통 기사 발행일의 연·월.
+ * @see resolveFallbackYear
+ */
+export interface FallbackDate {
+  year: number;
+  /** 1~12. 연말·연초 경계 보정에만 쓴다 */
+  month: number;
+}
+
 const VENUE_RE = /(광명|창원|부산)/g;
 // "2026년" — 점 구분 날짜(2026.07.31)는 DOTDATE_RE 가 따로 잡는다
 const YEAR_RE = /(\d{4})년/g;
 // "16회" 또는 "17회차" — 차 접미사는 선택
 const ROUND_RE = /(\d+)회(?:차)?/g;
-const DAY_RE = /(\d+)일차/g;
+// "1일차" 또는 "1일 차" — 띄어 쓴 표기가 실제로 들어온다 (2026-09-06 실측: 기사 #32)
+const DAY_RE = /(\d+)일\s*차/g;
 // "07경주" 또는 "06R/6R" — 경주번호 표기 두 가지 모두 지원
 const RACE_RE = /(\d+)(?:경주|R)/g;
 // "07월 31일" — 연도 없이 월·일만
@@ -81,6 +92,23 @@ function nearest(
 }
 
 /**
+ * 본문에 연도가 없을 때 기사 발행일에서 연도를 유추한다.
+ *
+ * 인터뷰는 **이미 치른 경주만 회고한다** — 미래 경주를 묻지 않는다.
+ * 그래서 경주 월이 기사 월보다 뒤라면 그건 작년 경주다.
+ * 예) 2027년 1월 기사의 "12월 05일 3경주" → 2026년 12월
+ *
+ * 월을 모르면 보정할 근거가 없으므로 기사 연도를 그대로 쓴다.
+ */
+function resolveFallbackYear(
+  fallback: FallbackDate,
+  raceMonth: number | null,
+): number {
+  if (raceMonth !== null && raceMonth > fallback.month) return fallback.year - 1;
+  return fallback.year;
+}
+
+/**
  * 텍스트에서 경주 정보를 전부 감지. 한 단락에 경주가 여러 개면 여러 개를 돌려준다.
  *
  * 매칭 방식: "N경주"(또는 "NR")를 기준점으로 잡고, 그 주변 WINDOW 안에서
@@ -91,12 +119,26 @@ function nearest(
  * - 연도는 "2026년" 또는 점 구분 날짜(2026.07.31)에서 가져온다
  * - 월/일은 선택 — 창원 URL 빌드에 필요하지만 없으면 외부에서 채움
  *
+ * @param fallback 본문에 연도가 없을 때 쓸 기준 날짜(보통 기사 발행 연·월).
+ *   주지 않으면 연도 없는 경주는 종전대로 버린다.
+ *
+ * ⚠️ 연도 폴백을 넣은 근거 (2026-09-06 전수 진단):
+ *   기사 29건 / 경주 언급 42건 중 8건(19%)이 링크되지 않았고, **8건 전부가
+ *   "본문에 연도가 없음"이 원인**이었다 (예: "부산 32회차 3일차 06경주(09월 06일)").
+ *   회차·괄호날짜·어순은 원인이 아니었다.
+ *   "틀린 링크보다 링크 없음" 원칙은 유지하되 — fallback 을 주지 않으면 여전히
+ *   버린다 — 기사 발행일이라는 확실한 근거가 있을 때는 유추가 이득이 크다.
+ *   유일한 위험인 연말·연초 경계는 resolveFallbackYear 가 보정한다.
+ *
  * ⚠️ 장소 토큰은 경주 하나가 독점한다. "07경주에서 3경주 연속" 처럼 본문에
  * 숫자+경주 가 섞여 들어와도 남는 장소 토큰이 없어 가짜 경주로 잡히지 않는다.
  * 대신 "광명 31회 1일차 04경주와 05경주" 처럼 장소를 한 번만 쓰고 경주를
  * 두 개 적은 표기는 첫 경주만 잡힌다 (틀린 영상을 거는 것보다 안전한 쪽).
  */
-export function extractAllRaceInfo(text: string): RaceInfo[] {
+export function extractAllRaceInfo(
+  text: string,
+  fallback?: FallbackDate,
+): RaceInfo[] {
   if (!text) return [];
 
   const races = scanTokens(RACE_RE, text);
@@ -121,12 +163,8 @@ export function extractAllRaceInfo(text: string): RaceInfo[] {
     if (!round || !day) continue;
 
     // 점 구분 날짜가 있으면 연·월·일을 통째로 쓴다. 없으면 "2026년" + "07월 31일".
+    // ⚠️ 월/일을 연도보다 먼저 구한다 — 연도 폴백의 경계 보정이 경주 월을 필요로 한다.
     const dotDate = nearest(dotDates, race.index);
-    const yearRaw = dotDate
-      ? dotDate.groups[0]
-      : nearest(years, race.index)?.groups[0];
-    if (!yearRaw) continue;
-
     const monthDay = dotDate ? null : nearest(monthDays, race.index);
     const month = dotDate
       ? Number(dotDate.groups[1])
@@ -139,8 +177,19 @@ export function extractAllRaceInfo(text: string): RaceInfo[] {
         ? Number(monthDay.groups[1])
         : null;
 
+    const yearRaw = dotDate
+      ? dotDate.groups[0]
+      : nearest(years, race.index)?.groups[0];
+    // 본문 연도 > 기사 발행 연도(폴백) 순. 둘 다 없으면 종전대로 이 경주는 버린다.
+    const year = yearRaw
+      ? Number(yearRaw)
+      : fallback
+        ? resolveFallbackYear(fallback, month)
+        : null;
+    if (year === null) continue;
+
     const info: RaceInfo = {
-      year: Number(yearRaw),
+      year,
       venue: venue.groups[0] as RaceVenue,
       round: Number(round.groups[0]),
       day: Number(day.groups[0]),
@@ -162,8 +211,11 @@ export function extractAllRaceInfo(text: string): RaceInfo[] {
 }
 
 /** 첫 번째 경주만 필요할 때. 여러 경주를 다뤄야 하면 extractAllRaceInfo 를 쓸 것. */
-export function extractRaceInfo(text: string): RaceInfo | null {
-  return extractAllRaceInfo(text)[0] ?? null;
+export function extractRaceInfo(
+  text: string,
+  fallback?: FallbackDate,
+): RaceInfo | null {
+  return extractAllRaceInfo(text, fallback)[0] ?? null;
 }
 
 /** 날짜(월·일)가 있어야 URL을 만들 수 있는 경기장 — 자체 VOD 서버 직링크를 쓴다 */
