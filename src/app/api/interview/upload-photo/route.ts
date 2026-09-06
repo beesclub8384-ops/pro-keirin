@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { createAdminClient } from "@/lib/supabase";
 import { applyFilmFilter } from "@/lib/film-filter";
+import { recordUploadFailure } from "@/lib/interview-upload-failure";
 
 const BUCKET = "interview-photos";
 
@@ -64,7 +65,13 @@ export async function POST(req: Request) {
   let form: FormData;
   try {
     form = await req.formData();
-  } catch {
+  } catch (e) {
+    // 여기서 깨지면 requestId·파일명도 알 수 없다. 그래도 "왔다는 사실"은 남긴다.
+    await recordUploadFailure({
+      stage: "server_formdata",
+      errorMessage: e instanceof Error ? e.message : String(e),
+      userAgent: req.headers.get("user-agent"),
+    });
     return NextResponse.json(
       { error: "폼 데이터 파싱 실패" },
       { status: 400 },
@@ -116,6 +123,14 @@ export async function POST(req: Request) {
     uploadBuffer = await normalizeToJpeg(Buffer.from(await file.arrayBuffer()));
   } catch (e) {
     console.error("[upload-photo] JPEG 변환 실패:", e);
+    await recordUploadFailure({
+      stage: "server_convert",
+      requestId,
+      errorMessage: e instanceof Error ? e.message : String(e),
+      fileName: file.name,
+      fileSize: file.size,
+      userAgent: req.headers.get("user-agent"),
+    });
     return NextResponse.json(
       { error: "이미지를 변환하지 못했습니다. 다른 사진으로 시도해주세요" },
       { status: 422 },
@@ -149,6 +164,14 @@ export async function POST(req: Request) {
 
   if (upErr) {
     console.error("[upload-photo] storage error:", upErr.message, path);
+    await recordUploadFailure({
+      stage: "server_storage",
+      requestId,
+      errorMessage: `${upErr.message} (path: ${path})`,
+      fileName: file.name,
+      fileSize: uploadBuffer.length,
+      userAgent: req.headers.get("user-agent"),
+    });
     return NextResponse.json({ error: upErr.message }, { status: 500 });
   }
 

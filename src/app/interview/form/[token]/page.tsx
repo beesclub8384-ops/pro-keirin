@@ -135,6 +135,30 @@ async function compressImage(file: File): Promise<File> {
   }
 }
 
+/**
+ * 업로드 실패를 서버에 신고한다 (fire-and-forget).
+ *
+ * ⚠️ 존재 이유:
+ *   413(본문 4.5MB 초과)·타임아웃·네트워크 끊김은 서버 핸들러에 도달조차 못 해
+ *   Vercel 쪽에 아무 흔적이 남지 않는다. 게다가 Hobby 로그는 1시간이면 사라진다.
+ *   브라우저만 아는 사실(원본 크기, 기기 UA)을 여기서 DB로 넘긴다.
+ *
+ * ⚠️ await 하지 않는다. 신고가 느리거나 실패해도 업로드 UI 가 멈추면 안 된다.
+ */
+function reportUploadFailure(payload: {
+  requestId: number;
+  errorMessage: string;
+  fileName: string;
+  fileSize: number;
+  originalSize: number;
+}) {
+  fetch("/api/interview/upload-photo/report-failure", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, userAgent: navigator.userAgent }),
+  }).catch(() => {});
+}
+
 export default function InterviewFormPage({
   params,
 }: {
@@ -242,9 +266,12 @@ export default function InterviewFormPage({
     await Promise.all(
       arr.map(async (file, i) => {
         const slotIdx = startIdx + i;
+        // 신고에 실을 "실제 전송 크기". 압축 전에는 원본과 같다.
+        let sentSize = file.size;
         try {
           // 4.5MB(Vercel 본문 상한) 아래로 줄여서 보낸다
           const upload = await compressImage(file);
+          sentSize = upload.size;
           const fd = new FormData();
           fd.append("file", upload);
           fd.append("requestId", String(numericId));
@@ -254,6 +281,13 @@ export default function InterviewFormPage({
           });
           if (!res.ok) {
             const err = await res.json().catch(() => ({ error: "업로드 실패" }));
+            reportUploadFailure({
+              requestId: numericId,
+              errorMessage: `HTTP ${res.status} ${err.error ?? ""}`.trim(),
+              fileName: file.name,
+              fileSize: sentSize,
+              originalSize: file.size,
+            });
             setAnswers((prev) => ({
               ...prev,
               [code]: {
@@ -279,7 +313,14 @@ export default function InterviewFormPage({
               ),
             },
           }));
-        } catch {
+        } catch (e) {
+          reportUploadFailure({
+            requestId: numericId,
+            errorMessage: e instanceof Error ? e.message : String(e),
+            fileName: file.name,
+            fileSize: sentSize,
+            originalSize: file.size,
+          });
           setAnswers((prev) => ({
             ...prev,
             [code]: {
@@ -333,9 +374,12 @@ export default function InterviewFormPage({
     await Promise.all(
       arr.map(async (file, i) => {
         const slotIdx = startIdx + i;
+        // 신고에 실을 "실제 전송 크기". 압축 전에는 원본과 같다.
+        let sentSize = file.size;
         try {
           // 4.5MB(Vercel 본문 상한) 아래로 줄여서 보낸다
           const upload = await compressImage(file);
+          sentSize = upload.size;
           const fd = new FormData();
           fd.append("file", upload);
           fd.append("requestId", String(numericId));
@@ -347,6 +391,13 @@ export default function InterviewFormPage({
           });
           if (!res.ok) {
             const err = await res.json().catch(() => ({ error: "업로드 실패" }));
+            reportUploadFailure({
+              requestId: numericId,
+              errorMessage: `HTTP ${res.status} ${err.error ?? ""}`.trim(),
+              fileName: file.name,
+              fileSize: sentSize,
+              originalSize: file.size,
+            });
             setFreePhotos((prev) =>
               prev.map((p, idx) =>
                 idx === slotIdx
@@ -362,7 +413,14 @@ export default function InterviewFormPage({
               idx === slotIdx ? { ...p, uploading: false, url: json.url } : p,
             ),
           );
-        } catch {
+        } catch (e) {
+          reportUploadFailure({
+            requestId: numericId,
+            errorMessage: e instanceof Error ? e.message : String(e),
+            fileName: file.name,
+            fileSize: sentSize,
+            originalSize: file.size,
+          });
           setFreePhotos((prev) =>
             prev.map((p, idx) =>
               idx === slotIdx
