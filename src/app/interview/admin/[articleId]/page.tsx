@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -26,6 +26,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { pickArticleBody } from "@/lib/article-body";
 import { compressImage } from "@/lib/image-compress";
+import PhotoLightbox from "@/components/PhotoLightbox";
 import { resolveArticlePhotos } from "@/lib/interview-photos";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
@@ -114,6 +115,39 @@ function removePhotoTag(article: string, n: number): string {
   });
   // 태그가 빠진 자리에 남은 빈 줄 정리
   return renumbered.replace(/[ \t]*\n{3,}/g, "\n\n").trimEnd();
+}
+
+/**
+ * 본문의 지정 위치(커서)에 [PHOTO_n] 태그를 끼워 넣는다.
+ *
+ * ⚠️ 중간에 끼워 넣어도 **재번호는 필요 없다.**
+ *   태그 번호는 photos 배열의 인덱스에서 나오고(replacePhotoTags 는 [PHOTO_n] 을
+ *   photos[n-1] 로 치환한다), 본문 안에서 태그가 몇 번째로 등장하는지는 보지 않는다.
+ *   그래서 [PHOTO_3] 을 문서 맨 앞에 둬도 여전히 3번 사진을 가리킨다.
+ *   재번호가 필요한 경우는 배열에서 원소가 빠질 때뿐이다 (removePhotoTag 참고).
+ *
+ * @param at 삽입 위치. null 이거나 범위를 벗어나면 본문 끝에 붙인다(폴백).
+ * @returns 새 본문과, 삽입한 태그 바로 뒤 위치(다음 장을 이어 붙일 지점)
+ */
+function insertPhotoTag(
+  article: string,
+  tag: string,
+  at: number | null,
+): { text: string; caret: number } {
+  if (at === null || at < 0 || at > article.length) {
+    const head = article.trimEnd();
+    const text = head ? `${head}\n\n${tag}` : tag;
+    return { text, caret: text.length };
+  }
+  // 삽입 지점 앞뒤의 공백/빈 줄을 걷어낸 뒤 빈 줄 하나씩만 다시 넣는다.
+  // 그냥 "\n\n" 를 양쪽에 붙이면 이미 빈 줄인 자리에서 빈 줄이 겹친다.
+  const before = article.slice(0, at).replace(/\s+$/, "");
+  const after = article.slice(at).replace(/^\s+/, "");
+  const upToTag = (before ? `${before}\n\n` : "") + tag;
+  return {
+    text: after ? `${upToTag}\n\n${after}` : upToTag,
+    caret: upToTag.length,
+  };
 }
 
 interface SpellItem {
@@ -206,6 +240,15 @@ export default function InterviewAdminDetailPage({
   const [photos, setPhotos] = useState<string[]>([]);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  /** 라이트박스로 크게 볼 사진의 인덱스. null 이면 닫힌 상태 */
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  /**
+   * 본문 textarea 의 마지막 커서 위치.
+   * ⚠️ state 가 아니라 ref 다. 파일 선택 다이얼로그가 뜨면 textarea 에서 포커스가
+   *   빠져 selectionStart 를 그때 읽을 수 없으므로, 커서가 움직일 때마다 기록해 둔다.
+   */
+  const cursorRef = useRef<number | null>(null);
   const [responsesOpen, setResponsesOpen] = useState(false);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [saving, setSaving] = useState(false);
@@ -307,7 +350,9 @@ export default function InterviewAdminDetailPage({
    * 사진 추가 — /records 와 같은 서명 URL 직행 방식.
    *   1) 서버에서 서명 업로드 URL 발급 (관리자 인증 + 크기 1차 검사)
    *   2) 브라우저 → Storage 직접 업로드 (Vercel 4.5MB 본문 상한을 우회한다)
-   *   3) photos 끝에 붙이고 본문 끝에 [PHOTO_n] 삽입 (위치는 관리자가 옮길 수 있다)
+   *   3) photos 끝에 붙이고 **커서 위치**에 [PHOTO_n] 삽입
+   *      (커서 기록이 없으면 본문 끝 — insertPhotoTag 의 폴백)
+   *      여러 장을 한 번에 고르면 같은 자리에 순서대로 이어 붙는다.
    *
    * ⚠️ 여기서 올린 파일은 Storage 에 이미 존재한다. 저장하지 않고 화면을 떠나면
    *   DB 에서 참조되지 않는 고아 파일이 남는다. 이번 범위에서는 허용한다
@@ -320,6 +365,8 @@ export default function InterviewAdminDetailPage({
     try {
       const next = [...photos];
       let nextBody = body;
+      // 기록된 커서 위치에서 시작해, 한 장 넣을 때마다 그 뒤로 밀어 이어 붙인다
+      let insertAt = cursorRef.current;
 
       for (const file of Array.from(files)) {
         const upload = await compressImage(file);
@@ -360,11 +407,30 @@ export default function InterviewAdminDetailPage({
         }
 
         next.push(signJson.publicUrl as string);
-        nextBody = `${nextBody.trimEnd()}\n\n[PHOTO_${next.length}]`;
+        const inserted = insertPhotoTag(
+          nextBody,
+          `[PHOTO_${next.length}]`,
+          insertAt,
+        );
+        nextBody = inserted.text;
+        insertAt = inserted.caret;
       }
 
       setPhotos(next);
       setBody(nextBody);
+      cursorRef.current = insertAt;
+
+      // 삽입 지점으로 커서를 옮겨 준다 — 어디에 들어갔는지 바로 보이도록.
+      // setBody 반영 뒤여야 하므로 다음 프레임에 실행한다. 실패해도 기능에는 영향 없음.
+      const caret = insertAt;
+      if (caret !== null) {
+        requestAnimationFrame(() => {
+          const el = bodyRef.current;
+          if (!el) return;
+          el.focus();
+          el.setSelectionRange(caret, caret);
+        });
+      }
     } finally {
       setPhotoUploading(false);
     }
@@ -605,8 +671,17 @@ export default function InterviewAdminDetailPage({
                 </button>
               </div>
               <textarea
+                ref={bodyRef}
                 value={body}
-                onChange={(e) => setBody(e.target.value)}
+                onChange={(e) => {
+                  setBody(e.target.value);
+                  cursorRef.current = e.target.selectionStart;
+                }}
+                // 커서가 움직일 때마다 위치를 기록해 둔다 (클릭·키보드 이동·선택 모두
+                // onSelect 로 들어온다). 사진 추가 시 이 위치에 [PHOTO_n] 을 끼워 넣는다.
+                onSelect={(e) => {
+                  cursorRef.current = e.currentTarget.selectionStart;
+                }}
                 rows={24}
                 spellCheck
                 lang="ko"
@@ -783,19 +858,32 @@ export default function InterviewAdminDetailPage({
                       key={`${url}-${i}`}
                       className="relative h-24 w-24 overflow-hidden rounded-lg border border-border"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={`사진 ${i + 1}`}
-                        loading="lazy"
-                        className="h-full w-full object-cover"
-                      />
-                      <span className="absolute left-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {/* 클릭하면 원본을 라이트박스로 크게 본다 */}
+                      <button
+                        type="button"
+                        onClick={() => setLightboxIndex(i)}
+                        title={`${i + 1}번 사진 크게 보기`}
+                        className="block h-full w-full cursor-zoom-in"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt={`사진 ${i + 1}`}
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                      <span className="pointer-events-none absolute left-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
                         {i + 1}
                       </span>
                       <button
                         type="button"
-                        onClick={() => handleRemovePhoto(i)}
+                        // 삭제 버튼은 크게보기 버튼의 형제라 중첩되지 않지만,
+                        // 나중에 구조가 바뀌어도 라이트박스가 열리지 않도록 전파를 끊는다
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemovePhoto(i);
+                        }}
                         title={`${i + 1}번 사진 삭제`}
                         className="absolute right-1 top-1 rounded-full bg-red-600/85 p-1 text-white transition-colors hover:bg-red-600"
                       >
@@ -911,6 +999,15 @@ export default function InterviewAdminDetailPage({
             </div>
           </div>
         </div>
+      )}
+
+      {/* 원본 사진 확대 보기 — 팀 소개·륜슐랭과 같은 공용 컴포넌트 */}
+      {lightboxIndex !== null && photos.length > 0 && (
+        <PhotoLightbox
+          photos={photos}
+          startIndex={Math.min(lightboxIndex, photos.length - 1)}
+          onClose={() => setLightboxIndex(null)}
+        />
       )}
     </div>
   );
