@@ -16,6 +16,8 @@ import {
   Pencil,
   Rocket,
   Search,
+  ImagePlus,
+  Trash2,
 } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -23,6 +25,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { pickArticleBody } from "@/lib/article-body";
+import { compressImage } from "@/lib/image-compress";
+import { resolveArticlePhotos } from "@/lib/interview-photos";
+import { supabaseBrowser } from "@/lib/supabase-browser";
+
+/** 사진 버킷 — api/interview/admin/article-photos 가 서명 URL을 발급하는 그 버킷 */
+const PHOTO_BUCKET = "interview-photos";
 
 interface Article {
   id: number;
@@ -63,17 +71,49 @@ function replacePhotoTags(article: string, photos?: string[]): string {
   });
 }
 
+/**
+ * 편집 시작 시점의 사진 배열을 정한다.
+ *
+ * ⚠️ 팬 화면(src/lib/interview.ts, api/interview/published)과 **같은 함수**를 쓴다.
+ *   예전에는 여기만 `photos.length > 0` 로 판단해, 관리자가 사진을 전부 지워도
+ *   빈 배열이 무시되고 응답 사진이 되살아났다.
+ */
 function collectPhotos(article: Article, responses: ResponseRow[]): string[] {
-  if (article.photos && article.photos.length > 0) return article.photos;
-  const urls: string[] = [];
+  const fallback: string[] = [];
   for (const r of responses) {
     if (r.photoUrls) {
       for (const u of r.photoUrls) {
-        if (u) urls.push(u);
+        if (u) fallback.push(u);
       }
     }
   }
-  return urls;
+  return resolveArticlePhotos(article.photos, fallback);
+}
+
+/**
+ * n번 사진을 지운 뒤 본문의 [PHOTO_*] 태그를 배열에 다시 맞춘다.
+ *
+ * 1) [PHOTO_n]        → 제거
+ * 2) [PHOTO_m] (m>n)  → [PHOTO_{m-1}]
+ *
+ * ⚠️ 순서가 중요하다. 배열에서 원소가 빠지면 뒤 인덱스가 하나씩 당겨지는데,
+ *   본문 태그를 같이 당기지 않으면 사진과 번호가 통째로 어긋난다.
+ *   예) 3장 중 2번 삭제 → photos=[1,3] 이 되므로 본문의 [PHOTO_3] 은
+ *       [PHOTO_2] 로 바뀌어야 원래 3번 사진을 계속 가리킨다.
+ *   제거를 먼저 하고 번호를 당겨야 한다. 순서를 바꾸면 [PHOTO_3]→[PHOTO_2] 가
+ *   먼저 일어나 방금 지우려던 2번과 충돌한다.
+ */
+function removePhotoTag(article: string, n: number): string {
+  const withoutTag = article.replace(
+    new RegExp(`\\[PHOTO_${n}\\]`, "g"),
+    "",
+  );
+  const renumbered = withoutTag.replace(/\[PHOTO_(\d+)\]/g, (match, num) => {
+    const m = parseInt(num, 10);
+    return m > n ? `[PHOTO_${m - 1}]` : match;
+  });
+  // 태그가 빠진 자리에 남은 빈 줄 정리
+  return renumbered.replace(/[ \t]*\n{3,}/g, "\n\n").trimEnd();
 }
 
 interface SpellItem {
@@ -159,6 +199,13 @@ export default function InterviewAdminDetailPage({
 
   const [headline, setHeadline] = useState("");
   const [body, setBody] = useState("");
+  /**
+   * 편집 중인 사진 배열. 인덱스 i 가 본문의 [PHOTO_{i+1}] 에 대응한다.
+   * 저장 버튼을 눌러야 photos 컬럼에 반영된다 (아래 handleSave).
+   */
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [responsesOpen, setResponsesOpen] = useState(false);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [saving, setSaving] = useState(false);
@@ -242,6 +289,7 @@ export default function InterviewAdminDetailPage({
         setBody(
           pickArticleBody(json.article.articleEdited, json.article.articleRaw),
         );
+        setPhotos(collectPhotos(json.article, json.responses));
         setLoading(false);
       } catch {
         if (!cancelled) {
@@ -255,6 +303,83 @@ export default function InterviewAdminDetailPage({
     };
   }, [articleId]);
 
+  /**
+   * 사진 추가 — /records 와 같은 서명 URL 직행 방식.
+   *   1) 서버에서 서명 업로드 URL 발급 (관리자 인증 + 크기 1차 검사)
+   *   2) 브라우저 → Storage 직접 업로드 (Vercel 4.5MB 본문 상한을 우회한다)
+   *   3) photos 끝에 붙이고 본문 끝에 [PHOTO_n] 삽입 (위치는 관리자가 옮길 수 있다)
+   *
+   * ⚠️ 여기서 올린 파일은 Storage 에 이미 존재한다. 저장하지 않고 화면을 떠나면
+   *   DB 에서 참조되지 않는 고아 파일이 남는다. 이번 범위에서는 허용한다
+   *   (정리하려면 /records 의 discard 액션 같은 회수 경로가 따로 필요하다).
+   */
+  async function handleAddPhotos(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setPhotoError(null);
+    setPhotoUploading(true);
+    try {
+      const next = [...photos];
+      let nextBody = body;
+
+      for (const file of Array.from(files)) {
+        const upload = await compressImage(file);
+        // ⚠️ 서명 URL 직행에는 서버 sharp 폴백이 없다. 브라우저가 JPEG 로 바꾸지
+        //    못한 원본(HEIC 등)을 그대로 올리면 화면에 alt 텍스트만 남는다.
+        if (upload.type !== "image/jpeg") {
+          setPhotoError(
+            `"${file.name}" 은 브라우저가 열지 못하는 형식입니다. JPEG나 PNG로 저장해 다시 올려주세요`,
+          );
+          break;
+        }
+
+        const signRes = await fetch("/api/interview/admin/article-photos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            articleId: Number(articleId),
+            fileName: upload.name,
+            fileSize: upload.size,
+          }),
+        });
+        const signJson = await signRes.json().catch(() => null);
+        if (!signRes.ok || !signJson?.path || !signJson?.token) {
+          setPhotoError(
+            signJson?.error ?? `"${file.name}" 업로드 준비에 실패했습니다`,
+          );
+          break;
+        }
+
+        const { error: upErr } = await supabaseBrowser.storage
+          .from(PHOTO_BUCKET)
+          .uploadToSignedUrl(signJson.path, signJson.token, upload, {
+            contentType: "image/jpeg",
+          });
+        if (upErr) {
+          setPhotoError(`"${file.name}" 업로드에 실패했습니다: ${upErr.message}`);
+          break;
+        }
+
+        next.push(signJson.publicUrl as string);
+        nextBody = `${nextBody.trimEnd()}\n\n[PHOTO_${next.length}]`;
+      }
+
+      setPhotos(next);
+      setBody(nextBody);
+    } finally {
+      setPhotoUploading(false);
+    }
+  }
+
+  /**
+   * 사진 삭제 — 배열에서 빼고 본문 태그도 함께 정리·재번호한다.
+   * Storage 파일 자체는 지우지 않는다 (되돌리기 여지를 남긴다).
+   */
+  function handleRemovePhoto(idx: number) {
+    setPhotoError(null);
+    setPhotos((prev) => prev.filter((_, i) => i !== idx));
+    setBody((prev) => removePhotoTag(prev, idx + 1));
+  }
+
   async function handleSave() {
     setSaving(true);
     setActionMsg(null);
@@ -262,7 +387,7 @@ export default function InterviewAdminDetailPage({
       const res = await fetch(`/api/interview/admin/articles/${articleId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ headline, articleEdited: body }),
+        body: JSON.stringify({ headline, articleEdited: body, photos }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "저장 실패" }));
@@ -609,6 +734,83 @@ export default function InterviewAdminDetailPage({
                 </div>
               )}
             </div>
+
+            {/* 사진 관리 — 번호가 본문의 [PHOTO_n] 과 1:1로 대응한다 */}
+            <div className="border-t border-border pt-5">
+              <div className="mb-2 flex items-center justify-between">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  사진 ({photos.length}장) — 번호가 본문 [PHOTO_n] 과 대응합니다
+                </label>
+                <label
+                  className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground/70 transition-colors hover:bg-muted ${
+                    photoUploading ? "pointer-events-none opacity-50" : ""
+                  }`}
+                >
+                  {photoUploading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ImagePlus className="h-3.5 w-3.5" />
+                  )}
+                  사진 추가
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    disabled={photoUploading}
+                    onChange={(e) => {
+                      handleAddPhotos(e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              </div>
+
+              {photoError && (
+                <p className="mb-2 text-xs font-medium text-red-500">
+                  {photoError}
+                </p>
+              )}
+
+              {photos.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  등록된 사진이 없습니다
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  {photos.map((url, i) => (
+                    <div
+                      key={`${url}-${i}`}
+                      className="relative h-24 w-24 overflow-hidden rounded-lg border border-border"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={`사진 ${i + 1}`}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                      <span className="absolute left-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                        {i + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePhoto(i)}
+                        title={`${i + 1}번 사진 삭제`}
+                        className="absolute right-1 top-1 rounded-full bg-red-600/85 p-1 text-white transition-colors hover:bg-red-600"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                업로드는 즉시 되지만 DB 반영은 [저장]을 눌러야 합니다. 삭제하면
+                본문의 태그도 자동으로 정리·재번호됩니다.
+              </p>
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -617,8 +819,9 @@ export default function InterviewAdminDetailPage({
             {headline && (
               <h1 className="mb-6 text-2xl font-extrabold">{headline}</h1>
             )}
+            {/* 편집 중인 photos 를 쓴다 — 저장 전에도 추가·삭제 결과가 보여야 한다 */}
             <Markdown remarkPlugins={[remarkGfm]}>
-              {replacePhotoTags(body, collectPhotos(article, responses))}
+              {replacePhotoTags(body, photos)}
             </Markdown>
           </CardContent>
         </Card>

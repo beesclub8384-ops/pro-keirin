@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase";
 import { pickArticleBody } from "@/lib/article-body";
+import { resolveArticlePhotos } from "@/lib/interview-photos";
 
 export interface InterviewArticle {
   date: string;
@@ -92,10 +93,11 @@ async function enrichArticles(
   }
 
   return articles.map((a) => {
-    const articlePhotos = asStringArray(a.photos);
-    const responsePhotos = photosByReq.get(a.request_id) ?? [];
-    const uniquePhotos = Array.from(
-      new Set([...articlePhotos, ...responsePhotos]),
+    // ⚠️ 합집합이 아니다. article.photos 가 있으면 그것이 전부다 (빈 배열 포함).
+    //    합집합으로 묶으면 관리자가 지운 사진이 응답 사진에서 되살아난다.
+    const uniquePhotos = resolveArticlePhotos(
+      a.photos,
+      photosByReq.get(a.request_id) ?? [],
     );
     return {
       date: toKSTDate(a.published_at),

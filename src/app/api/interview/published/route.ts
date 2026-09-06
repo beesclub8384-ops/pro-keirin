@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 import { pickArticleBody } from "@/lib/article-body";
+import { resolveArticlePhotos } from "@/lib/interview-photos";
 
 // 팬용 목록/상세가 공유하는 응답 — 60초 캐시로 Supabase 부하를 막는다.
 // 이 60초는 백스톱일 뿐이고, 관리자가 기사를 저장/발행/삭제하면
@@ -79,9 +80,12 @@ export async function GET() {
   }
 
   const result = (articles ?? []).map((a) => {
-    const articlePhotos = asStringArray(a.photos);
-    const responsePhotos = photosByReq.get(a.request_id as number) ?? [];
-    const photos = Array.from(new Set([...articlePhotos, ...responsePhotos]));
+    // ⚠️ 합집합이 아니다. article.photos 가 있으면 그것이 전부다 (빈 배열 포함).
+    //    합집합으로 묶으면 관리자가 지운 사진이 응답 사진에서 되살아난다.
+    const photos = resolveArticlePhotos(
+      a.photos,
+      photosByReq.get(a.request_id as number) ?? [],
+    );
     return {
       date: toKSTDate(a.published_at as string | null),
       playerName: a.player_name,

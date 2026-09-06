@@ -134,21 +134,40 @@ export async function PUT(req: Request, { params }: Params) {
     return NextResponse.json({ error: "invalid articleId" }, { status: 400 });
   }
 
-  let body: { articleEdited?: string; headline?: string };
+  let body: {
+    articleEdited?: string;
+    headline?: string;
+    photos?: string[] | null;
+  };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "invalid json body" }, { status: 400 });
   }
 
+  const update: Record<string, unknown> = {
+    article_edited: body.articleEdited ?? null,
+    headline: body.headline ?? null,
+    updated_at: new Date().toISOString(),
+  };
+
+  // ⚠️ photos 는 body 에 있을 때만 건드린다.
+  //    undefined(구버전 화면이나 다른 호출자가 안 보낸 경우)면 기존 값을 그대로 둔다 —
+  //    ?? null 로 처리하면 사진을 보내지 않은 저장 한 번에 전부 날아간다.
+  //    빈 배열([])은 "관리자가 전부 지웠다"는 확정 상태라 그대로 저장한다
+  //    (resolveArticlePhotos 가 빈 배열도 존중하므로 응답 사진으로 되살아나지 않는다).
+  if (body.photos !== undefined) {
+    update.photos = Array.isArray(body.photos)
+      ? body.photos.filter(
+          (u): u is string => typeof u === "string" && u.length > 0,
+        )
+      : null;
+  }
+
   const sb = createAdminClient();
   const { error } = await sb
     .from("interview_articles")
-    .update({
-      article_edited: body.articleEdited ?? null,
-      headline: body.headline ?? null,
-      updated_at: new Date().toISOString(),
-    })
+    .update(update)
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

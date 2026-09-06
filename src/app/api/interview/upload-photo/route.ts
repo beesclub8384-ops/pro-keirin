@@ -3,6 +3,7 @@ import sharp from "sharp";
 import { createAdminClient } from "@/lib/supabase";
 import { applyFilmFilter } from "@/lib/film-filter";
 import { recordUploadFailure } from "@/lib/interview-upload-failure";
+import { sanitizeFilename } from "@/lib/storage-path";
 
 const BUCKET = "interview-photos";
 
@@ -15,11 +16,6 @@ export const maxDuration = 60;
 // 아이폰 사진은 확장자가 .jpg 여도 실제 내용이 HEIC 인 경우가 있는데,
 // 브라우저는 HEIC 를 표시하지 못해 alt 텍스트만 보인다.
 const JPEG_QUALITY = 92;
-
-function sanitizeFilename(name: string): string {
-  const base = name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  return base.length > 60 ? base.slice(-60) : base;
-}
 
 /** ISO-BMFF(ftyp) 컨테이너인지 — HEIC/HEIF/AVIF 계열이 여기 해당 */
 function isIsoBmff(buf: Buffer): boolean {
