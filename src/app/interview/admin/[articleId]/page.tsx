@@ -20,6 +20,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Markdown from "react-markdown";
+import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -529,6 +530,36 @@ export default function InterviewAdminDetailPage({
   const { article, responses } = data;
   const canPublish = article.status === "approved";
 
+  /**
+   * 미리보기 탭의 이미지 렌더러 — 본문 사진을 클릭하면 라이트박스가 열린다.
+   *
+   * ⚠️ 기준은 **편집 중인 photos state** 다 (저장 전 추가·삭제가 그대로 반영된다).
+   *   미리보기가 replacePhotoTags(body, photos) 로 그려지므로 img 의 src 는
+   *   photos 안의 URL 과 정확히 같고, indexOf 로 몇 번째 사진인지 찾을 수 있다.
+   *   photos 에 없는 src(본문에 직접 쓴 외부 이미지 등)는 클릭 대상이 아니다.
+   *
+   * 편집 탭 썸네일과 같은 lightboxIndex 상태를 쓴다 — 넘기는 배열도 같은 photos 라
+   * 인덱스 의미가 일치해서 따로 둘 이유가 없다.
+   */
+  const previewMdComponents: Components = {
+    img: (props) => {
+      const src = typeof props.src === "string" ? props.src : "";
+      const idx = src ? photos.indexOf(src) : -1;
+      const clickable = idx >= 0;
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={props.src}
+          alt={props.alt || ""}
+          loading="lazy"
+          decoding="async"
+          onClick={clickable ? () => setLightboxIndex(idx) : undefined}
+          className={clickable ? "cursor-zoom-in" : undefined}
+        />
+      );
+    },
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:py-10">
       {/* Back */}
@@ -908,7 +939,10 @@ export default function InterviewAdminDetailPage({
               <h1 className="mb-6 text-2xl font-extrabold">{headline}</h1>
             )}
             {/* 편집 중인 photos 를 쓴다 — 저장 전에도 추가·삭제 결과가 보여야 한다 */}
-            <Markdown remarkPlugins={[remarkGfm]}>
+            <Markdown
+              remarkPlugins={[remarkGfm]}
+              components={previewMdComponents}
+            >
               {replacePhotoTags(body, photos)}
             </Markdown>
           </CardContent>

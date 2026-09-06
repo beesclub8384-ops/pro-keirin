@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { ChevronLeft, MapPin, Play, RefreshCw } from "lucide-react";
@@ -17,6 +17,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import GradeBadge from "@/components/GradeBadge";
+import PhotoLightbox from "@/components/PhotoLightbox";
 import type { InterviewArticle } from "@/lib/interview";
 import { fetchArticlesByDate, lookupRaceDate } from "@/lib/interview-client";
 
@@ -186,39 +187,66 @@ const isBlockedInternalLink = (href?: string): boolean => {
   }
 };
 
-/** 블록 내부용 — Q/A 감지 로직 없이 단순 마크다운 렌더 (색상은 부모 div에서 상속) */
-const blockMdComponents: Components = {
-  p: (props) => (
-    <p className="text-[15px] sm:text-base leading-[1.85] mb-3 last:mb-0">
-      {props.children}
-    </p>
-  ),
-  img: (props) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={props.src}
-      alt={props.alt || ""}
-      loading="lazy"
-      decoding="async"
-      className="block mx-auto my-4 w-[87%] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
-    />
-  ),
-  strong: (props) => <strong className="font-bold">{props.children}</strong>,
-  a: (props) =>
-    isBlockedInternalLink(props.href) ? (
-      // 본관 경로·판별 불가 href는 링크 없이 글자만 표시
-      <span>{props.children}</span>
-    ) : (
-      <a
-        href={props.href}
-        className="text-brand hover:underline"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+/**
+ * 블록 내부용 — Q/A 감지 로직 없이 단순 마크다운 렌더 (색상은 부모 div에서 상속).
+ *
+ * ⚠️ 상수가 아니라 **기사별 팩토리**다.
+ *   본문 사진을 클릭하면 라이트박스를 여는데, 그때 넘길 photos 는 반드시
+ *   "그 사진이 실린 기사"의 것이어야 한다. 같은 날짜에 기사가 여러 개일 때
+ *   모듈 전역 상수 하나를 공유하면 다른 선수의 사진이 섞여 들어간다.
+ *   그래서 기사 하나마다 그 기사의 photos 를 닫아 넣은 렌더러를 만든다.
+ *
+ * @param photos 이 기사의 사진 URL 배열 ([PHOTO_n] 이 photos[n-1] 로 치환돼 있다)
+ * @param onOpen 클릭한 사진의 photos 내 인덱스를 받는다
+ */
+function makeBlockMdComponents(
+  photos: string[],
+  onOpen: (index: number) => void,
+): Components {
+  return {
+    p: (props) => (
+      <p className="text-[15px] sm:text-base leading-[1.85] mb-3 last:mb-0">
         {props.children}
-      </a>
+      </p>
     ),
-};
+    img: (props) => {
+      const src = typeof props.src === "string" ? props.src : "";
+      // photos 에 없는 이미지(본문에 직접 쓴 외부 URL 등)는 클릭 대상이 아니다 —
+      // 커서도 바뀌지 않고 onClick 도 붙지 않아 눌러도 아무 일이 없다.
+      const idx = src ? photos.indexOf(src) : -1;
+      const clickable = idx >= 0;
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={props.src}
+          alt={props.alt || ""}
+          loading="lazy"
+          decoding="async"
+          onClick={clickable ? () => onOpen(idx) : undefined}
+          className={cn(
+            "block mx-auto my-4 w-[87%] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]",
+            clickable && "cursor-zoom-in",
+          )}
+        />
+      );
+    },
+    strong: (props) => <strong className="font-bold">{props.children}</strong>,
+    a: (props) =>
+      isBlockedInternalLink(props.href) ? (
+        // 본관 경로·판별 불가 href는 링크 없이 글자만 표시
+        <span>{props.children}</span>
+      ) : (
+        <a
+          href={props.href}
+          className="text-brand hover:underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {props.children}
+        </a>
+      ),
+  };
+}
 
 /** 📊 분석 노트용 컴포넌트 — 작고 밀도 있는 스타일 */
 const analysisComponents: Components = {
@@ -314,6 +342,18 @@ export default function InterviewDatePage({
 }) {
   const { date } = use(params);
   const { player } = use(searchParams);
+
+  /**
+   * 본문 사진 확대 보기 상태.
+   *
+   * ⚠️ 인덱스만 두지 않고 photos 배열까지 함께 담는다.
+   *   같은 날짜에 기사가 여러 개일 수 있어서, 인덱스와 배열이 따로 놀면
+   *   다른 선수의 사진이 열리는 무음 실패가 난다. 한 덩어리로 갱신해 어긋날 수 없게 한다.
+   */
+  const [lightbox, setLightbox] = useState<{
+    photos: string[];
+    index: number;
+  } | null>(null);
 
   const { data: allArticles, error: articlesError, mutate } = useSWR(
     ["interview-by-date", date],
@@ -437,6 +477,12 @@ export default function InterviewDatePage({
             );
             const { main, analysis } = splitAnalysisNote(processed);
             const blocks = parseQABlocks(main);
+            // 이 기사 전용 렌더러 — 사진 클릭 시 이 기사의 photos 안에서만 인덱스를 찾는다
+            const articlePhotos = article.photos ?? [];
+            const mdComponents = makeBlockMdComponents(
+              articlePhotos,
+              (index) => setLightbox({ photos: articlePhotos, index }),
+            );
 
             return (
               <Card
@@ -486,7 +532,7 @@ export default function InterviewDatePage({
                           <div className="font-semibold text-foreground">
                             <Markdown
                               remarkPlugins={[remarkGfm]}
-                              components={blockMdComponents}
+                              components={mdComponents}
                             >
                               {block.question}
                             </Markdown>
@@ -495,7 +541,7 @@ export default function InterviewDatePage({
                             <div className="mt-3 text-blue-700">
                               <Markdown
                                 remarkPlugins={[remarkGfm]}
-                                components={blockMdComponents}
+                                components={mdComponents}
                               >
                                 {block.answer}
                               </Markdown>
@@ -567,6 +613,15 @@ export default function InterviewDatePage({
             );
           })}
         </div>
+      )}
+
+      {/* 본문 사진 확대 보기 — 클릭한 사진이 실린 기사의 photos 만 넘긴다 */}
+      {lightbox && (
+        <PhotoLightbox
+          photos={lightbox.photos}
+          startIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
       )}
     </div>
   );
