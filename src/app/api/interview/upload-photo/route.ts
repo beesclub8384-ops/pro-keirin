@@ -5,6 +5,11 @@ import { applyFilmFilter } from "@/lib/film-filter";
 
 const BUCKET = "interview-photos";
 
+// sharp 정규화 + 필름 필터는 큰 사진에서 수 초가 걸린다(실측: 12MP 약 4초, 20MP 약 10초).
+// 기본 실행 시간 안에 못 끝내면 응답이 JSON 이 아닌 형태로 잘려 클라이언트는
+// "업로드 실패" 한 줄만 보게 되므로 여유를 둔다.
+export const maxDuration = 60;
+
 // 업로드는 포맷과 무관하게 항상 JPEG 로 정규화해서 저장한다.
 // 아이폰 사진은 확장자가 .jpg 여도 실제 내용이 HEIC 인 경우가 있는데,
 // 브라우저는 HEIC 를 표시하지 못해 alt 텍스트만 보인다.
@@ -90,6 +95,9 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
+  // ⚠️ 방어용 검사다. Vercel 서버리스 함수의 요청 본문 상한 4.5MB 가 먼저 작동해
+  //    그보다 큰 요청은 이 핸들러에 도달하지도 못한다(로그도 남지 않는다).
+  //    실제 크기 방어는 클라이언트의 compressImage() 가 담당한다.
   const MAX = 10 * 1024 * 1024; // 10MB
   if (file.size > MAX) {
     return NextResponse.json(
@@ -140,6 +148,7 @@ export async function POST(req: Request) {
     });
 
   if (upErr) {
+    console.error("[upload-photo] storage error:", upErr.message, path);
     return NextResponse.json({ error: upErr.message }, { status: 500 });
   }
 

@@ -58,6 +58,83 @@ function newAnswer(): AnswerState {
   return { answerText: "", answerChoice: "", followUp: "", photos: [] };
 }
 
+/**
+ * 업로드 전 브라우저에서 이미지를 축소·재압축한다.
+ *
+ * ⚠️ 존재 이유 (2026-09-06 실측):
+ *   Vercel 서버리스 함수의 요청 본문 상한은 4.5MB다. 이 상한은
+ *   /api/interview/upload-photo 핸들러에 **도달하기 전에** 걸리기 때문에
+ *   서버의 10MB 검사도, console.error 도, 어떤 서버 로그도 남지 않는다.
+ *   클라이언트에는 본문이 JSON 이 아닌 응답만 돌아와 "업로드 실패" 한 줄로 끝난다.
+ *   최근 아이폰 사진은 원본이 4.5MB를 쉽게 넘으므로 브라우저에서 미리 줄여 보낸다.
+ *
+ * 새 패키지 없이 canvas 로만 처리한다.
+ * 디코딩에 실패하면(브라우저가 못 여는 HEIC 등) 원본 File 을 그대로 돌려준다 —
+ * 서버에 sharp → heic-convert 폴백이 있어 원본을 넘기는 편이 안전하다.
+ */
+const COMPRESS_MAX_EDGE = 2560; // 웹 표시용으로 충분한 긴 변
+const COMPRESS_FALLBACK_EDGE = 1920; // 품질을 낮춰도 안 줄면 해상도까지 낮춘다
+const COMPRESS_TARGET_BYTES = 4 * 1024 * 1024; // 4.5MB 상한 아래로 여유를 둔 목표치
+
+/** 비트맵을 maxEdge 이내로 축소해 JPEG Blob 으로 굽는다. 실패 시 null */
+async function drawToJpegBlob(
+  bitmap: ImageBitmap,
+  maxEdge: number,
+  quality: number,
+): Promise<Blob | null> {
+  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  // JPEG 에는 투명도가 없다. 흰 배경을 먼저 깔지 않으면 투명 영역이 검게 나온다.
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(bitmap, 0, 0, w, h);
+
+  return new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), "image/jpeg", quality);
+  });
+}
+
+async function compressImage(file: File): Promise<File> {
+  let bitmap: ImageBitmap;
+  try {
+    // createImageBitmap 은 EXIF 회전을 기본 반영하지 않는 브라우저가 있어 명시한다.
+    bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+  } catch {
+    return file; // 브라우저가 못 여는 포맷 → 원본 그대로 서버로
+  }
+
+  try {
+    let blob = await drawToJpegBlob(bitmap, COMPRESS_MAX_EDGE, 0.85);
+    // 목표치를 넘으면 품질을 단계적으로 낮춰 재시도
+    for (const quality of [0.7, 0.55]) {
+      if (blob && blob.size <= COMPRESS_TARGET_BYTES) break;
+      blob = await drawToJpegBlob(bitmap, COMPRESS_MAX_EDGE, quality);
+    }
+    // 그래도 넘으면 해상도를 낮춰 마지막으로 재시도
+    if (!blob || blob.size > COMPRESS_TARGET_BYTES) {
+      blob = await drawToJpegBlob(bitmap, COMPRESS_FALLBACK_EDGE, 0.7);
+    }
+    if (!blob) return file;
+    // 재압축이 오히려 커졌다면(이미 작고 잘 압축된 원본) 원본을 쓴다
+    if (blob.size >= file.size) return file;
+
+    const base = file.name.replace(/\.[^.]+$/, "") || "photo";
+    return new File([blob], `${base}.jpg`, { type: "image/jpeg" });
+  } catch {
+    return file;
+  } finally {
+    bitmap.close();
+  }
+}
+
 export default function InterviewFormPage({
   params,
 }: {
@@ -166,8 +243,10 @@ export default function InterviewFormPage({
       arr.map(async (file, i) => {
         const slotIdx = startIdx + i;
         try {
+          // 4.5MB(Vercel 본문 상한) 아래로 줄여서 보낸다
+          const upload = await compressImage(file);
           const fd = new FormData();
-          fd.append("file", file);
+          fd.append("file", upload);
           fd.append("requestId", String(numericId));
           const res = await fetch("/api/interview/upload-photo", {
             method: "POST",
@@ -255,8 +334,10 @@ export default function InterviewFormPage({
       arr.map(async (file, i) => {
         const slotIdx = startIdx + i;
         try {
+          // 4.5MB(Vercel 본문 상한) 아래로 줄여서 보낸다
+          const upload = await compressImage(file);
           const fd = new FormData();
-          fd.append("file", file);
+          fd.append("file", upload);
           fd.append("requestId", String(numericId));
           // 자유 첨부 사진에만 빈티지 필름 필터 적용
           fd.append("applyFilter", "true");
@@ -302,6 +383,16 @@ export default function InterviewFormPage({
     });
   }
 
+  // 업로드에 실패한 사진이 하나라도 있는지.
+  // ⚠️ 이 검사가 없으면 실패한 사진이 handleSubmit 에서 조용히 버려진 채로 제출이 성립해
+  //    "제출 완료 화면은 떴는데 사진만 사라지는" 무음 실패가 된다 (2026-09-06 실제 발생).
+  const hasPhotoError = useMemo(() => {
+    const inAnswers = Object.values(answers).some((a) =>
+      a.photos.some((p) => p.error),
+    );
+    return inAnswers || freePhotos.some((p) => p.error);
+  }, [answers, freePhotos]);
+
   // 답변·사진 업로드가 모두 끝났는지 (동의 여부는 아래에서 따로 합친다 —
   // 미체크가 유일한 blocker 일 때만 동의 안내를 띄우기 위해 분리해 둔다)
   const answersComplete = useMemo(() => {
@@ -311,6 +402,8 @@ export default function InterviewFormPage({
     );
     const anyFreeUploading = freePhotos.some((p) => p.uploading);
     if (anyUploading || anyFreeUploading) return false;
+    // 실패한 사진은 삭제하거나 다시 올려야 제출할 수 있다
+    if (hasPhotoError) return false;
     return state.data.questions.every((q) => {
       const a = answers[q.code];
       if (!a) return false;
@@ -319,7 +412,7 @@ export default function InterviewFormPage({
       if (q.format === "choice_text") return a.answerChoice !== "";
       return false;
     });
-  }, [state, answers, freePhotos]);
+  }, [state, answers, freePhotos, hasPhotoError]);
 
   const canSubmit = answersComplete && agreed;
 
@@ -338,11 +431,15 @@ export default function InterviewFormPage({
           questionText: q.questionText,
           answerText: textValue || null,
           answerChoice: q.format === "text" ? null : a.answerChoice || null,
+          // ⚠️ !p.error / !p.uploading 는 이제 도달 불가 조건이다 —
+          //    answersComplete 가 업로드 중이거나 실패한 사진이 있으면 제출을 막는다.
+          //    방어용으로만 남긴다. 여기서 조용히 버려지면 무음 실패가 된다.
           photoUrls: a.photos
             .filter((p) => p.url && !p.uploading && !p.error)
             .map((p) => p.url),
         };
       });
+      // 위와 동일 — 게이트가 막으므로 도달 불가, 방어용
       const freePhotoUrls = freePhotos
         .filter((p) => p.url && !p.uploading && !p.error)
         .map((p) => p.url);
@@ -721,6 +818,11 @@ export default function InterviewFormPage({
             </p>
           )}
         </div>
+        {hasPhotoError && (
+          <p className="mb-2 text-center text-sm font-medium text-red-500">
+            업로드에 실패한 사진이 있습니다. 사진을 삭제하거나 다시 올려주세요.
+          </p>
+        )}
         {submitError && (
           <p className="mb-2 text-center text-sm text-red-500">{submitError}</p>
         )}
