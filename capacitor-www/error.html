@@ -1,0 +1,133 @@
+<!doctype html>
+<!--
+  7RANDOMS 인터뷰 — 네이티브 오프라인/에러 화면
+
+  capacitor.config.ts 의 server.errorPath 가 이 파일을 가리킨다.
+  원격 server.url 로드가 실패하면(네트워크 없음, Vercel 장애, DNS 실패)
+  Capacitor 가 http://localhost/error.html 로 이 페이지를 띄운다.
+    → BridgeWebViewClient.onReceivedError / onReceivedHttpError → Bridge.getErrorUrl()
+
+  ⚠️ 외부 리소스를 절대 참조하지 말 것.
+     이 화면이 뜨는 시점은 "네트워크가 죽은 순간"이라 CDN·웹폰트·이미지는 전부 실패한다.
+     CSS 는 인라인, 아이콘은 CSS 도형으로만 그린다. (workbox/서비스워커와도 무관하다 —
+     서비스워커는 첫 실행에 네트워크가 있어야 설치되므로 여기서는 기대할 수 없다.)
+
+  ⚠️ 이 파일은 webDir(capacitor-www/) 소스다.
+     npx cap sync 가 android/app/src/main/assets/public/ 로 복사한다.
+     assets/public 은 gitignore 대상이므로 그쪽을 직접 고치면 sync 때 지워진다.
+-->
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>연결 실패 · 7RANDOMS 인터뷰</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+        /* 배경 이미지도 외부 자원이라 못 쓴다 — 단색 그라데이션으로 대체 */
+        background: linear-gradient(160deg, #1f1f22 0%, #101012 100%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .card {
+        width: 100%;
+        max-width: 360px;
+        background: rgba(255, 255, 255, 0.96);
+        color: #1a1a1a;
+        border-radius: 16px;
+        padding: 36px 28px;
+        text-align: center;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      }
+      /* 로고 대신 워드마크 (이미지 파일 없이) */
+      .wordmark {
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        color: #e11d2a;
+        margin-bottom: 20px;
+      }
+      .icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        background: #f1f1f1;
+        font-size: 28px;
+        line-height: 1;
+      }
+      h1 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      p {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #555;
+        margin-bottom: 24px;
+      }
+      button {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #fff;
+        background: #e11d2a;
+        transition: background 0.15s ease;
+      }
+      button:active {
+        background: #c4161f;
+      }
+      button[disabled] {
+        opacity: 0.6;
+        cursor: default;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="wordmark">7RANDOMS</div>
+      <div class="icon">📡</div>
+      <h1>인터넷 연결을 확인해주세요</h1>
+      <p>연결이 끊겨 있어 화면을 불러오지 못했습니다.<br />연결이 복구되면 다시 시도해 주세요.</p>
+      <button id="retry" type="button">다시 시도</button>
+    </div>
+    <script>
+      // ⚠️ capacitor.config.ts 의 server.url 과 반드시 같아야 한다.
+      //    이 페이지는 http://localhost/error.html 로 떠 있으므로 location.reload() 하면
+      //    에러 페이지 자신을 다시 그릴 뿐 앱으로 돌아가지 못한다. 앱 주소로 직접 이동한다.
+      var APP_URL = "https://pro-keirin.vercel.app/interview";
+
+      document.getElementById("retry").addEventListener("click", function () {
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = "연결 중...";
+        // 실패하면 Capacitor 가 다시 이 error.html 을 띄운다 (버튼 상태는 초기화됨)
+        window.location.replace(APP_URL);
+      });
+    </script>
+  </body>
+</html>

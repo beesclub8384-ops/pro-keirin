@@ -95,6 +95,13 @@ android/.gradle/
 android/build/
 android/local.properties
 
+# --- 릴리스 서명 키 (절대 커밋 금지) ---
+# 이 파일/키를 잃어버리면 플레이스토어 앱 업데이트가 영구 불가능하다.
+# 형식만 android/keystore.properties.example 로 커밋한다.
+android/keystore.properties
+*.jks
+*.keystore
+
 .vercel
 
 # --- 선수 사진 (미사용 방침 / 용량) ---
