@@ -46,6 +46,7 @@ export default function NewInterviewRequestPage() {
   const [createdToken, setCreatedToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareMsg, setShareMsg] = useState<string | null>(null);
+  const [autoFillMsg, setAutoFillMsg] = useState<string | null>(null);
 
   async function handleLookup() {
     if (!playerName.trim()) return;
@@ -110,6 +111,29 @@ export default function NewInterviewRequestPage() {
     return codes;
   }
 
+  // 서버가 racer_profiles 로 채워준 등급·지부를 화면에 반영한다.
+  // 동명이인이면 서버가 채우지 않으므로 직접 입력하라고 안내한다.
+  function applyAutoFill(json: {
+    grade: string | null;
+    region: string | null;
+    autoFilled?: boolean;
+    duplicateName?: boolean;
+  }) {
+    if (json.grade) setGrade(json.grade);
+    if (json.region) setRegion(json.region);
+    if (json.duplicateName) {
+      setAutoFillMsg(
+        "동명이인이 있어 등급·지부를 자동으로 채우지 못했습니다. 직접 입력해주세요.",
+      );
+    } else if (json.autoFilled) {
+      setAutoFillMsg(
+        `등급·지부를 자동으로 채웠습니다 (${json.grade ?? "-"} / ${json.region ?? "-"})`,
+      );
+    } else {
+      setAutoFillMsg(null);
+    }
+  }
+
   async function handleSaveDraft() {
     if (!playerName.trim()) {
       setError("선수 이름을 입력해주세요");
@@ -143,6 +167,13 @@ export default function NewInterviewRequestPage() {
         setError(j.error ?? "저장 실패");
         return;
       }
+      const json = (await res.json().catch(() => null)) as {
+        grade: string | null;
+        region: string | null;
+        autoFilled?: boolean;
+        duplicateName?: boolean;
+      } | null;
+      if (json) applyAutoFill(json);
       setSavedMsg("임시저장되었습니다");
       setTimeout(() => setSavedMsg(null), 3000);
     } catch {
@@ -186,9 +217,17 @@ export default function NewInterviewRequestPage() {
         setError(j.error ?? "생성 실패");
         return;
       }
-      const json = (await res.json()) as { id: number; formToken: string };
+      const json = (await res.json()) as {
+        id: number;
+        formToken: string;
+        grade: string | null;
+        region: string | null;
+        autoFilled?: boolean;
+        duplicateName?: boolean;
+      };
       setCreatedId(json.id);
       setCreatedToken(json.formToken);
+      applyAutoFill(json);
     } catch {
       setError("네트워크 오류");
     } finally {
@@ -368,6 +407,13 @@ export default function NewInterviewRequestPage() {
                 className={`mt-1.5 text-xs ${lookupMsg.includes("찾을 수 없") ? "text-amber-600" : "text-green-600"}`}
               >
                 {lookupMsg}
+              </p>
+            )}
+            {autoFillMsg && (
+              <p
+                className={`mt-1.5 text-xs ${autoFillMsg.includes("동명이인") ? "text-amber-600" : "text-green-600"}`}
+              >
+                {autoFillMsg}
               </p>
             )}
           </div>

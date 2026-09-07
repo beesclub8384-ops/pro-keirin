@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 import { verifyAdminAuth } from "@/lib/admin-auth";
+import { toDisplayGrade } from "@/lib/racer-grade";
 
 function extractGrade(raceType: string | null): string | null {
   if (!raceType) return null;
@@ -24,7 +25,7 @@ export async function GET(req: Request) {
 
   const { data: profile } = await sb
     .from("racer_profiles")
-    .select("racer_id, training, year")
+    .select("racer_id, grade, training, year")
     .eq("name", name)
     .order("year", { ascending: false })
     .limit(1)
@@ -58,6 +59,12 @@ export async function GET(req: Request) {
 
       grade = extractGrade(race?.race_type as string | null);
     }
+  }
+
+  // 출주 이력이 없거나 race_type 이 등급 라벨이 아니면 racer_profiles.grade
+  // (클래스등급 SS/A1/B1 …) 로 폴백한다. 여기서도 못 구하면 null 유지.
+  if (!grade) {
+    grade = toDisplayGrade(profile.grade as string | null);
   }
 
   return NextResponse.json({

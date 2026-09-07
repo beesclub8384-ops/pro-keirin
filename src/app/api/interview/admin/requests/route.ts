@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 import { verifyAdminAuth } from "@/lib/admin-auth";
+import { lookupRacerGradeRegion } from "@/lib/racer-grade";
 
 export async function GET(req: Request) {
   if (!verifyAdminAuth(req)) {
@@ -78,13 +79,39 @@ export async function POST(req: Request) {
 
   const isDraft = body.status === "draft";
   const sb = createAdminClient();
+
+  // 등급·지부 자동 채움: body 에 값이 있으면 관리자 수동 입력을 우선한다.
+  // 비어 있을 때만 racer_profiles 를 조회한다. 조회가 실패해도 요청 생성은 그대로 진행.
+  let grade = (body.grade ?? "").trim() || null;
+  let region = (body.region ?? "").trim() || null;
+  let duplicateName = false;
+  let autoFilled = false;
+  if (!grade || !region) {
+    try {
+      const found = await lookupRacerGradeRegion(sb, playerName);
+      duplicateName = found.duplicateName;
+      if (!found.duplicateName) {
+        if (!grade && found.grade) {
+          grade = found.grade;
+          autoFilled = true;
+        }
+        if (!region && found.region) {
+          region = found.region;
+          autoFilled = true;
+        }
+      }
+    } catch {
+      // 자동 채움 실패는 무시 — 요청 생성 자체를 막지 않는다
+    }
+  }
+
   const { data, error } = await sb
     .from("interview_requests")
     .insert({
       racer_id: body.racerId ?? null,
       player_name: playerName,
-      grade: body.grade ?? null,
-      region: body.region ?? null,
+      grade,
+      region,
       request_type: body.requestType ?? "regular",
       selected_questions: body.selectedQuestions,
       status: isDraft ? "draft" : "sent",
@@ -98,6 +125,10 @@ export async function POST(req: Request) {
     success: true,
     id: data.id,
     formToken: data.form_token,
+    grade,
+    region,
+    autoFilled,
+    duplicateName,
   });
 }
 
