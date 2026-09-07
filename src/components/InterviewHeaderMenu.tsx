@@ -6,8 +6,8 @@ import { Menu, X } from "lucide-react";
 
 const menuItems = [
   { label: "경륜이란", href: "/interview/about" },
-  { label: "팀", href: "/interview/team" },
   { label: "륜슐랭", href: "/interview/gyeongshullin" },
+  { label: "팀", href: "/interview/team" },
   { label: "개인정보처리방침", href: "/interview/privacy" },
 ];
 
