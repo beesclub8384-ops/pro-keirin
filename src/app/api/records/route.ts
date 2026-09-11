@@ -26,6 +26,8 @@ import { createAdminClient, fetchAllRows } from "@/lib/supabase";
  *   create        문서 1건 등록 (parentId 를 주면 그 원본에 대한 답변으로 묶인다)
  *
  * 답변 연결은 1단계만이다 — 답변 문서에 다시 답변을 달 수 없다(resolveParentId).
+ * create 가 어떤 이유로든 실패하면 그 요청으로 올라간 첨부는 서버가 지운다
+ * (rollbackUploads). 화면이 따로 정리하지 않아도 고아 파일이 남지 않는다.
  * 수정/삭제는 다음 단계.
  */
 
@@ -710,15 +712,33 @@ async function resolveParentId(
 
 /** 문서 1건 등록 */
 async function createRecord(body: RecordsBody) {
+  const sb = createAdminClient();
+
+  /**
+   * 저장에 실패했을 때 이미 올라간 첨부를 되돌려 지운다.
+   *
+   * 이 함수에 들어온 시점에는 브라우저가 첨부를 Storage 에 이미 올려둔 상태다.
+   * 어느 경로로 빠지든(입력 검증 400 / 답변 대상 오류 / 행 저장 실패 500)
+   * 지우지 않으면 아무도 참조하지 않는 50MB 짜리 고아 파일이 그대로 남는다.
+   * 화면은 다시 저장할 때 첨부를 처음부터 새로 올리므로, 지우는 쪽이 항상 옳다.
+   *
+   * ⚠️ parseFilePaths 를 통과한 경로만 지운다. 형식이 깨진 입력을 그대로
+   *    Storage 에 넘기면 엉뚱한 오브젝트를 지울 수 있다.
+   */
+  const uploaded = parseFilePaths(body.file_paths);
+  const rollbackUploads = async () => {
+    if (uploaded.ok) await removeFilesQuietly(sb, uploaded.value);
+  };
+
   const fields = validateRecordFields(body);
   if (!fields.ok) {
+    await rollbackUploads();
     return NextResponse.json({ error: fields.error }, { status: 400 });
   }
 
-  const sb = createAdminClient();
-
   const parent = await resolveParentId(sb, body.parentId);
   if (!parent.ok) {
+    await rollbackUploads();
     return NextResponse.json(
       { error: parent.error },
       { status: parent.status ?? 400 },
@@ -727,6 +747,8 @@ async function createRecord(body: RecordsBody) {
 
   const missing = await findMissingPaths(sb, fields.value.file_paths);
   if (missing.length > 0) {
+    // 일부만 올라간 상태다. 올라간 것만이라도 정리하고 돌려보낸다.
+    await rollbackUploads();
     return NextResponse.json(
       {
         error: `첨부 파일이 업로드되지 않았습니다 (${missing.length}개). 파일을 다시 선택해 저장해주세요`,
@@ -742,10 +764,7 @@ async function createRecord(body: RecordsBody) {
     .single();
 
   if (error) {
-    // 파일은 이미 버킷에 올라가 있는데 행 저장이 실패했다.
-    // 그대로 두면 누구도 참조하지 않는 50MB짜리 고아 파일이 남는다.
-    // 화면에서는 다시 저장하면 새로 업로드되므로 여기서 지우는 편이 안전하다.
-    await removeFilesQuietly(sb, fields.value.file_paths);
+    await rollbackUploads();
     return NextResponse.json(
       { error: `문서 저장에 실패했습니다: ${error.message}` },
       { status: 500 },
