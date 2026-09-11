@@ -23,8 +23,9 @@ import { createAdminClient, fetchAllRows } from "@/lib/supabase";
  *   sign-upload   첨부 1개를 올릴 서명 업로드 URL 발급
  *   sign-download 첨부 1개의 서명 URL 재발급 (원본 한글 이름으로 내려받기)
  *   discard       저장되지 못한 첨부 정리
- *   create        문서 1건 등록
+ *   create        문서 1건 등록 (parentId 를 주면 그 원본에 대한 답변으로 묶인다)
  *
+ * 답변 연결은 1단계만이다 — 답변 문서에 다시 답변을 달 수 없다(resolveParentId).
  * 수정/삭제는 다음 단계.
  */
 
@@ -121,6 +122,8 @@ interface RecordsBody {
   memo?: string | null;
   file_paths?: unknown;
   file_names?: unknown;
+  /** 답변 대상 원본 문서의 id. 없거나 null 이면 원본 문서로 저장한다 */
+  parentId?: unknown;
 }
 
 interface RecordRow {
@@ -133,6 +136,8 @@ interface RecordRow {
   memo: string | null;
   file_paths: string[] | null;
   file_names: string[] | null;
+  /** 답변 대상 원본 문서의 id. null 이면 이 문서가 원본이다 */
+  parent_id: number | null;
   created_at: string | null;
 }
 
@@ -147,7 +152,7 @@ interface RecordFile {
 }
 
 const SELECT_COLUMNS =
-  "id, category, title, doc_date, counterpart, doc_number, memo, file_paths, file_names, created_at";
+  "id, category, title, doc_date, counterpart, doc_number, memo, file_paths, file_names, parent_id, created_at";
 
 /**
  * YYYY-MM-DD 이면서 실제로 존재하는 날짜인지 확인한다.
@@ -268,6 +273,9 @@ export async function POST(req: Request) {
  *
  * 첨부는 비공개 버킷이라 경로만으로는 열 수 없다. 문서 전체의 경로를 한 번에 모아
  * 서명 URL을 배치 발급하고, file_names 와 순서를 맞춰 files 배열로 내려준다.
+ *
+ * parent_id 는 가공하지 않고 그대로 내려보낸다. 원본 아래에 답변을 묶는 일은 화면에서
+ * 한다 — 서버가 묶어서 보내면 검색·필터를 건드릴 때마다 목록을 다시 받아와야 한다.
  */
 async function listRecords() {
   const sb = createAdminClient();
@@ -635,6 +643,71 @@ async function discardFiles(body: RecordsBody) {
   return NextResponse.json({ ok: true, removed: files.value.length });
 }
 
+/** 답변 대상 검증 결과 — 실패 시 status 를 따로 주면 그 코드로 응답한다 */
+type ParentResult =
+  | { ok: true; value: number | null }
+  | { ok: false; error: string; status?: number };
+
+/**
+ * 답변 대상(parentId)을 검증해 저장할 값으로 바꾼다.
+ *
+ * 규칙은 하나다 — **답변에는 답변을 달 수 없다(1단계만)**. 회신에 대한 재질의도
+ * 회신 밑이 아니라 원본 밑에 단다.
+ *
+ * 외래키는 "그 id 가 존재한다"까지만 보장한다. 그 행이 원본인지(parent_id 가 null 인지)는
+ * 여기서 직접 확인해야 한다. 확인을 빼먹으면 답변에 답변이 달리는데, 화면은 원본만
+ * 최상위로 그리므로 그 문서는 어느 그룹에도 속하지 못하고 목록에서 통째로 사라진다.
+ * 저장은 성공했다고 나오는데 문서가 안 보이는, 전형적인 무음 실패다.
+ *
+ * parentId 가 아예 없으면 null 을 돌려준다 — 기존 업로드는 이 경로를 그대로 탄다.
+ */
+async function resolveParentId(
+  sb: SupabaseClient,
+  raw: unknown,
+): Promise<ParentResult> {
+  // 답변이 아닌 일반 업로드 — 여기서 바로 끝난다(DB 조회도 하지 않는다)
+  if (raw === undefined || raw === null || raw === "") {
+    return { ok: true, value: null };
+  }
+
+  const id = Number(raw);
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return { ok: false, error: "답변 대상 문서 번호가 올바르지 않습니다" };
+  }
+
+  const { data, error } = await sb
+    .from("records")
+    .select("id, parent_id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    // 조회 자체가 실패한 것이라 사용자 잘못이 아니다. 400 으로 돌려주면
+    // "번호가 잘못됐다"는 뜻으로 읽혀 엉뚱한 곳을 고치게 된다.
+    return {
+      ok: false,
+      error: `답변 대상 문서를 확인하지 못했습니다: ${error.message}`,
+      status: 500,
+    };
+  }
+  if (!data) {
+    return {
+      ok: false,
+      error:
+        "답변 대상 문서를 찾을 수 없습니다. 목록을 새로고침한 뒤 다시 시도해주세요",
+    };
+  }
+  if (data.parent_id !== null && data.parent_id !== undefined) {
+    return {
+      ok: false,
+      error:
+        "답변 문서에는 답변을 달 수 없습니다. 원본 문서에 답변을 달아주세요",
+    };
+  }
+
+  return { ok: true, value: id };
+}
+
 /** 문서 1건 등록 */
 async function createRecord(body: RecordsBody) {
   const fields = validateRecordFields(body);
@@ -643,6 +716,14 @@ async function createRecord(body: RecordsBody) {
   }
 
   const sb = createAdminClient();
+
+  const parent = await resolveParentId(sb, body.parentId);
+  if (!parent.ok) {
+    return NextResponse.json(
+      { error: parent.error },
+      { status: parent.status ?? 400 },
+    );
+  }
 
   const missing = await findMissingPaths(sb, fields.value.file_paths);
   if (missing.length > 0) {
@@ -656,7 +737,7 @@ async function createRecord(body: RecordsBody) {
 
   const { data, error } = await sb
     .from("records")
-    .insert(fields.value)
+    .insert({ ...fields.value, parent_id: parent.value })
     .select(SELECT_COLUMNS)
     .single();
 

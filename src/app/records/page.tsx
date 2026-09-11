@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
+  CornerDownRight,
   Download,
   FileText,
   Inbox,
@@ -44,7 +45,11 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
  * 화면 구조: 비밀번호를 통과하면 **문서 목록**이 먼저 보인다. 업로드 폼은 접혀 있고
  * "새 문서 올리기"를 눌러야 펼쳐진다. 자료실은 올리는 일보다 찾아보는 일이 훨씬 잦다.
  *
- * 이번 단계는 목록·검색·열람까지다. 수정/삭제는 다음 단계.
+ * 목록은 원본 문서만 최상위로 세우고, 그 아래에 답변(회신)을 들여쓰기해 묶는다.
+ * 공문 A와 회신 A-1이 목록 여기저기 흩어져 있으면 무엇에 대한 답인지 알 수 없다.
+ * 답변 연결은 1단계까지만이다 — 답변 카드에는 [답변 추가] 버튼을 달지 않는다.
+ *
+ * 이번 단계는 목록·검색·열람·답변 연결까지다. 수정/삭제는 다음 단계.
  */
 
 /** ⚠️ src/app/api/records/route.ts 의 CATEGORIES 와 반드시 동일하게 유지할 것 */
@@ -103,7 +108,23 @@ interface RecordItem {
   doc_number: string | null;
   memo: string | null;
   files: RecordFile[];
+  /** 답변 대상 원본의 id. null 이면 이 문서가 원본이다 */
+  parent_id: string | number | null;
   created_at: string | null;
+}
+
+/** 원본 1건 + 그 아래 답변들 — 목록은 이 묶음 단위로 그린다 */
+interface RecordGroup {
+  original: RecordItem;
+  replies: RecordItem[];
+  /**
+   * 머리 문서에 [답변 추가] 를 달아도 되는지.
+   *
+   * 보통은 true 다. 부모를 잃은 답변(또는 API 를 거치지 않고 들어온 2단 답변)을
+   * 최상위로 끌어올려 그리는 경우에만 false 가 된다 — 목록에서 사라지게 두는 것보다
+   * 낫지만, 거기에 또 답변을 달면 서버가 400 으로 막으므로 버튼을 아예 숨긴다.
+   */
+  canReply: boolean;
 }
 
 /** 저장 전 화면에 들고 있는 첨부 1개 */
@@ -131,6 +152,39 @@ function norm(value: string | null | undefined): string {
   return (value ?? "").toLowerCase();
 }
 
+/** 이 문서가 원본인지 (parent_id 가 비어 있으면 원본) */
+function isOriginal(item: RecordItem): boolean {
+  return (
+    item.parent_id === null ||
+    item.parent_id === undefined ||
+    item.parent_id === ""
+  );
+}
+
+/**
+ * 문서 1건이 검색어와 분류 필터를 **둘 다** 만족하는지.
+ * q 는 미리 trim + 소문자로 만들어 넘긴다 (문서 수만큼 반복 호출된다).
+ */
+function matchesFilters(item: RecordItem, q: string, filter: string): boolean {
+  if (filter !== "전체" && item.category !== filter) return false;
+  if (!q) return true;
+  return (
+    norm(item.title).includes(q) ||
+    norm(item.counterpart).includes(q) ||
+    norm(item.doc_number).includes(q) ||
+    norm(item.memo).includes(q)
+  );
+}
+
+/**
+ * 답변 정렬 기준 — 문서 날짜가 없으면 등록 시각으로 대신한다.
+ * 둘 다 YYYY-MM-DD 로 시작해서 문자열 비교만으로 날짜 순서가 나온다
+ * (2026-09-01 과 2026-09-01T04:10:15+00 이 섞여도 앞 10자가 먼저 갈린다).
+ */
+function replyOrderKey(item: RecordItem): string {
+  return item.doc_date ?? item.created_at ?? "";
+}
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)}KB`;
@@ -154,6 +208,11 @@ export default function RecordsPage() {
   const [downloading, setDownloading] = useState<string | null>(null);
   /** 업로드 폼 펼침 여부. 기본은 접힘 — 메인 화면은 목록이다 */
   const [showUpload, setShowUpload] = useState(false);
+  /**
+   * 답변 대상 원본. null 이면 일반 업로드다.
+   * 폼은 하나를 공유하고, 이 값이 있으면 배너가 뜨고 create 에 parentId 가 실린다.
+   */
+  const [replyTo, setReplyTo] = useState<RecordItem | null>(null);
 
   // --- 입력 폼 상태 ---
   const [category, setCategory] = useState("");
@@ -196,6 +255,8 @@ export default function RecordsPage() {
           ? (json.items as RecordItem[]).map((it) => ({
               ...it,
               files: Array.isArray(it.files) ? it.files : [],
+              // parent_id 가 없는 응답(구버전 서버)이 와도 원본으로 취급한다
+              parent_id: it.parent_id ?? null,
             }))
           : [],
       );
@@ -250,22 +311,68 @@ export default function RecordsPage() {
   }
 
   /**
-   * 검색어와 종류 필터를 함께 적용한다 (둘 다 만족하는 것만 남는다).
+   * 목록을 [원본 + 그 답변들] 묶음으로 재구성하고 검색어·분류 필터를 적용한다.
    * 검색 대상은 제목·상대처·문서번호·메모 네 곳이며 대소문자는 무시한다.
+   *
+   * 필터 규칙 — 답변이 문맥을 잃지 않게 한다:
+   *  1) 원본이 걸리면 → 원본 + 답변 **전부**. 답변 하나가 조건에 안 맞는다고 빼면
+   *     주고받은 기록에 구멍이 난다.
+   *  2) 원본은 안 걸리고 답변만 걸리면 → 원본 + **걸린 답변만**. 원본은 조건에
+   *     맞지 않아도 함께 세운다. "무엇에 대한 답인지"가 답변의 절반이라
+   *     답변만 덩그러니 띄우면 읽을 수가 없다.
+   *  3) 둘 다 안 걸리면 → 묶음을 통째로 뺀다.
    */
-  const visibleItems = useMemo(() => {
+  const groups = useMemo<RecordGroup[]>(() => {
     const q = query.trim().toLowerCase();
-    return items.filter((item) => {
-      if (activeFilter !== "전체" && item.category !== activeFilter) return false;
-      if (!q) return true;
-      return (
-        norm(item.title).includes(q) ||
-        norm(item.counterpart).includes(q) ||
-        norm(item.doc_number).includes(q) ||
-        norm(item.memo).includes(q)
+
+    // 1) 원본 id 를 먼저 모은다. 답변을 붙일 수 있는 대상은 원본뿐이다.
+    const originalIds = new Set<string>();
+    for (const item of items) {
+      if (isOriginal(item)) originalIds.add(String(item.id));
+    }
+
+    // 2) 답변을 부모별로 나눠 담는다.
+    //    부모가 목록에 없거나 부모가 또 답변인 경우(= 1단계 규칙이 깨진 데이터)에는
+    //    그 답변을 최상위로 끌어올린다. 조용히 버리면 문서가 사라진 것처럼 보인다.
+    const repliesByParent = new Map<string, RecordItem[]>();
+    const heads: RecordItem[] = [];
+    for (const item of items) {
+      const parentKey = isOriginal(item) ? null : String(item.parent_id);
+      if (parentKey !== null && originalIds.has(parentKey)) {
+        const bucket = repliesByParent.get(parentKey);
+        if (bucket) bucket.push(item);
+        else repliesByParent.set(parentKey, [item]);
+      } else {
+        heads.push(item);
+      }
+    }
+
+    // 3) 답변은 오래된 것부터 — 주고받은 순서대로 읽히게 한다.
+    //    (원본끼리의 순서는 서버가 준 최신순 그대로 둔다)
+    for (const bucket of repliesByParent.values()) {
+      bucket.sort((a, b) => replyOrderKey(a).localeCompare(replyOrderKey(b)));
+    }
+
+    // 4) 검색어·분류 필터
+    return heads.flatMap<RecordGroup>((head) => {
+      const replies = repliesByParent.get(String(head.id)) ?? [];
+      const canReply = isOriginal(head);
+      if (matchesFilters(head, q, activeFilter)) {
+        return [{ original: head, replies, canReply }];
+      }
+      const hitReplies = replies.filter((r) =>
+        matchesFilters(r, q, activeFilter),
       );
+      if (hitReplies.length === 0) return [];
+      return [{ original: head, replies: hitReplies, canReply }];
     });
   }, [items, query, activeFilter]);
+
+  /** 화면에 실제로 그려지는 문서 건수 (원본 + 보이는 답변) */
+  const visibleCount = useMemo(
+    () => groups.reduce((sum, g) => sum + 1 + g.replies.length, 0),
+    [groups],
+  );
 
   /** 비밀번호 확인 */
   async function handleLogin(e: React.FormEvent) {
@@ -311,6 +418,8 @@ export default function RecordsPage() {
     setDocNumber("");
     setMemo("");
     setFiles([]);
+    // 답변 대상도 함께 놓는다. 남겨두면 다음 문서가 같은 원본에 딸려 들어간다.
+    setReplyTo(null);
     setFormError("");
   }
 
@@ -325,6 +434,36 @@ export default function RecordsPage() {
     setQuery("");
     setActiveFilter("전체");
     setShowUpload(false);
+  }
+
+  /**
+   * 원본 카드의 [답변 추가] — 같은 업로드 폼을 "답변 모드"로 열어준다.
+   *
+   * 분류를 수신공문으로 미리 골라두는 이유: 회신은 대부분 받는 쪽이다.
+   * 기본값일 뿐이라 그대로 바꿀 수 있다.
+   */
+  function startReply(item: RecordItem) {
+    setReplyTo(item);
+    setShowUpload(true);
+    setCategory("수신공문");
+    setFormError("");
+    setFormSuccess("");
+    // 폼은 목록 위에 있다. 목록 아래쪽에서 눌렀다면 폼이 화면 밖이라
+    // 버튼이 아무 반응도 없는 것처럼 보인다.
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /** 답변 대상 해제 — 폼 내용은 그대로 두고 일반 업로드로만 되돌린다 */
+  function cancelReply() {
+    setReplyTo(null);
+  }
+
+  /** 올리기 폼 접기/펴기 — 접을 때는 보이지 않는 답변 대상도 함께 놓는다 */
+  function toggleUpload() {
+    const next = !showUpload;
+    setShowUpload(next);
+    // 접힌 채로 대상이 남아 있으면, 나중에 다시 열었을 때 엉뚱한 원본에 답변이 달린다
+    if (!next) setReplyTo(null);
   }
 
   /** 파일 선택 — 확장자/크기/개수를 여기서 먼저 거른다 */
@@ -408,6 +547,9 @@ export default function RecordsPage() {
     if (!title.trim()) return setFormError("문서 제목을 입력해주세요");
 
     setSaving(true);
+    // 지금 화면의 답변 대상을 붙잡아 둔다. 저장은 첨부 업로드까지 시간이 걸리는데
+    // 그 사이에 대상이 바뀌면 엉뚱한 원본에 달릴 수 있다.
+    const parentId = replyTo ? replyTo.id : null;
     const uploadedPaths: string[] = [];
     // 원본 파일명(한글 그대로). uploadedPaths 와 순서 1:1 — Storage 경로는 ASCII만 허용해서
     // 경로에 원본 이름을 담을 수 없다. 이름은 records.file_names 로 따로 저장한다.
@@ -478,6 +620,8 @@ export default function RecordsPage() {
           memo: memo.trim(),
           file_paths: uploadedPaths,
           file_names: uploadedNames,
+          // null 이면 서버가 원본 문서로 저장한다 (기존 업로드와 동일한 경로)
+          parentId,
         }),
       });
       const json = await res.json();
@@ -488,7 +632,7 @@ export default function RecordsPage() {
       }
 
       resetForm();
-      setFormSuccess("저장되었습니다");
+      setFormSuccess(parentId ? "답변을 저장했습니다" : "저장되었습니다");
       // 방금 올린 문서가 목록 맨 위에 보이도록 폼을 접고 다시 불러온다
       setShowUpload(false);
       await loadList(password);
@@ -507,6 +651,130 @@ export default function RecordsPage() {
     const timer = setTimeout(() => setFormSuccess(""), 4000);
     return () => clearTimeout(timer);
   }, [formSuccess]);
+
+  /**
+   * 문서 카드 1장. 원본과 답변이 보여주는 내용이 같아서 한 곳에서 그린다.
+   *
+   * isReply 면 ↳ 표시 + 점선 테두리 + 옅은 배경으로 한 단계 낮게 보이게 한다.
+   * canReply 면 [답변 추가] 버튼을 단다 — 답변 카드에는 절대 달지 않는다(1단계 규칙).
+   */
+  function renderDocumentCard(
+    item: RecordItem,
+    isReply: boolean,
+    canReply: boolean,
+  ) {
+    return (
+      <Card className={isReply ? "border-dashed bg-muted/30" : undefined}>
+        <CardContent
+          className={`flex flex-col gap-2 ${isReply ? "py-3" : "py-4"}`}
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            {isReply && (
+              <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                <CornerDownRight className="size-3.5" />
+                답변
+              </span>
+            )}
+            <Badge variant="secondary">{item.category}</Badge>
+            {item.doc_date && (
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {formatDocDate(item.doc_date)}
+              </span>
+            )}
+          </div>
+
+          {isReply ? (
+            <h3 className="break-words text-sm font-semibold">{item.title}</h3>
+          ) : (
+            <h2 className="break-words text-base font-semibold">
+              {item.title}
+            </h2>
+          )}
+
+          {/* 값이 없는 항목은 줄 자체를 만들지 않는다 */}
+          {(item.counterpart || item.doc_number || item.memo) && (
+            <dl className="flex flex-col gap-1 text-sm">
+              {item.counterpart && (
+                <div className="flex gap-2">
+                  <dt className="shrink-0 text-muted-foreground">상대처</dt>
+                  <dd className="min-w-0 break-words">{item.counterpart}</dd>
+                </div>
+              )}
+              {item.doc_number && (
+                <div className="flex gap-2">
+                  <dt className="shrink-0 text-muted-foreground">문서번호</dt>
+                  <dd className="min-w-0 break-words">{item.doc_number}</dd>
+                </div>
+              )}
+              {item.memo && (
+                <div className="flex gap-2">
+                  <dt className="shrink-0 text-muted-foreground">메모</dt>
+                  <dd className="min-w-0 whitespace-pre-wrap break-words">
+                    {item.memo}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          )}
+
+          {item.files.length > 0 && (
+            <ul className="mt-1 flex flex-col gap-2">
+              {item.files.map((f) => (
+                <li
+                  key={f.path}
+                  className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2"
+                >
+                  <FileText className="size-4 shrink-0 text-muted-foreground" />
+                  {f.signedUrl ? (
+                    <a
+                      href={f.signedUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="min-w-0 flex-1 break-all text-sm underline underline-offset-2 hover:text-primary"
+                    >
+                      {f.name}
+                    </a>
+                  ) : (
+                    // 서명 URL 발급이 실패한 경우 — 내려받기 버튼은 그래도 동작한다
+                    <span className="min-w-0 flex-1 break-all text-sm text-muted-foreground">
+                      {f.name}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(f)}
+                    disabled={downloading !== null}
+                    aria-label={`${f.name} 내려받기`}
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full border bg-white text-foreground shadow-sm hover:bg-muted disabled:opacity-50"
+                  >
+                    <Download
+                      className={`size-4 ${
+                        downloading === f.path ? "animate-pulse" : ""
+                      }`}
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {canReply && (
+            <div className="mt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => startReply(item)}
+              >
+                <CornerDownRight className="size-4" />
+                답변 추가
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
 
   // ---------------------------------------------------------------- 비밀번호 화면
   if (!password) {
@@ -582,7 +850,7 @@ export default function RecordsPage() {
         size="lg"
         variant={showUpload ? "secondary" : "default"}
         className="h-12 w-full text-base"
-        onClick={() => setShowUpload((v) => !v)}
+        onClick={toggleUpload}
       >
         {showUpload ? (
           <ChevronDown className="size-4" />
@@ -596,11 +864,34 @@ export default function RecordsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="size-4" />새 문서 등록
+              <FileText className="size-4" />
+              {replyTo ? "답변 문서 등록" : "새 문서 등록"}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {/* 답변 대상 배너 — 무엇에 대한 답을 올리는 중인지 계속 보이게 한다 */}
+              {replyTo && (
+                <div className="flex items-start gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2">
+                  <CornerDownRight className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground">답변 대상</p>
+                    <p className="break-words text-sm font-medium">
+                      {replyTo.title}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={cancelReply}
+                    disabled={saving}
+                    aria-label="답변 대상 해제"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full border bg-white text-foreground shadow-sm hover:bg-muted disabled:opacity-50"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+              )}
+
               <div className="flex flex-col gap-1.5">
                 <span className="text-sm font-medium">
                   분류 <span className="text-destructive">*</span>
@@ -775,7 +1066,9 @@ export default function RecordsPage() {
                   ? `첨부 업로드 중... (${progress.done}/${progress.total})`
                   : saving
                     ? "저장 중..."
-                    : "저장"}
+                    : replyTo
+                      ? "답변 저장"
+                      : "저장"}
               </Button>
             </form>
           </CardContent>
@@ -818,10 +1111,8 @@ export default function RecordsPage() {
       <p className="text-sm text-muted-foreground">
         {listLoading
           ? "불러오는 중..."
-          : `문서 ${visibleItems.length}건${
-              visibleItems.length !== items.length
-                ? ` (전체 ${items.length}건)`
-                : ""
+          : `문서 ${visibleCount}건${
+              visibleCount !== items.length ? ` (전체 ${items.length}건)` : ""
             }`}
       </p>
 
@@ -830,7 +1121,7 @@ export default function RecordsPage() {
       )}
 
       {/* 문서 목록 */}
-      {!listLoading && visibleItems.length === 0 ? (
+      {!listLoading && groups.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
             <Inbox className="size-8 text-muted-foreground" />
@@ -843,99 +1134,20 @@ export default function RecordsPage() {
         </Card>
       ) : (
         <ul className="flex flex-col gap-3">
-          {visibleItems.map((item) => (
-            <li key={item.id}>
-              <Card>
-                <CardContent className="flex flex-col gap-2 py-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary">{item.category}</Badge>
-                    {item.doc_date && (
-                      <span className="text-xs tabular-nums text-muted-foreground">
-                        {formatDocDate(item.doc_date)}
-                      </span>
-                    )}
-                  </div>
+          {groups.map((group) => (
+            <li key={group.original.id} className="flex flex-col gap-2">
+              {renderDocumentCard(group.original, false, group.canReply)}
 
-                  <h2 className="break-words text-base font-semibold">
-                    {item.title}
-                  </h2>
-
-                  {/* 값이 없는 항목은 줄 자체를 만들지 않는다 */}
-                  {(item.counterpart || item.doc_number || item.memo) && (
-                    <dl className="flex flex-col gap-1 text-sm">
-                      {item.counterpart && (
-                        <div className="flex gap-2">
-                          <dt className="shrink-0 text-muted-foreground">
-                            상대처
-                          </dt>
-                          <dd className="min-w-0 break-words">
-                            {item.counterpart}
-                          </dd>
-                        </div>
-                      )}
-                      {item.doc_number && (
-                        <div className="flex gap-2">
-                          <dt className="shrink-0 text-muted-foreground">
-                            문서번호
-                          </dt>
-                          <dd className="min-w-0 break-words">
-                            {item.doc_number}
-                          </dd>
-                        </div>
-                      )}
-                      {item.memo && (
-                        <div className="flex gap-2">
-                          <dt className="shrink-0 text-muted-foreground">메모</dt>
-                          <dd className="min-w-0 whitespace-pre-wrap break-words">
-                            {item.memo}
-                          </dd>
-                        </div>
-                      )}
-                    </dl>
-                  )}
-
-                  {item.files.length > 0 && (
-                    <ul className="mt-1 flex flex-col gap-2">
-                      {item.files.map((f) => (
-                        <li
-                          key={f.path}
-                          className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2"
-                        >
-                          <FileText className="size-4 shrink-0 text-muted-foreground" />
-                          {f.signedUrl ? (
-                            <a
-                              href={f.signedUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="min-w-0 flex-1 break-all text-sm underline underline-offset-2 hover:text-primary"
-                            >
-                              {f.name}
-                            </a>
-                          ) : (
-                            // 서명 URL 발급이 실패한 경우 — 내려받기 버튼은 그래도 동작한다
-                            <span className="min-w-0 flex-1 break-all text-sm text-muted-foreground">
-                              {f.name}
-                            </span>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleDownload(f)}
-                            disabled={downloading !== null}
-                            aria-label={`${f.name} 내려받기`}
-                            className="flex size-9 shrink-0 items-center justify-center rounded-full border bg-white text-foreground shadow-sm hover:bg-muted disabled:opacity-50"
-                          >
-                            <Download
-                              className={`size-4 ${
-                                downloading === f.path ? "animate-pulse" : ""
-                              }`}
-                            />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </CardContent>
-              </Card>
+              {group.replies.length > 0 && (
+                /* 왼쪽 세로선 + 들여쓰기로 "이 원본에 딸린 것"임을 보이게 한다 */
+                <ul className="ml-2 flex flex-col gap-2 border-l-2 border-muted pl-3 sm:ml-4 sm:pl-4">
+                  {group.replies.map((reply) => (
+                    <li key={reply.id}>
+                      {renderDocumentCard(reply, true, false)}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>
