@@ -250,7 +250,12 @@ async function main() {
     const batch = rows.slice(i, i + BATCH);
     const { error } = await supabase
       .from("judge_sanctions")
-      .upsert(batch, { onConflict: "no,race_year,venue" });
+      // source 는 유니크키의 일부다. 심판제재선수 계열은 모두 'judge_racer',
+      // 서면경고를 포함한 /racer/state/sanction 수집분은 'racer_state'.
+      .upsert(
+        batch.map((r) => ({ ...r, source: "judge_racer" })),
+        { onConflict: "source,no,race_year,venue" }
+      );
     if (error) {
       console.error(`  upsert 에러 (batch ${i}):`, error.message);
     } else {
