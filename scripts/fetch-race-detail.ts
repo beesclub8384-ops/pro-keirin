@@ -599,11 +599,24 @@ async function main() {
       if (supabaseUrl && supabaseKey) {
         console.log(`  로컬 entry 없음 → Supabase에서 round/day 조회`);
         const supabase = createClient(supabaseUrl, supabaseKey);
-        const { data: dcPage } = await supabase
+        // 주의: decision_card_pages 에는 날짜당 광명/창원/부산 3개장 행이 들어있다.
+        // venue 필터 없이 .single() 을 쓰면 여러 행이 잡혀 에러가 나고, 그 결과
+        // "해당 날짜에 경주 없음" 으로 조용히 넘어가 수집이 통째로 멈춘다.
+        // (이 스크립트는 광명 전용 — URL 도 meetCd 001 고정)
+        const { data: dcPage, error: dcError } = await supabase
           .from("decision_card_pages")
           .select("round, day")
           .eq("date", TARGET_DATE)
-          .single();
+          .eq("venue", "광명")
+          .order("id", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (dcError) {
+          console.error(`  decision_card_pages 조회 에러: ${dcError.message}`);
+        } else if (!dcPage) {
+          console.error(`  decision_card_pages 에 ${TARGET_DATE} 광명 행 없음`);
+        }
 
         if (dcPage) {
           const { round, day: dayNum } = dcPage;
