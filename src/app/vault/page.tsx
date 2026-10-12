@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Camera,
   Check,
+  ClipboardList,
   ImageOff,
   Lock,
   LockKeyhole,
@@ -13,7 +15,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -595,10 +597,20 @@ export default function VaultPage() {
     <main className="mx-auto w-full max-w-2xl space-y-6 p-4 pb-16">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-bold">대납 입력</h1>
-        <Button variant="outline" size="sm" onClick={handleLock}>
-          <Lock className="size-4" />
-          잠그기
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* 낙차위로금 지급 근거 조회용. 관리자 비밀번호를 따로 묻는다 (대납과 다른 비밀번호) */}
+          <Link
+            href="/admin/falls"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <ClipboardList className="size-4" />
+            낙차 대장
+          </Link>
+          <Button variant="outline" size="sm" onClick={handleLock}>
+            <Lock className="size-4" />
+            잠그기
+          </Button>
+        </div>
       </div>
 
       {/* 입력 폼 — editingId가 있으면 수정 모드 (배경색/제목/버튼으로 구분) */}

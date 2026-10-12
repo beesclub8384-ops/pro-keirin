@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "check:guards": "node scripts/check-admin-guards.mjs",
+    "verify:falls": "tsx scripts/verify-falls-ledger.ts",
     "fetch-data": "tsx scripts/fetch-race-data.ts",
     "fetch-entry": "tsx scripts/fetch-entry-data.ts",
     "fetch-ranking": "tsx scripts/fetch-ranking-data.ts",

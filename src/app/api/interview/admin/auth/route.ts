@@ -1,3 +1,7 @@
+// admin-guard: public
+// 로그인 엔드포인트 자체이므로 인증 가드를 걸 수 없다 (걸면 로그인이 불가능해진다).
+// POST 는 비밀번호를 직접 비교하고, GET 은 쿠키 유효성만 돌려준다.
+// 이 선언은 scripts/check-admin-guards.mjs 가 의도적 공개임을 알아보게 하려는 것이다.
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
