@@ -88,6 +88,99 @@ async function main() {
     console.log(`     경고 ${r.warnings.length}건: ${r.warnings.map((x) => `${x.date} ${x.venue} ${x.kind}`).join(" / ")}`);
   }
 
+  // ---------------------------------------------------------------- 1-b: 예정일 전체 누락
+  // 6) 2026-10-11 광명이 "예정일 전체 누락"으로 잡히는가
+  //    (출주표부터 실패한 날이라 기존 "대조" 경고로는 잡히지 않는다 — 이 단계의 핵심)
+  {
+    const r = await buildFallsReport(sb, { from: "2026-10-09", to: "2026-10-11", venue: "all" });
+    const sched = r.warnings.filter((w) => w.source === "예정");
+    check("2026-10-11 예정일 경고 1건", sched.length, 1);
+    const w = sched[0];
+    check("2026-10-11 [날짜, 구장, 종류]", [w?.date, w?.venue, w?.kind], ["2026-10-11", "광명", "예정일 전체 누락"]);
+    check("2026-10-11 [회차, 일차, 확신도]", [w?.scheduleRound, w?.scheduleDay, w?.confidence], [40, 3, "높음"]);
+    check("2026-10-11 출주표·결과 0/0", [w?.dcEntryCount, w?.entryCount], [0, 0]);
+  }
+
+  // 7) 예정표 4일차는 분리 표시 + 확신 낮음 (숨기지 않는다)
+  {
+    const r = await buildFallsReport(sb, { from: "2026-10-01", to: "2026-10-11", venue: "all" });
+    const d4 = r.warnings.find((x) => x.date === "2026-10-05");
+    check(
+      "2026-10-05 [종류, 확신도, 일차]",
+      [d4?.kind, d4?.confidence, d4?.scheduleDay],
+      ["예정표 4일차(미개최 가능)", "낮음", 4],
+    );
+  }
+
+  // 8) 미래일은 경고하지 않는다 (예정표에 연말까지 36일이 들어 있다)
+  {
+    const r = await buildFallsReport(sb, { from: "2026-10-13", to: "2026-12-27", venue: "all" });
+    check("미래 구간 예정일 경고 0건", r.warnings.filter((x) => x.source === "예정").length, 0);
+    check("미래 구간 대조한 예정일 0일", r.scheduleCoverage.evaluatedDates, 0);
+  }
+
+  // 9) 실제 개최된 4일차(2026-03-02 round 9 day 4)는 경고가 없어야 한다
+  {
+    const r = await buildFallsReport(sb, { from: "2026-03-01", to: "2026-03-02", venue: "all" });
+    check("2026-03-02 개최된 4일차 경고 없음", r.warnings.filter((x) => x.date === "2026-03-02").length, 0);
+  }
+
+  // 10) 2026 과거 예정일 전체 집계 — 1~3일차 1건(10-11) / 4일차 3건
+  {
+    const parts = [
+      { from: "2026-01-01", to: "2026-03-31" },
+      { from: "2026-04-01", to: "2026-06-30" },
+      { from: "2026-07-01", to: "2026-09-30" },
+      { from: "2026-10-01", to: "2026-10-12" },
+    ];
+    const all = [];
+    for (const q of parts) {
+      const r = await buildFallsReport(sb, { ...q, venue: "all" });
+      all.push(...r.warnings.filter((x) => x.source === "예정"));
+    }
+    check(
+      "2026 과거 예정일 전체 누락(1~3일차)",
+      all.filter((x) => x.kind === "예정일 전체 누락").map((x) => x.date),
+      ["2026-10-11"],
+    );
+    check(
+      "2026 과거 예정표 4일차(확신 낮음)",
+      all.filter((x) => x.confidence === "낮음").map((x) => x.date),
+      ["2026-05-25", "2026-08-17", "2026-10-05"],
+    );
+  }
+
+  // 11) 2025년 조회 → 예정표 범위 밖이라 대조 불가. 조용히 0건이 되면 안 된다
+  {
+    const r = await buildFallsReport(sb, { from: "2025-07-01", to: "2025-07-31", venue: "all" });
+    check("2025년 scheduleCoverage.available", r.scheduleCoverage.available, false);
+    check(
+      "2025년 비활성 이유가 남는다",
+      typeof r.scheduleCoverage.reason === "string" && r.scheduleCoverage.reason.length > 0,
+      true,
+    );
+    check("2025년 예정일 경고 0건", r.warnings.filter((x) => x.source === "예정").length, 0);
+  }
+
+  // 12) 구장 필터가 광명을 제외하면 예정표 대조 비활성 (예정표는 광명 전용)
+  {
+    const r = await buildFallsReport(sb, { from: "2026-10-09", to: "2026-10-11", venue: "부산" });
+    check("부산 필터 시 대조 비활성", r.scheduleCoverage.available, false);
+    check("부산 필터 시 예정일 경고 0건", r.warnings.filter((x) => x.source === "예정").length, 0);
+  }
+
+  // 13) 회귀 — 2026-09-11 광명은 출주표가 있으므로 "결과 누락" 하나만 (중복 금지)
+  {
+    const r = await buildFallsReport(sb, { from: "2026-08-17", to: "2026-10-11", venue: "all" });
+    const gm = r.warnings.filter((x) => x.date === "2026-09-11" && x.venue === "광명");
+    check("2026-09-11 광명 경고 1건만", gm.length, 1);
+    check("2026-09-11 광명 [종류, 근거]", [gm[0]?.kind, gm[0]?.source], ["결과 누락", "대조"]);
+    check("기존 대조 경고 6건 유지(회귀)", r.warnings.filter((x) => x.source === "대조").length, 6);
+    console.log(
+      `     전체 경고 ${r.warnings.length}건: ${r.warnings.map((x) => `${x.date} ${x.venue} ${x.kind}`).join(" / ")}`,
+    );
+  }
+
   console.log(pass ? "\n🎉 교차검증 전부 통과" : "\n⚠️ 불일치 있음");
   process.exit(pass ? 0 : 1);
 }

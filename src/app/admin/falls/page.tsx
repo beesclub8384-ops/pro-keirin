@@ -67,6 +67,18 @@ interface FallWarning {
   missingResults: number;
   missingEntries: number;
   kind: string;
+  source: "대조" | "예정";
+  scheduleRound: number | null;
+  scheduleDay: number | null;
+  confidence: "높음" | "낮음";
+}
+
+interface ScheduleCoverage {
+  available: boolean;
+  from: string | null;
+  to: string | null;
+  reason: string | null;
+  evaluatedDates: number;
 }
 
 interface FallsReport {
@@ -75,6 +87,7 @@ interface FallsReport {
   totals: DayVenueTotals[];
   warnings: FallWarning[];
   latestDataDate: string | null;
+  scheduleCoverage: ScheduleCoverage;
 }
 
 function toISODate(d: Date): string {
@@ -353,8 +366,8 @@ export default function FallsLedgerPage() {
         </Card>
       )}
 
-      {/* 경고 줄 — 출주표는 있는데 결과가 없는 날짜·구장 */}
-      {data && data.warnings.length > 0 && (
+      {/* 경고 줄 — (1) 출주표 vs 결과 불일치 (2) 예정일 전체 누락 */}
+      {data && (data.warnings.length > 0 || !data.scheduleCoverage.available) && (
         <Card className="border-amber-400 bg-amber-50/70">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base text-amber-900">
@@ -362,29 +375,86 @@ export default function FallsLedgerPage() {
               수집 불일치 {data.warnings.length}건
             </CardTitle>
             <p className="text-xs text-amber-800">
-              출주표와 결과의 행 수가 어긋난 날짜·구장입니다. 이 구간의 낙차
-              건수는 실제보다 적을 수 있습니다.
+              출주표와 결과가 어긋나거나, 예정일인데 양쪽이 모두 없는 날짜입니다. 이
+              구간의 낙차 건수는 실제보다 적을 수 있습니다.
             </p>
           </CardHeader>
           <CardContent className="space-y-1 text-sm">
-            {data.warnings.map((w) => (
-              <div
-                key={dayVenueKey(w.date, w.venue)}
-                className="flex flex-wrap items-center gap-x-2 text-amber-900"
-              >
-                <span className="font-semibold">
-                  {w.date} · {w.venue}
-                </span>
-                <span className="rounded bg-amber-500 px-1.5 py-0.5 text-xs font-semibold text-white">
-                  {w.kind}
-                </span>
-                <span className="text-amber-800">
-                  출주표 {w.dcEntryCount}행 / 결과 {w.entryCount}행
-                  {w.missingResults > 0 && <> · 결과 없는 엔트리 {w.missingResults}</>}
-                  {w.missingEntries > 0 && <> · 출주표 없는 결과 {w.missingEntries}</>}
-                </span>
-              </div>
-            ))}
+            {data.warnings.map((w) => {
+              const uncertain = w.confidence === "낮음";
+              return (
+                <div
+                  key={`${w.source}|${dayVenueKey(w.date, w.venue)}`}
+                  className={
+                    uncertain
+                      ? "flex flex-wrap items-center gap-x-2 text-slate-600"
+                      : "flex flex-wrap items-center gap-x-2 text-amber-900"
+                  }
+                >
+                  <span className="font-semibold">
+                    {w.date} · {w.venue}
+                  </span>
+                  <span
+                    className={
+                      uncertain
+                        ? "rounded bg-slate-400 px-1.5 py-0.5 text-xs font-semibold text-white"
+                        : w.source === "예정"
+                          ? "rounded bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white"
+                          : "rounded bg-amber-500 px-1.5 py-0.5 text-xs font-semibold text-white"
+                    }
+                  >
+                    {w.kind}
+                  </span>
+                  {uncertain && (
+                    <span className="rounded border border-slate-400 px-1.5 py-0.5 text-xs font-medium text-slate-600">
+                      확신 낮음
+                    </span>
+                  )}
+                  {w.source === "예정" ? (
+                    <span className={uncertain ? "text-slate-600" : "text-amber-800"}>
+                      예정표 {w.scheduleRound}회 {w.scheduleDay}일차 · 출주표·결과 모두
+                      없음
+                      {uncertain && " (4일차는 미개최가 흔합니다 — 원본 확인 필요)"}
+                    </span>
+                  ) : (
+                    <span className="text-amber-800">
+                      출주표 {w.dcEntryCount}행 / 결과 {w.entryCount}행
+                      {w.missingResults > 0 && (
+                        <> · 결과 없는 엔트리 {w.missingResults}</>
+                      )}
+                      {w.missingEntries > 0 && (
+                        <> · 출주표 없는 결과 {w.missingEntries}</>
+                      )}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* 예정일 경고의 적용 범위 — 안 뜨는 것을 "정상"으로 오해하지 않게 명시한다 */}
+            <div className="mt-3 space-y-1 border-t border-amber-300 pt-2 text-xs text-amber-800">
+              {data.scheduleCoverage.available ? (
+                <p>
+                  예정일 기준 경고는 <strong>광명 전용</strong>입니다. 예정표
+                  (race_schedule)에는 구장 구분이 없고 광명 일정만 들어 있어,
+                  창원·부산은 이 경고가 뜨지 않습니다. 적재 범위는{" "}
+                  {data.scheduleCoverage.from} ~ {data.scheduleCoverage.to}이며, 이번
+                  조회에서 {data.scheduleCoverage.evaluatedDates}일을 대조했습니다
+                  (오늘과 미래는 제외).
+                </p>
+              ) : (
+                <p className="font-medium">
+                  ⚠ 예정일 대조 불가 — {data.scheduleCoverage.reason}
+                  {data.scheduleCoverage.from &&
+                    ` (예정표 범위: ${data.scheduleCoverage.from} ~ ${data.scheduleCoverage.to})`}
+                </p>
+              )}
+              <p>
+                예정표는 연초에 일괄 등록된 일정이라 <strong>&quot;예정&quot;이 실제
+                개최를 뜻하지 않습니다.</strong> 경고가 떴다고 반드시 수집 실패인 것은
+                아니므로 원본(kcycle) 확인이 필요합니다.
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
