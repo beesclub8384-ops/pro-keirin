@@ -1,0 +1,936 @@
+{
+  "venue": "창원",
+  "year": 2022,
+  "baseline": "docs\\recovery\\baseline-2026-10-13T01-57-17-145Z.json",
+  "baselineGeneratedAt": "2026-10-13T01:57:17.145Z",
+  "startedAt": "2026-10-13T02-51-56-972Z",
+  "finishedAt": "2026-10-13T03:09:31.718Z",
+  "aborted": false,
+  "targetCount": 91,
+  "processed": 91,
+  "retried": 2,
+  "skippedAlreadyRecovered": [
+    "2022-03-04",
+    "2022-03-05",
+    "2022-03-06"
+  ],
+  "byOutcome": {
+    "성공": 91,
+    "원본미제공": 0,
+    "실패": 0
+  },
+  "unrecoverableDates": [],
+  "failedDates": [],
+  "results": [
+    {
+      "date": "2022-03-18",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 1,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220318 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-03-19",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220319 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-03-20",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 17,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220320 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-03-26",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220326 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-03-27",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220327 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-04-01",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 5,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220401 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-04-02",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220402 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-04-03",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220403 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-04-15",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220415 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-04-16",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220416 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-04-17",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220417 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-04-24",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 2,
+      "note": "=== 완료: 20220424 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-04-29",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220429 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-04-30",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220430 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-05-01",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220501 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-05-06",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220506 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-05-07",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220507 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-05-08",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 12,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220508 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-05-13",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220513 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-05-20",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220520 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-05-21",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220521 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-05-22",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220522 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-05-29",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 13,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220529 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-06-03",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220603 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-06-04",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220604 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-06-05",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220605 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-06-10",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220610 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-06-11",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220611 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-06-17",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220617 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-06-18",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220618 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-06-19",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220619 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-06-26",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220626 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-01",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220701 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-02",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 12,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220702 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-03",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220703 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-08",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 20,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220708 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-09",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 14,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220709 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-10",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 16,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "race_results upsert 에러 (batch 0): TypeError: fetch failed"
+    },
+    {
+      "date": "2022-07-15",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220715 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-16",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 16,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220716 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-17",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220717 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-22",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 19,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220722 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-29",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 12,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220729 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-30",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 12,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220730 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-07-31",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220731 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-08-07",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 34,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220807 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-08-12",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220812 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-08-13",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 2,
+      "note": "=== 완료: 20220813 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-08-14",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 20,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220814 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-08-19",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 16,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220819 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-08-26",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220826 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-08-27",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 13,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220827 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-08-28",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 21,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220828 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-09-11",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220911 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-09-12",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 14,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220912 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-09-16",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 19,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220916 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-09-18",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 19,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220918 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-09-23",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220923 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-09-24",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220924 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-09-25",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 16,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220925 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-09-30",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20220930 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-01",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221001 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-02",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221002 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-07",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221007 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-08",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 18,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221008 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-09",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221009 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-14",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 20,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221014 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-21",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221021 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-22",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 21,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221022 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-23",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 16,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221023 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-10-30",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 21,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221030 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-11-04",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 18,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221104 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-11-05",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221105 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-11-06",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221106 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-11-11",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 19,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221111 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-11-12",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221112 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-11-13",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 13,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221113 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-11-18",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221118 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-11-19",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 14,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221119 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-11-20",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 41,
+      "violations": 22,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221120 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-02",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221202 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-03",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221203 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-04",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 20,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221204 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-09",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 41,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221209 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-10",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 31,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221210 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-11",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 19,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221211 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-16",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221216 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-17",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 12,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221217 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-18",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 41,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221218 창원 6경주 적재 ==="
+    },
+    {
+      "date": "2022-12-23",
+      "outcome": "성공",
+      "races": 4,
+      "resultRows": 28,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221223 창원 4경주 적재 ==="
+    },
+    {
+      "date": "2022-12-24",
+      "outcome": "성공",
+      "races": 4,
+      "resultRows": 28,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "=== 완료: 20221224 창원 4경주 적재 ==="
+    }
+  ]
+}

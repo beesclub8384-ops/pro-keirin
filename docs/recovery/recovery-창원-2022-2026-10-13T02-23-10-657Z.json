@@ -1,0 +1,58 @@
+{
+  "venue": "창원",
+  "year": 2022,
+  "baseline": "docs\\recovery\\baseline-2026-10-13T01-57-17-145Z.json",
+  "baselineGeneratedAt": "2026-10-13T01:57:17.145Z",
+  "startedAt": "2026-10-13T02-23-10-657Z",
+  "finishedAt": "2026-10-13T02:23:35.960Z",
+  "aborted": true,
+  "targetCount": 94,
+  "processed": 4,
+  "byOutcome": {
+    "성공": 3,
+    "원본미제공": 0,
+    "실패": 1
+  },
+  "unrecoverableDates": [],
+  "failedDates": [
+    "2022-03-18"
+  ],
+  "results": [
+    {
+      "date": "2022-03-04",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 6,
+      "exitCode": 0,
+      "note": "=== 완료: 20220304 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-03-05",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 8,
+      "exitCode": 0,
+      "note": "=== 완료: 20220305 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-03-06",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 4,
+      "exitCode": 0,
+      "note": "=== 완료: 20220306 창원 3경주 적재 ==="
+    },
+    {
+      "date": "2022-03-18",
+      "outcome": "실패",
+      "races": null,
+      "resultRows": null,
+      "violations": null,
+      "exitCode": 1,
+      "note": "치명적 에러: terminated"
+    }
+  ]
+}
