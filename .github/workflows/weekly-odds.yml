@@ -34,9 +34,23 @@ jobs:
       - name: Fetch race data (current year)
         run: npx tsx scripts/fetch-race-data.ts --year $(date -u +%Y)
 
-      - name: Enrich race results
-        run: npx tsx scripts/enrich-race-results.ts
-
+      # Enrich race results 스텝을 제거했다 (2026-10-13).
+      #
+      # 왜: scripts/enrich-race-results.ts 는 src/data/race-detail-data.json 을 읽는데
+      #     그 파일은 .gitignore 대상(141MB)이라 깨끗한 러너에 존재하지 않는다.
+      #     ENOENT 로 죽어 이 워크플로가 2026-03-10 부터 31회 연속 전패했다
+      #     (성공 0건). race_odds 가 2026-03-02 에서 멈춘 원인.
+      #
+      # 왜 "의존 제거" 가 아니라 "스텝 삭제" 인가: 이 스텝의 산출물을 뒤의 두
+      #     시딩 스텝이 쓰지 않는다.
+      #       - seed/seed-race-odds.ts  → race-data.json 에서 id/date/venue/
+      #         gradeGroup/raceNo/odds 만 읽는다. enrich 가 주입하는 results 는 안 쓴다.
+      #       - seed/seed-races.ts      → race-data.json 을 아예 안 읽는다
+      #         (src/data/yearly-race-detail/*.json 을 읽는다).
+      #     race-data.json 의 results 를 쓰는 곳은 앱(src/lib/data-loader.ts)이고,
+      #     그 파일은 git 에 추적되어 커밋 상태로 배포된다 — CI 에서 만들 필요가 없다.
+      #
+      # scripts/enrich-race-results.ts 는 삭제하지 않았다 (로컬 수동 작업용으로 유지).
       - name: Seed races + results
         run: npx tsx scripts/seed/seed-races.ts
 
