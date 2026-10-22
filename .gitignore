@@ -120,3 +120,8 @@ verify-missing-*.csv
 
 # --- 선수 연도별 출주횟수 수집 체크포인트 ---
 .racer-stats-progress.json
+
+# --- 등급별 출주 회차 분석 산출물 / 진단용 임시 HTML ---
+analysis-output/grade-starts/
+analysis-output/grade-days/
+scripts/tmp/
