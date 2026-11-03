@@ -1,4 +1,13 @@
 /**
+ * ⛔ 사용 중단 (2026-11-03) — 실행해도 아무것도 저장하지 않고 종료한다.
+ *
+ *   이 스크립트는 공정제재 페이지(/racer/state/sanction)를 judge_sanctions(source='racer_state')에
+ *   저장했는데, 같은 페이지를 racer_sanctions 가 이미 전량 보관한다 (scripts/fetch-racer-sanctions.ts).
+ *   원칙: judge_sanctions = 심판제재 페이지 / racer_sanctions = 공정제재 페이지 (페이지 하나 = 표 하나).
+ *   기존 racer_state 144건은 2026-11-03 마이그레이션(20261103_judge_sanctions_dedup_key.sql)에서 삭제했다.
+ *   scripts/ 파일은 삭제 금지라 파일만 남겨 둔다.
+ *
+ * (이하 원래 설명)
  * 제재선수 현황 수집 스크립트 (제재유형 전체)
  * 출처: https://www.kcycle.or.kr/racer/state/sanction
  *
@@ -350,6 +359,10 @@ async function collectYear(year: number, dryRun: boolean): Promise<void> {
 }
 
 async function main() {
+  // ⛔ 사용 중단 — 파일 상단 주석 참조
+  console.error('⛔ fetch-racer-state-sanctions.ts 는 사용 중단됐습니다. 공정제재는 scripts/fetch-racer-sanctions.ts → racer_sanctions')
+  process.exit(1)
+
   const args = process.argv.slice(2)
   const yearIdx = args.indexOf('--year')
   const targetYear = yearIdx !== -1 ? parseInt(args[yearIdx + 1]) : null

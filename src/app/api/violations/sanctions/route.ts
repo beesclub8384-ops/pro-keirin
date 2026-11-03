@@ -21,9 +21,12 @@ export async function GET(request: NextRequest) {
       .from("judge_sanctions")
       .select("*", { count: "exact" })
       .eq("venue", venue)
-      // no 는 고유하지 않다(1,874행 / 920개 값) → 표시 순서용 no 를 앞에 두고 고유키를 뒤에 덧붙인다.
-      // 없으면 페이지를 넘길 때 같은 행이 두 번 나오거나 빠진다 (CLAUDE.md 규칙 3)
-      .order("no", { ascending: false })
+      // no 는 고유하지 않고(출처마다 번호 체계가 다름) NULL 도 있다 — kcycle 2023 일부는 연도 No. 를
+      // 확정할 수 없어 NULL (2026-11-03). 연도·회차로 먼저 정렬해 NULL 행이 제 회차 자리에 오게 하고,
+      // 끝에 고유키 id 를 덧붙인다. 없으면 페이지를 넘길 때 같은 행이 두 번 나오거나 빠진다 (CLAUDE.md 규칙 3)
+      .order("race_year", { ascending: false, nullsFirst: false })
+      .order("round", { ascending: false, nullsFirst: false })
+      .order("no", { ascending: false, nullsFirst: false })
       .order("id", { ascending: false });
 
     if (year) query = query.eq("race_year", parseInt(year));

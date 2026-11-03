@@ -1,6 +1,9 @@
-name: Judge Sanctions (3 venues weekly)
+name: Sanctions (심판제재 3구장 + 공정제재, weekly)
 
-# 심판제재선수 주간 수집: 매주 월요일 KST 09:00 = UTC 월(1) 00:00
+# 제재 주간 수집: 매주 월요일 KST 09:00 = UTC 월(1) 00:00
+#   심판제재 → judge_sanctions (source: judge_racer=광명 kcycle / lepopark=창원 / spo1=부산)
+#   공정제재 → racer_sanctions (kcycle /racer/state/sanction, 전체 교체)
+# 한 단계가 실패해도 나머지는 돈다 (if: !cancelled()) — 실패는 잡 결과로 드러난다
 # cron 요일: 0=일, 1=월, ..., 6=토
 on:
   schedule:
@@ -10,7 +13,7 @@ on:
 jobs:
   fetch-and-seed:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
 
     steps:
       - name: Checkout repository
@@ -34,13 +37,22 @@ jobs:
         run: npx tsx scripts/fetch-judge-sanctions.ts
 
       - name: Fetch 창원 sanctions (lepopark)
+        if: ${{ !cancelled() }}
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/fetch-changwon-sanctions.ts
 
       - name: Fetch 부산 sanctions (spo1)
+        if: ${{ !cancelled() }}
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/fetch-busan-sanctions.ts
+
+      - name: Fetch 공정제재 (kcycle racer/state/sanction → racer_sanctions)
+        if: ${{ !cancelled() }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/fetch-racer-sanctions.ts

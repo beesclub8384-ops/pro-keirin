@@ -10,7 +10,7 @@
 //   - 1페이지 최상단 번호 = 누적 총건수 → totalPages = ceil(maxNo/10)
 //   - spo1 인증서 체인 문제 → NODE_TLS_REJECT_UNAUTHORIZED=0
 //   - judge_sanctions 에 venue='부산' upsert
-//   - onConflict: no,race_year,venue
+//   - onConflict: source,dedup_key (dedup_key = no|race_year)
 //     (2026-05-19 마이그레이션으로 venue 포함 — 없으면 광명/(no,race_year) 충돌)
 //
 // 컬럼: 번호 | 제재선수 | 제재내용 | 제재사유 | 작성일 | 자료관리부서 | 최근업데이트
@@ -38,6 +38,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const VENUE = "부산";
+const SOURCE = "spo1"; // judge_sanctions.source (출처 구분)
 const BASE = "https://www.spo1.or.kr/racer/racerSanction.do";
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
@@ -250,11 +251,11 @@ async function main() {
     const batch = rows.slice(i, i + BATCH);
     const { error } = await supabase
       .from("judge_sanctions")
-      // source 는 유니크키의 일부다. 심판제재선수 계열은 모두 'judge_racer',
-      // 서면경고를 포함한 /racer/state/sanction 수집분은 'racer_state'.
+      // 고유키 (source, dedup_key) — 2026-11-03 마이그레이션. 이 사이트 고유 번호 기준: dedup_key = no|race_year
+      // source: judge_racer=kcycle(광명) / lepopark=창원 / spo1=부산
       .upsert(
-        batch.map((r) => ({ ...r, source: "judge_racer" })),
-        { onConflict: "source,no,race_year,venue" }
+        batch.map((r) => ({ ...r, source: SOURCE, dedup_key: `${r.no}|${r.race_year}` })),
+        { onConflict: "source,dedup_key" }
       );
     if (error) {
       console.error(`  upsert 에러 (batch ${i}):`, error.message);
@@ -267,8 +268,8 @@ async function main() {
   const { count } = await supabase
     .from("judge_sanctions")
     .select("*", { count: "exact", head: true })
-    .eq("venue", VENUE);
-  console.log(`  DB 재조회 (venue=부산): ${count}건`);
+    .eq("source", SOURCE);
+  console.log(`  DB 재조회 (source=spo1): ${count}건`);
   console.log("=== 완료 ===");
 }
 

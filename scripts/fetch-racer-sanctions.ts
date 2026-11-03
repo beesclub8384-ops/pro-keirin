@@ -145,8 +145,10 @@ function parseRows(html: string): SanctionRow[] {
     const idFromPopup = racerCell.match(/fnRacer\.popup\(&quot;(\d{8})&quot;\)/);
     const idPlain = stripTags(racerCell).match(/\b(\d{8})\b/);
     const racerId = idFromPopup?.[1] ?? idPlain?.[1] ?? null;
-    const nameCohort = stripTags(racerCell).match(/([가-힣]+)\s*\/\s*(\d+기)/);
-    const racerName = nameCohort?.[1] ?? null;
+    // 이름에 공백이 있는 선수("이 효", "허 남")가 있다. 예전 정규식 ([가-힣]+) 은 성을 버려
+    // "효"로 저장했다 (29행, 2026-11-03 발견) → 공백 포함으로 받고 공백은 1칸으로 맞춘다
+    const nameCohort = stripTags(racerCell).match(/([가-힣]+(?:\s+[가-힣]+)*)\s*\/\s*(\d+기)/);
+    const racerName = nameCohort ? nameCohort[1].replace(/\s+/g, " ") : null;
     const cohort = nameCohort?.[2] ?? null;
 
     // 셀1: 처리결과 전문
@@ -261,6 +263,25 @@ async function main() {
     for (const b of badId.slice(0, 10)) console.log(`    seq ${b.seqNo}: '${b.racerId}' (${b.racerName})`);
   }
 
+  // 전체 교체 검증: seq_no 는 고정 식별자가 아니다. 과거 날짜 제재가 끼어들면 뒤 번호가 밀린다
+  // (2026-11-03 실측: DB 71건이 ±1~2 밀려 있었음). 그래서 1~최대번호를 빠짐없이 받았을 때만
+  // seq_no 기준으로 통째로 덮어쓰고, 최대번호보다 큰 DB 행은 지운다.
+  const maxSeq = Math.max(...seenSeq);
+  const gaps: number[] = [];
+  for (let s = 1; s <= maxSeq; s++) if (!seenSeq.has(s)) gaps.push(s);
+  if (gaps.length > 0 || all.length !== maxSeq) {
+    console.error(
+      `❌ 전체 수집 불완전 (수집 ${all.length} / 최대번호 ${maxSeq} / 빈 번호 ${gaps.slice(0, 10).join(",")}) → 저장 안 함`,
+    );
+    process.exit(1);
+  }
+  const badName = all.filter((r) => !r.racerName || r.racerName.replace(/\s/g, "").length < 2);
+  if (badName.length > 0) {
+    console.error(`❌ 이름 파싱 이상 ${badName.length}건 (예: seq ${badName[0].seqNo} '${badName[0].racerName}') → 저장 안 함`);
+    process.exit(1);
+  }
+  console.log(`  전체 검증 통과: 1~${maxSeq} 빠짐없음, 이름 이상 0건`);
+
   if (DRY_RUN) {
     console.log("\n[DRY-RUN] DB 미적재. 샘플 3건:");
     for (const r of all.slice(0, 3)) {
@@ -270,7 +291,16 @@ async function main() {
   }
 
   const n = await upsertRows(all);
-  console.log(`\n=== 완료: ${n}건 upsert (racer_sanctions) ===`);
+  const { error: delErr, count: delCount } = await supabase
+    .from("racer_sanctions")
+    .delete({ count: "exact" })
+    .gt("seq_no", maxSeq);
+  if (delErr) throw new Error(`최대번호 초과 행 삭제 실패: ${delErr.message}`);
+  const { count } = await supabase.from("racer_sanctions").select("*", { count: "exact", head: true });
+  console.log(
+    `\n=== 완료: ${n}건 upsert / 최대번호 초과 ${delCount ?? 0}건 삭제 / DB ${count}건 (기대 ${maxSeq}) ===`,
+  );
+  if (count !== maxSeq) process.exit(1);
 }
 
 main().catch((err) => {

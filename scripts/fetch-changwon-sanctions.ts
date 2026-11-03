@@ -9,7 +9,7 @@
 //   - GET /api/racer/penalty?page={0-base}&size=100 → { content:[], totalElements }
 //   - 전체 페이지 순회 (총 ~630건)
 //   - judge_sanctions 에 venue='창원' 으로 upsert
-//   - onConflict: no,race_year,venue
+//   - onConflict: source,dedup_key (dedup_key = no|race_year)
 //     (2026-05-19 마이그레이션으로 unique 제약에 venue 추가 — venue 없으면
 //      광명 행과 (no,race_year) 충돌하여 광명 데이터를 덮어쓰는 무음 손상 발생)
 //
@@ -40,6 +40,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const VENUE = "창원";
+const SOURCE = "lepopark"; // judge_sanctions.source (출처 구분)
 const API = "https://www.lepopark.or.kr/api/racer/penalty";
 const PAGE_SIZE = 100;
 const DELAY_MS = 500;
@@ -184,11 +185,11 @@ async function main() {
     const batch = rows.slice(i, i + BATCH);
     const { error } = await supabase
       .from("judge_sanctions")
-      // source 는 유니크키의 일부다. 심판제재선수 계열은 모두 'judge_racer',
-      // 서면경고를 포함한 /racer/state/sanction 수집분은 'racer_state'.
+      // 고유키 (source, dedup_key) — 2026-11-03 마이그레이션. 이 사이트 고유 번호 기준: dedup_key = no|race_year
+      // source: judge_racer=kcycle(광명) / lepopark=창원 / spo1=부산
       .upsert(
-        batch.map((r) => ({ ...r, source: "judge_racer" })),
-        { onConflict: "source,no,race_year,venue" }
+        batch.map((r) => ({ ...r, source: SOURCE, dedup_key: `${r.no}|${r.race_year}` })),
+        { onConflict: "source,dedup_key" }
       );
     if (error) {
       console.error(`  upsert 에러 (batch ${i}):`, error.message);
@@ -201,8 +202,8 @@ async function main() {
   const { count } = await supabase
     .from("judge_sanctions")
     .select("*", { count: "exact", head: true })
-    .eq("venue", VENUE);
-  console.log(`  DB 재조회 (venue=창원): ${count}건`);
+    .eq("source", SOURCE);
+  console.log(`  DB 재조회 (source=lepopark): ${count}건`);
   console.log("=== 완료 ===");
 }
 
