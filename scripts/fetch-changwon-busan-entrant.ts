@@ -3,7 +3,8 @@
 // 데이터 소스: lepopark.or.kr (창원 자체 사이트, 한 페이지에 광명/창원/부산 모두 표시)
 //
 // 사용법:
-//   npx tsx scripts/fetch-changwon-busan-entrant.ts            → 오늘 (자동 수집용)
+//   npx tsx scripts/fetch-changwon-busan-entrant.ts            → 오늘~3일 뒤 경주일 전부 (자동 수집용)
+//     출주표는 경주 전날 저녁 게시되므로 "오늘"만 보면 다음 날(일·월 등) 출주표를 놓친다.
 //   npx tsx scripts/fetch-changwon-busan-entrant.ts --date 20260515
 //   npx tsx scripts/fetch-changwon-busan-entrant.ts --year 2020
 //
@@ -36,6 +37,8 @@ const TRACK_CD = "002";
 const TARGET_VENUES = ["창원", "부산"] as const;
 type Venue = (typeof TARGET_VENUES)[number];
 const DELAY_MS = 500;
+/** 자동 수집 범위: 오늘부터 며칠 뒤까지 (수요일 실행 → 목요일 시작 회차 + 금요일까지) */
+const LOOKAHEAD_DAYS = 3;
 
 // ---------- 유틸 ----------
 function delay(ms: number): Promise<void> {
@@ -63,6 +66,12 @@ function toIsoDate(yyyymmdd: string): string {
 function todayKstYmd(): string {
   const kst = new Date(Date.now() + 9 * 3600 * 1000);
   return kst.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+/** YYYYMMDD 에 n 일 더하기 (UTC 기준 날짜 산술이라 시간대 영향 없음) */
+function addDaysYmd(ymd: string, n: number): string {
+  const d = new Date(Date.UTC(+ymd.slice(0, 4), +ymd.slice(4, 6) - 1, +ymd.slice(6, 8) + n));
+  return d.toISOString().slice(0, 10).replace(/-/g, "");
 }
 
 function parseIntOrNull(s: string): number | null {
@@ -443,6 +452,12 @@ async function collectOne(entry: RcDateEntry): Promise<number> {
     console.log(`  ${entry.rcdate}: canceled → 스킵`);
     return 0;
   }
+  // 부산 A회차(예: "39A")는 decision_card_pages.round(smallint) 에 넣으면 39 로 바뀌어
+  // 같은 회차 정규 출주표를 덮어쓴다. 스키마 변경 전까지 저장하지 않는다.
+  if (!/^\d+$/.test(String(entry.rctimes).trim())) {
+    console.warn(`  ⚠️ ${entry.rcdate}: 숫자가 아닌 회차(${entry.rctimes}) → 저장 안 함 (A회차 스키마 미지원)`);
+    return 0;
+  }
   const html = await fetchEntrantPage(entry.rcdate);
   const page = parsePage(html, entry);
   if (!page || page.races.length === 0) {
@@ -535,13 +550,43 @@ async function main() {
     return;
   }
 
-  const targetYmd = dateArg ?? todayKstYmd();
+  if (!dateArg) {
+    // 자동 수집: 오늘~LOOKAHEAD_DAYS 일 뒤 경주일 전부 (전날 저녁 게시 대응, 연말 대비 다음 해 목록 포함)
+    const today = todayKstYmd();
+    const until = addDaysYmd(today, LOOKAHEAD_DAYS);
+    console.log(`=== 자동 수집: ${today} ~ ${until} 경주일 ===`);
+    const years = [...new Set([today.slice(0, 4), until.slice(0, 4)])].map((y) => parseInt(y, 10));
+    const entries = (await Promise.all(years.map((y) => fetchRcDates(y))))
+      .flat()
+      .filter((e) => e.rcdate >= today && e.rcdate <= until)
+      .sort((a, b) => a.rcdate.localeCompare(b.rcdate));
+    if (entries.length === 0) {
+      console.log("  해당 기간 경주일 없음");
+      return;
+    }
+    let total = 0;
+    let failed = 0;
+    for (const e of entries) {
+      try {
+        total += await collectOne(e);
+      } catch (err) {
+        failed++;
+        console.error(`  ERROR ${e.rcdate}:`, err instanceof Error ? err.message : String(err));
+      }
+      await delay(DELAY_MS);
+    }
+    console.log(`\n=== 완료: 경주일 ${entries.length}개 / 창원·부산 ${total}경주 / 실패 ${failed} ===`);
+    if (failed > 0) process.exit(1);
+    return;
+  }
+
+  const targetYmd = dateArg;
   if (!/^\d{8}$/.test(targetYmd)) {
     console.error("ERROR: --date 형식 오류 (YYYYMMDD):", targetYmd);
     process.exit(1);
   }
   const year = parseInt(targetYmd.slice(0, 4), 10);
-  console.log(dateArg ? `=== 단일 날짜 수집: ${targetYmd} ===` : `=== 오늘 자동 수집: ${targetYmd} ===`);
+  console.log(`=== 단일 날짜 수집: ${targetYmd} ===`);
 
   const entries = await fetchRcDates(year);
   const found = entries.find((e) => e.rcdate === targetYmd);

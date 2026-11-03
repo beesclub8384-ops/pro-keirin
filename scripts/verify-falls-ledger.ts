@@ -76,45 +76,54 @@ async function main() {
   }
 
   // 5) 경고 줄 — 출주표/결과 불일치
+  //    2026-11-03 갱신: 원래 고정값이던 누락(09-11 광명 결과, 08-28 창원·부산 결과, 08-23 부산 출주표)은
+  //    재수집으로 메워졌다. 이제는 "메워진 날짜에 경고가 남지 않는다"와 남은 부분 누락 2건을 고정한다.
   {
     const r = await buildFallsReport(sb, { from: "2026-08-17", to: "2026-10-11", venue: "all" });
     const w = (d: string, v: string) => r.warnings.find((x) => x.date === d && x.venue === v);
-    check("경고 2026-09-11 광명 [출주표, 결과, 종류]", [w("2026-09-11", "광명")?.dcEntryCount, w("2026-09-11", "광명")?.entryCount, w("2026-09-11", "광명")?.kind], [112, 0, "결과 누락"]);
-    check("경고 2026-08-28 부산 [출주표, 결과]", [w("2026-08-28", "부산")?.dcEntryCount, w("2026-08-28", "부산")?.entryCount], [42, 0]);
-    check("경고 2026-08-28 창원 [출주표, 결과]", [w("2026-08-28", "창원")?.dcEntryCount, w("2026-08-28", "창원")?.entryCount], [42, 0]);
+    check("경고 2026-08-17 광명 부분 누락 [출주표, 결과, 종류]", [w("2026-08-17", "광명")?.dcEntryCount, w("2026-08-17", "광명")?.entryCount, w("2026-08-17", "광명")?.kind], [112, 109, "부분 누락"]);
     check("경고 2026-09-19 창원 결과없는엔트리", w("2026-09-19", "창원")?.missingResults, 1);
-    check("경고 2026-08-23 부산 종류", w("2026-08-23", "부산")?.kind, "출주표 누락");
-    check("2026-10-11 광명은 그룹에 없음(개최 미확정)", r.totals.some((t) => t.date === "2026-10-11" && t.venue === "광명"), false);
+    check(
+      "재수집으로 메운 날짜 경고 없음 (09-11 광명, 08-28 창원·부산, 08-23 부산)",
+      [w("2026-09-11", "광명"), w("2026-08-28", "창원"), w("2026-08-28", "부산"), w("2026-08-23", "부산")].map((x) => x?.kind ?? null),
+      [null, null, null, null],
+    );
+    const t1011 = r.totals.find((t) => t.date === "2026-10-11" && t.venue === "광명");
+    check("2026-10-11 광명 개최 반영 [경주, 결과, 출주표]", [t1011?.raceCount, t1011?.entryCount, t1011?.dcEntryCount], [16, 112, 112]);
     console.log(`     경고 ${r.warnings.length}건: ${r.warnings.map((x) => `${x.date} ${x.venue} ${x.kind}`).join(" / ")}`);
   }
 
-  // ---------------------------------------------------------------- 1-b: 예정일 전체 누락
-  // 6) 2026-10-11 광명이 "예정일 전체 누락"으로 잡히는가
-  //    (출주표부터 실패한 날이라 기존 "대조" 경고로는 잡히지 않는다 — 이 단계의 핵심)
+  // 5-b) 출주표 누락 — 부산 A회차(18A: 2026-05-08~10)는 decision_card_pages.round 가 smallint 라
+  //      저장하지 않는다(스키마 변경 보류). 결과만 있으므로 "출주표 누락"으로 잡혀야 한다.
   {
-    const r = await buildFallsReport(sb, { from: "2026-10-09", to: "2026-10-11", venue: "all" });
-    const sched = r.warnings.filter((w) => w.source === "예정");
-    check("2026-10-11 예정일 경고 1건", sched.length, 1);
-    const w = sched[0];
-    check("2026-10-11 [날짜, 구장, 종류]", [w?.date, w?.venue, w?.kind], ["2026-10-11", "광명", "예정일 전체 누락"]);
-    check("2026-10-11 [회차, 일차, 확신도]", [w?.scheduleRound, w?.scheduleDay, w?.confidence], [40, 3, "높음"]);
-    check("2026-10-11 출주표·결과 0/0", [w?.dcEntryCount, w?.entryCount], [0, 0]);
+    const r = await buildFallsReport(sb, { from: "2026-05-08", to: "2026-05-10", venue: "부산" });
+    check(
+      "부산 18A 출주표 누락 [날짜, 출주표, 결과]",
+      r.warnings.filter((x) => x.kind === "출주표 누락").map((x) => [x.date, x.dcEntryCount, x.entryCount]),
+      [["2026-05-08", 0, 28], ["2026-05-09", 0, 28], ["2026-05-10", 0, 27]],
+    );
   }
 
-  // 7) 예정표 4일차는 분리 표시 + 확신 낮음 (숨기지 않는다)
+  // ---------------------------------------------------------------- 1-b: 예정일 전체 누락
+  // 6) 2026-10-11 광명 — 원래 "예정일 전체 누락" 고정값이었으나 재수집으로 메워졌다 (2026-11-03).
+  //    지금은 예정일 경고가 없어야 한다. ⚠️ "예정일 전체 누락" 종류를 실데이터로 검증할 사례는 현재 없다.
+  {
+    const r = await buildFallsReport(sb, { from: "2026-10-09", to: "2026-10-11", venue: "all" });
+    check("2026-10-09~11 예정일 경고 0건", r.warnings.filter((w) => w.source === "예정").length, 0);
+  }
+
+  // 7) 예정표 4일차 2026-10-05 — 실제 개최돼 수집됨 → 경고 없음 (4일차 확신 낮음 사례는 현재 없음)
   {
     const r = await buildFallsReport(sb, { from: "2026-10-01", to: "2026-10-11", venue: "all" });
-    const d4 = r.warnings.find((x) => x.date === "2026-10-05");
-    check(
-      "2026-10-05 [종류, 확신도, 일차]",
-      [d4?.kind, d4?.confidence, d4?.scheduleDay],
-      ["예정표 4일차(미개최 가능)", "낮음", 4],
-    );
+    check("2026-10-05 경고 없음", r.warnings.filter((x) => x.date === "2026-10-05").length, 0);
+    check("2026-10-05 광명 개최 반영", r.totals.some((t) => t.date === "2026-10-05" && t.venue === "광명"), true);
   }
 
   // 8) 미래일은 경고하지 않는다 (예정표에 연말까지 36일이 들어 있다)
   {
-    const r = await buildFallsReport(sb, { from: "2026-10-13", to: "2026-12-27", venue: "all" });
+    // 고정 날짜로 두면 시간이 지나 과거가 되며 깨진다 → 내일(KST)부터 예정표 끝까지
+    const tomorrow = new Date(Date.now() + 9 * 3600 * 1000 + 86400 * 1000).toISOString().slice(0, 10);
+    const r = await buildFallsReport(sb, { from: tomorrow, to: "2026-12-27", venue: "all" });
     check("미래 구간 예정일 경고 0건", r.warnings.filter((x) => x.source === "예정").length, 0);
     check("미래 구간 대조한 예정일 0일", r.scheduleCoverage.evaluatedDates, 0);
   }
@@ -125,7 +134,8 @@ async function main() {
     check("2026-03-02 개최된 4일차 경고 없음", r.warnings.filter((x) => x.date === "2026-03-02").length, 0);
   }
 
-  // 10) 2026 과거 예정일 전체 집계 — 1~3일차 1건(10-11) / 4일차 3건
+  // 10) 2026 과거 예정일 전체 집계 — 원래 1~3일차 1건(10-11) / 4일차 3건(05-25·08-17·10-05).
+  //     모두 재수집으로 메워졌다 (2026-11-03) → 둘 다 0건
   {
     const parts = [
       { from: "2026-01-01", to: "2026-03-31" },
@@ -141,12 +151,12 @@ async function main() {
     check(
       "2026 과거 예정일 전체 누락(1~3일차)",
       all.filter((x) => x.kind === "예정일 전체 누락").map((x) => x.date),
-      ["2026-10-11"],
+      [],
     );
     check(
       "2026 과거 예정표 4일차(확신 낮음)",
       all.filter((x) => x.confidence === "낮음").map((x) => x.date),
-      ["2026-05-25", "2026-08-17", "2026-10-05"],
+      [],
     );
   }
 
@@ -169,15 +179,14 @@ async function main() {
     check("부산 필터 시 예정일 경고 0건", r.warnings.filter((x) => x.source === "예정").length, 0);
   }
 
-  // 13) 회귀 — 2026-09-11 광명은 출주표가 있으므로 "결과 누락" 하나만 (중복 금지)
+  // 13) 회귀 — 2026-09-11 광명은 결과를 메웠으므로 경고 0건, 구간 대조 경고는 부분 누락 2건만
   {
     const r = await buildFallsReport(sb, { from: "2026-08-17", to: "2026-10-11", venue: "all" });
-    const gm = r.warnings.filter((x) => x.date === "2026-09-11" && x.venue === "광명");
-    check("2026-09-11 광명 경고 1건만", gm.length, 1);
-    check("2026-09-11 광명 [종류, 근거]", [gm[0]?.kind, gm[0]?.source], ["결과 누락", "대조"]);
-    check("기존 대조 경고 6건 유지(회귀)", r.warnings.filter((x) => x.source === "대조").length, 6);
-    console.log(
-      `     전체 경고 ${r.warnings.length}건: ${r.warnings.map((x) => `${x.date} ${x.venue} ${x.kind}`).join(" / ")}`,
+    check("2026-09-11 광명 경고 0건", r.warnings.filter((x) => x.date === "2026-09-11" && x.venue === "광명").length, 0);
+    check(
+      "대조 경고 2건 유지(회귀)",
+      r.warnings.filter((x) => x.source === "대조").map((x) => `${x.date} ${x.venue} ${x.kind}`),
+      ["2026-08-17 광명 부분 누락", "2026-09-19 창원 부분 누락"],
     );
   }
 
