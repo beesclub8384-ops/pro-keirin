@@ -74,6 +74,8 @@ export interface PageDecisionCard {
 
 export interface FetchResult {
   success: boolean;
+  /** 오류가 아니라 "수집할 것 없음/아직 미게시"로 건너뛴 경우 true (CLI 는 exit 0) */
+  skipped?: boolean;
   year?: number;
   round?: number;
   day?: number;
@@ -539,7 +541,7 @@ export async function fetchAndSeedLatest(
     // 자동 타겟 결정
     const auto = await determineNextTarget(supabase);
     if (!auto) {
-      return { success: false, message: "수집할 출주표가 없습니다 (14일 이내 미수집 경주 없음)" };
+      return { success: false, skipped: true, message: "수집할 출주표가 없습니다 (14일 이내 미수집 경주 없음)" };
     }
     target = auto;
   }
@@ -553,6 +555,7 @@ export async function fetchAndSeedLatest(
     console.log(`회차 불일치 - 스킵: ${target.round}회 ${target.day}일차 출주표가 아직 게시되지 않음`);
     return {
       success: false,
+      skipped: true,
       year: target.year,
       round: target.round,
       day: target.day,

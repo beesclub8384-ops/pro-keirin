@@ -58,6 +58,9 @@ async function main() {
   if (result.success) {
     console.log(`\n성공: ${result.year}년 ${result.round}회차 ${result.day}일차 (${result.date})`);
     console.log(`  경주: ${result.racesCount}개, 선수: ${result.entriesCount}명`);
+  } else if (result.skipped) {
+    // 미게시/타겟 없음은 정상 스킵 — 워크플로를 실패로 표시하지 않는다
+    console.log(`\n스킵: ${result.message}`);
   } else {
     console.log(`\n실패: ${result.message}`);
     process.exit(1);

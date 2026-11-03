@@ -290,6 +290,26 @@ function parseRaceDetail(html: string, year: number, round: number, dayNum: numb
   };
 }
 
+// --- kcycle 응답 검증 ---
+// kcycle 은 없는/미게시 회차를 요청하면 404 대신 가장 최근 경주 데이터를 돌려준다.
+// (실측: /2026/99/4/001/01 요청 → "43회 3일차 / 2026년 11월 01일" 페이지 반환)
+// 각 경주 상세 페이지 상단의 "N회 N일차" 와 "YYYY년 MM월 DD일" 을 파싱해 요청값과 대조한다.
+function verifyPageRoundDay(
+  html: string, round: number, day: number, date: string
+): { ok: boolean; actual: string } {
+  const text = html.replace(/<[^>]*>/g, " ");
+  const rd = text.match(/(\d+)\s*회\s*(\d+)\s*일차/);
+  const dt = text.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+  if (!rd || !dt) return { ok: false, actual: "회차/일차/날짜 표기 없음" };
+  const actualDate = `${dt[1]}-${dt[2].padStart(2, "0")}-${dt[3].padStart(2, "0")}`;
+  const actual = `${rd[1]}회 ${rd[2]}일차 ${actualDate}`;
+  const ok =
+    parseInt(rd[1], 10) === Number(round) &&
+    parseInt(rd[2], 10) === Number(day) &&
+    actualDate === date;
+  return { ok, actual };
+}
+
 // --- Fetch ---
 async function fetchRaceDetailPage(year: number, round: number, day: number, raceNo: number): Promise<string> {
   const paddedRaceNo = String(raceNo).padStart(2, "0");
@@ -372,6 +392,7 @@ async function fetchYear(year: number, filterDate?: string | null, preloadedTarg
   }
 
   let failCount = 0;
+  let mismatchCount = 0;
 
   for (let i = startIdx; i < targets.length; i++) {
     const target = targets[i];
@@ -380,12 +401,22 @@ async function fetchYear(year: number, filterDate?: string | null, preloadedTarg
     for (let attempt = 0; attempt < MAX_RETRIES && !success; attempt++) {
       try {
         const html = await fetchRaceDetailPage(year, target.round, target.day, target.raceNo);
-        const detail = parseRaceDetail(html, year, target.round, target.day, target.raceNo, target.date);
         success = true;
         failCount = 0;
 
-        if (detail) {
-          races.push(detail);
+        // 회차/일차/날짜 불일치 시 저장하지 않고 스킵 (엉뚱한 회차 데이터 저장 방지)
+        const check = verifyPageRoundDay(html, target.round, target.day, target.date);
+        if (!check.ok) {
+          mismatchCount++;
+          console.log(
+            `  검증 불일치 스킵 ${target.round}회${target.day}일 ${target.raceNo}R` +
+            ` (요청 ${target.date} / 응답 ${check.actual})`
+          );
+        } else {
+          const detail = parseRaceDetail(html, year, target.round, target.day, target.raceNo, target.date);
+          if (detail) {
+            races.push(detail);
+          }
         }
 
         // 진행 상태 로그
@@ -412,6 +443,10 @@ async function fetchYear(year: number, filterDate?: string | null, preloadedTarg
         }
       }
     }
+  }
+
+  if (mismatchCount > 0) {
+    console.log(`  ⚠️ 회차/일차/날짜 검증 불일치로 스킵: ${mismatchCount}건`);
   }
 
   return { year, totalRaces: races.length, races };
@@ -589,7 +624,7 @@ async function main() {
     clearProgress(year);
 
     // 1. 로컬 entry 파일에서 round/day 조회 시도
-    let targets = loadRaceTargets(year, TARGET_DATE);
+    const targets = loadRaceTargets(year, TARGET_DATE);
 
     // 2. 로컬에 없으면 Supabase decision_card_pages에서 조회
     if (targets.length === 0) {
@@ -618,8 +653,29 @@ async function main() {
           console.error(`  decision_card_pages 에 ${TARGET_DATE} 광명 행 없음`);
         }
 
-        if (dcPage) {
-          const { round, day: dayNum } = dcPage;
+        // 출주표가 없으면 race_schedule(광명 전용, venue 컬럼 없음)에서 회차/일차 조회.
+        // 출주표 수집이 빠진 날(예: 월요일 4일차)에도 결과는 수집되도록 한다.
+        // 회차/일차가 틀려도 아래 kcycle 페이지 검증에서 걸러진다.
+        let roundDay: { round: number; day: number } | null = dcPage ?? null;
+        if (!roundDay) {
+          const { data: schedRow, error: schedError } = await supabase
+            .from("race_schedule")
+            .select("round, day")
+            .eq("date", TARGET_DATE)
+            .order("round", { ascending: true })
+            .order("day", { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          if (schedError) {
+            console.error(`  race_schedule 조회 에러: ${schedError.message}`);
+          } else if (schedRow) {
+            console.log(`  race_schedule 에서 회차/일차 사용 (출주표 없음)`);
+            roundDay = schedRow;
+          }
+        }
+
+        if (roundDay) {
+          const { round, day: dayNum } = roundDay;
           console.log(`  ${year}년 ${round}회차 ${dayNum}일차`);
 
           // kcycle 요약 페이지에서 경주 수 파악
