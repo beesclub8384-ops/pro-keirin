@@ -1,0 +1,32 @@
+{
+  "venue": "부산",
+  "year": 2026,
+  "baseline": "docs\\recovery\\baseline-2026-10-13T01-57-17-145Z.json",
+  "baselineGeneratedAt": "2026-10-13T01:57:17.145Z",
+  "startedAt": "2026-11-03T05-50-36-894Z",
+  "finishedAt": "2026-11-03T05:50:43.266Z",
+  "aborted": false,
+  "targetCount": 1,
+  "processed": 1,
+  "retried": 0,
+  "skippedAlreadyRecovered": [],
+  "byOutcome": {
+    "성공": 1,
+    "원본미제공": 0,
+    "실패": 0
+  },
+  "unrecoverableDates": [],
+  "failedDates": [],
+  "results": [
+    {
+      "date": "2026-06-12",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 13,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    }
+  ]
+}

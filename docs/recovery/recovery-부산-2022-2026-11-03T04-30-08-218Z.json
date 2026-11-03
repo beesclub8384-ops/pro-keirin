@@ -1,0 +1,882 @@
+{
+  "venue": "부산",
+  "year": 2022,
+  "baseline": "docs\\recovery\\baseline-2026-10-13T01-57-17-145Z.json",
+  "baselineGeneratedAt": "2026-10-13T01:57:17.145Z",
+  "startedAt": "2026-11-03T04-30-08-218Z",
+  "finishedAt": "2026-11-03T04:51:12.508Z",
+  "aborted": false,
+  "targetCount": 86,
+  "processed": 86,
+  "retried": 4,
+  "skippedAlreadyRecovered": [],
+  "byOutcome": {
+    "성공": 86,
+    "원본미제공": 0,
+    "실패": 0
+  },
+  "unrecoverableDates": [],
+  "failedDates": [],
+  "results": [
+    {
+      "date": "2022-03-06",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-03-11",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 2,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-03-12",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 1,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-03-13",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-03-20",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-03-25",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 5,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-03-26",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 20,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-03-27",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-03",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-08",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 0,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-09",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-10",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-15",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-16",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 16,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-17",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-22",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-23",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 5,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-04-24",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-05-01",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-05-08",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 2,
+      "note": "⚠️ 월 경주일 목록 조회 실패 → 페이지 직접 시도: fetch failed"
+    },
+    {
+      "date": "2022-05-13",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-05-14",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 2,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-05-15",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 2,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-05-20",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-05-22",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 3,
+      "note": "⚠️ 월 경주일 목록 조회 실패 → 페이지 직접 시도: fetch failed"
+    },
+    {
+      "date": "2022-05-27",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 12,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-05-28",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-05-29",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-06-05",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 12,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-06-11",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-06-12",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-06-17",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-06-24",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-06-25",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 2,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-06-26",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-07-03",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 13,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-07-08",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-07-10",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-07-15",
+      "outcome": "성공",
+      "races": 8,
+      "resultRows": 56,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-07-16",
+      "outcome": "성공",
+      "races": 8,
+      "resultRows": 56,
+      "violations": 16,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-07-17",
+      "outcome": "성공",
+      "races": 8,
+      "resultRows": 56,
+      "violations": 13,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "⚠️ 월 경주일 목록 조회 실패 → 페이지 직접 시도: fetch failed"
+    },
+    {
+      "date": "2022-07-22",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-07-23",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-07-24",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "⚠️ 월 경주일 목록 조회 실패 → 페이지 직접 시도: fetch failed"
+    },
+    {
+      "date": "2022-07-31",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 18,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-08-05",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-08-06",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 4,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-08-07",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-08-13",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 13,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-08-14",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 12,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-08-19",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-08-20",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-08-21",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-08-28",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "⚠️ 월 경주일 목록 조회 실패 → 페이지 직접 시도: fetch failed"
+    },
+    {
+      "date": "2022-09-02",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "⚠️ 월 경주일 목록 조회 실패 → 페이지 직접 시도: fetch failed"
+    },
+    {
+      "date": "2022-09-03",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-09-12",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "⚠️ 월 경주일 목록 조회 실패 → 페이지 직접 시도: fetch failed"
+    },
+    {
+      "date": "2022-09-16",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-09-17",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 41,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-09-18",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-09-23",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 5,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-09-25",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 8,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-09-30",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-10-01",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-10-02",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 14,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-10-09",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 23,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "⚠️ 월 경주일 목록 조회 실패 → 페이지 직접 시도: fetch failed"
+    },
+    {
+      "date": "2022-10-14",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-10-15",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-10-16",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 15,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-10-21",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 11,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-10-23",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 17,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "⚠️ 월 경주일 목록 조회 실패 → 페이지 직접 시도: fetch failed"
+    },
+    {
+      "date": "2022-10-28",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 9,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-10-29",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-10-30",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-11-06",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-11-13",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-11-18",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-11-20",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-11-25",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-11-26",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 7,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-11-27",
+      "outcome": "성공",
+      "races": 6,
+      "resultRows": 42,
+      "violations": 12,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-12-04",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 6,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-12-09",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 2,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-12-16",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 3,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-12-17",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 5,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    {
+      "date": "2022-12-18",
+      "outcome": "성공",
+      "races": 3,
+      "resultRows": 21,
+      "violations": 10,
+      "exitCode": 0,
+      "attempts": 1,
+      "note": "(Use `node --trace-warnings ...` to show where the warning was created)"
+    }
+  ]
+}

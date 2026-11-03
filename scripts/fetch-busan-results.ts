@@ -36,6 +36,7 @@ config({ path: ".env.local" });
 
 import { createClient } from "@supabase/supabase-js";
 import { normalizeGrade } from "../src/lib/grade-normalizer";
+import { pruneRaceResults } from "./lib/prune-race-results";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey =
@@ -559,12 +560,34 @@ async function seedToSupabase(races: BusanRace[]): Promise<void> {
     }
   }
 
+  let resultsUpsertFailed = false;
   for (let i = 0; i < resultRows.length; i += BATCH_SIZE) {
     const batch = resultRows.slice(i, i + BATCH_SIZE);
     const { error } = await supabase
       .from("race_results")
       .upsert(batch, { onConflict: "race_id,back_no" });
-    if (error) console.error(`  race_results upsert 에러 (batch ${i}):`, error.message);
+    if (error) {
+      resultsUpsertFailed = true;
+      console.error(`  race_results upsert 에러 (batch ${i}):`, error.message);
+    }
+  }
+
+  // --prune: 원본 페이지에 없는 배번 행 삭제 (upsert 로는 안 지워지는 광명 사본 잔재 정리)
+  // upsert 가 하나라도 실패했으면 삭제하지 않는다
+  if (process.argv.includes("--prune")) {
+    if (resultsUpsertFailed) {
+      console.warn("  ⚠️ race_results upsert 실패 → prune 하지 않음");
+    } else {
+      await pruneRaceResults(
+        supabase,
+        races.flatMap((race) => {
+          const raceId = raceIdMap.get(`${race.year}|${race.round}|${race.day}|${race.raceNo}`);
+          return raceId
+            ? [{ raceId, label: `부산 ${race.date} ${race.raceNo}R`, keepBackNos: race.results.map((r) => r.backNo) }]
+            : [];
+        }),
+      );
+    }
   }
 
   // violations upsert (venue='부산')
